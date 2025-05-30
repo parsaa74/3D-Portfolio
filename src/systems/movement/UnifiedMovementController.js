@@ -59,7 +59,7 @@ export class UnifiedMovementController {
     // Collision parameters
     this.playerRadius = 0.3; // Approximate player width/2
     this.playerHeight = 1.8; // Player eye height (already used for initial position)
-    this.collisionCheckSteps = 3; // Max recursion depth for sliding
+    this.collisionCheckSteps = 5; // Increased max recursion depth for sliding
 
     // Input state
     this.input = {
@@ -610,6 +610,11 @@ export class UnifiedMovementController {
     if (moveLength < 0.001) {
       return moveDelta; // Not moving significantly
     }
+    
+    // Add early exit for very small movements to prevent micro-bouncing
+    if (moveLength < 0.01 && recursionDepth > 0) {
+      return new THREE.Vector3(0, 0, 0);
+    }
 
     if (!this.environment || typeof this.environment.getCollidableWalls !== 'function') {
       console.warn("[Collision] No environment or getCollidableWalls method found.");
@@ -625,7 +630,9 @@ export class UnifiedMovementController {
     const moveDirection = moveDelta.clone().normalize();
 
     // --- IMPROVED: Multi-directional collision detection ---
-    console.log(`[Collision Recur: ${recursionDepth}] Checking move: (${moveDelta.x.toFixed(3)}, ${moveDelta.y.toFixed(3)}, ${moveDelta.z.toFixed(3)})`);
+    if (recursionDepth === 0) { // Only log on first recursion level
+      console.log(`[Collision] Checking move: (${moveDelta.x.toFixed(3)}, ${moveDelta.y.toFixed(3)}, ${moveDelta.z.toFixed(3)})`);
+    }
     
     // Create a shell of raycasts around the player for more robust detection
     const raycaster = new THREE.Raycaster();
@@ -669,7 +676,9 @@ export class UnifiedMovementController {
             if (dotProduct < 0 && intersection.distance < nearestDistance) {
               nearestIntersection = intersection;
               nearestDistance = intersection.distance;
-              console.log(`Hit: dist=${intersection.distance.toFixed(3)}, obj=${intersection.object.name}, dot=${dotProduct.toFixed(3)}`);
+              if (recursionDepth === 0) { // Only log on first recursion level
+                console.log(`Hit: dist=${intersection.distance.toFixed(3)}, obj=${intersection.object.name}, dot=${dotProduct.toFixed(3)}`);
+              }
             }
           }
         }
@@ -677,7 +686,7 @@ export class UnifiedMovementController {
     }
     
     // If we found a collision within our range
-    const epsilon = 0.01; // Increased epsilon for numerical stability
+    const epsilon = 0.01;
     if (nearestIntersection && nearestDistance <= rayLength + epsilon) {
       // --- Collision Detected ---
       // Calculate how far we can safely move
@@ -699,11 +708,18 @@ export class UnifiedMovementController {
         slideVector.y = 0;
       }
 
-      console.log(`[Collision] Detected at distance ${nearestDistance.toFixed(3)}. Allowed move: ${distanceToCollision.toFixed(3)}`);
+      if (recursionDepth === 0) { // Only log on first recursion level
+        console.log(`[Collision] Detected at distance ${nearestDistance.toFixed(3)}. Allowed move: ${distanceToCollision.toFixed(3)}`);
+      }
 
-      // Dampen the slide vector slightly to prevent overshooting/instability
-      const slideFriction = 0.9; // Increased friction for stability
+      // Dampen the slide vector more aggressively to prevent overshooting/instability
+      const slideFriction = Math.max(0.7, 0.95 - recursionDepth * 0.1); // Reduce friction with depth
       const dampedSlideVector = slideVector.multiplyScalar(slideFriction);
+      
+      // Add minimum threshold for slide vector to prevent micro-movements
+      if (dampedSlideVector.length() < 0.005) {
+        return allowedMove; // Just return the allowed movement without sliding
+      }
 
       // Recursively check for collisions along the slide path
       const allowedSlide = this._checkCollision(dampedSlideVector, recursionDepth + 1);

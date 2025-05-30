@@ -47,9 +47,8 @@ function createDroneVoice(rootFreq, ratio, lfoSettings, reverb, output) {
 export class AudioManager {
   constructor() {
     console.log("AudioManager (DroneArt): Initializing...");
-    this.toneContext = Tone.getContext();
-    this.masterLimiter = new Tone.Limiter(-1).toDestination();
-    this.masterReverb = new Tone.Reverb({ decay: 7, preDelay: 0.04, wet: 0.4 }).connect(this.masterLimiter);
+    
+    // Initialize state variables
     this.droneVoices = [];
     this.rootIndex = 0;
     this.rootFreq = ROOT_CYCLE[this.rootIndex];
@@ -57,8 +56,12 @@ export class AudioManager {
     this.isActive = false;
     this.playerSpeed = 0;
     this.zone = 'default';
-    // Pre-create voices (but don't connect yet)
-    this._initVoices();
+    this.isInitialized = false;
+    
+    // Defer audio initialization until user interaction
+    this.toneContext = null;
+    this.masterLimiter = null;
+    this.masterReverb = null;
   }
 
   _initVoices() {
@@ -75,11 +78,37 @@ export class AudioManager {
   }
 
   /**
+   * Initialize audio components - called only after user interaction
+   */
+  async _initializeAudio() {
+    if (this.isInitialized) return true;
+    
+    try {
+      this.toneContext = Tone.getContext();
+      this.masterLimiter = new Tone.Limiter(-1).toDestination();
+      this.masterReverb = new Tone.Reverb({ decay: 7, preDelay: 0.04, wet: 0.4 }).connect(this.masterLimiter);
+      
+      // Pre-create voices (but don't connect yet)
+      this._initVoices();
+      
+      this.isInitialized = true;
+      console.log("AudioManager: Audio components initialized successfully");
+      return true;
+    } catch (error) {
+      console.error("AudioManager: Failed to initialize audio components:", error);
+      return false;
+    }
+  }
+
+  /**
    * Resume the AudioContext after user interaction
    * Must be called in response to a user gesture (click, tap, keypress)
    */
   async resumeAudioContext() {
     try {
+      // Initialize audio components if not already done
+      await this._initializeAudio();
+      
       await Tone.start();
       console.log("AudioContext resumed successfully after user gesture");
       return true;
@@ -91,6 +120,15 @@ export class AudioManager {
 
   async startDroneInstallation() {
     if (this.isActive) return;
+    
+    // Initialize audio if not already done
+    if (!this.isInitialized) {
+      const initialized = await this._initializeAudio();
+      if (!initialized) {
+        console.error("Cannot start drone installation - audio initialization failed");
+        return false;
+      }
+    }
     
     // First ensure AudioContext is running
     const audioContextState = Tone.getContext().state;
