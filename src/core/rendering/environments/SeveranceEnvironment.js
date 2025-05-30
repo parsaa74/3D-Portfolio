@@ -432,10 +432,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           // Use material system to load vertex shader instead of inline definition
           // This ensures we're following the project organization guidelines
           vertexShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/common/vertex.glsl"
+            "./src/shaders/common/vertex.glsl"
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/wall.glsl"
+            "./src/shaders/wall.glsl"
           ),
           side: THREE.DoubleSide,
         });
@@ -483,10 +483,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           },
           // Use material system to load vertex shader instead of inline definition
           vertexShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/common/vertex.glsl"
+            "./src/shaders/common/vertex.glsl"
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/corridor.glsl"
+            "./src/shaders/corridor.glsl"
           ),
           transparent: true,
           blending: THREE.AdditiveBlending,
