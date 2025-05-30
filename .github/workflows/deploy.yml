@@ -36,7 +36,25 @@ jobs:
         touch dist/.nojekyll
         ls -la dist/
         ls -la dist/assets/
+        cat dist/index.html | grep -E "(script|link)"
         
+    - name: Deploy built files to root for GitHub Pages
+      run: |
+        # Backup development files
+        mkdir -p backup-dev
+        cp index.html backup-dev/
+        cp -r src backup-dev/ 2>/dev/null || true
+        
+        # Copy built files to root
+        cp -r dist/* .
+        
+        # Commit and push the changes
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Deploy: Update root with built files [skip ci]" || echo "No changes to commit"
+        git push || echo "Nothing to push"
+
     - name: Setup Pages
       uses: actions/configure-pages@v4
 

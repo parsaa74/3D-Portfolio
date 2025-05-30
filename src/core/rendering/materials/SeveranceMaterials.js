@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { getAssetPath } from '../../../utils/assetPath.js';
 
 /**
  * Material system for the Severance aesthetic
@@ -162,12 +163,12 @@ export class SeveranceMaterials {
   async _loadTextures() {
     const textureLoader = new THREE.TextureLoader();
     const texturePaths = {
-      wall: "/assets/textures/wall.jpg",
-      floor: "/assets/textures/floor.jpg",
-      ceiling: "/assets/textures/ceiling.jpg",
-      trim: "/assets/textures/trim.jpg",
-      door: "/assets/textures/door.jpg",
-      outsideGround: "/assets/textures/wall.jpg",
+      wall: getAssetPath("/assets/textures/wall.jpg"),
+      floor: getAssetPath("/assets/textures/floor.jpg"),
+      ceiling: getAssetPath("/assets/textures/ceiling.jpg"),
+      trim: getAssetPath("/assets/textures/trim.jpg"),
+      door: getAssetPath("/assets/textures/door.jpg"),
+      outsideGround: getAssetPath("/assets/textures/wall.jpg"),
     };
 
     const loadTexture = (path) => {

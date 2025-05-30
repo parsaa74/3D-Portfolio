@@ -14,6 +14,7 @@ import {
 } from "../../../systems/corridorSystem";
 import { CORRIDOR_MAP } from "../../../systems/map/SeveranceCorridorMap.js";
 import PerformanceArtLetterGenerator from '../performance/PerformanceArtLetterGenerator.js';
+import { getAssetPath } from '../../../utils/assetPath.js';
 
 
 const DOORWAY_WIDTH = 1.8; // Widened from 1.2 for a more spacious doorframe
@@ -242,7 +243,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door frame model...");
         const doorFrameResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/door frame.glb',
+                getAssetPath('assets/models/door frame.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Frame loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -260,7 +261,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door pivot model...");
         const doorPivotResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/door pivot.glb',
+                getAssetPath('assets/models/door pivot.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Pivot loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -278,7 +279,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading card reader model...");
         const cardReaderResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/card reader.glb',
+                getAssetPath('assets/models/card reader.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Card reader loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -432,10 +433,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           // Use material system to load vertex shader instead of inline definition
           // This ensures we're following the project organization guidelines
           vertexShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/common/vertex.txt"
+            getAssetPath("./src/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/wall.txt"
+            getAssetPath("./src/shaders/wall.txt")
           ),
           side: THREE.DoubleSide,
         });
@@ -483,10 +484,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           },
           // Use material system to load vertex shader instead of inline definition
           vertexShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/common/vertex.txt"
+            getAssetPath("./src/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/corridor.txt"
+            getAssetPath("./src/shaders/corridor.txt")
           ),
           transparent: true,
           blending: THREE.AdditiveBlending,
@@ -1564,16 +1565,6 @@ export class SeveranceEnvironment extends BaseEnvironment {
     return doorGroup;
   }
 
-  /**
-   * Set up department locations and access points - REMOVED/TO BE REPLACED
-   * @private
-   */
-  /*
-  setupDepartments() {
-      // ... Entire function content removed ...
-  }
-  */ // KEEPING THE FUNCTION SIGNATURE AS A REMINDER TO ADD PORTFOLIO SETUP LATER
-
   // --- Portfolio Section Configuration ---
   portfolioSectionsConfig = {
       DESIGN: {
@@ -2123,19 +2114,6 @@ export class SeveranceEnvironment extends BaseEnvironment {
    */
   getCurrentLocation() {
     if (!this.camera) return "Unknown";
-
-    // Check if in any department - REMOVED departmentBounds check
-    /*
-    for (const [name, bounds] of this.departmentBounds) {
-      if (bounds.containsPoint(this.camera.position)) {
-        return name;
-      }
-    }
-    */
-
-    // TODO: Implement logic to detect which portfolio section the player is in,
-    // potentially based on proximity to section entrances or defined zones.
-    // For now, just return "CORRIDOR".
 
     // If not in a department, must be in a corridor
     return "CORRIDOR";
@@ -3299,22 +3277,6 @@ export class SeveranceEnvironment extends BaseEnvironment {
     eButtonCanvas.width = 320; // Keep width
     eButtonCanvas.height = 100; // Reduce height slightly
     const eButtonCtx = eButtonCanvas.getContext('2d');
-import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // Added GLTFLoader import
-import { TextureLoader } from "three"; // Add TextureLoader import
-import { BaseEnvironment } from "./BaseEnvironment";
-import { MapSystem } from "../../../systems/map/MapSystem";
-import { SeveranceMaterials } from "../materials/SeveranceMaterials";
-import { UnifiedMovementController } from "../../../systems/movement/UnifiedMovementController";
-import {
-  CorridorSystem,
-  CORRIDOR_WIDTH,
-  SEGMENT_LENGTH,
-  CORRIDOR_HEIGHT,
-  CORRIDOR_TRIM_HEIGHT,
-} from "../../../systems/corridorSystem";
-import { CORRIDOR_MAP } from "../../../systems/map/SeveranceCorridorMap.js";
-import PerformanceArtLetterGenerator from '../performance/PerformanceArtLetterGenerator.js';
 
 
 const DOORWAY_WIDTH = 1.8; // Widened from 1.2 for a more spacious doorframe
@@ -3543,7 +3505,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door frame model...");
         const doorFrameResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/door frame.glb',
+                getAssetPath('assets/models/door frame.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Frame loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -3561,7 +3523,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door pivot model...");
         const doorPivotResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/door pivot.glb',
+                getAssetPath('assets/models/door pivot.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Pivot loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -3579,7 +3541,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading card reader model...");
         const cardReaderResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/card reader.glb',
+                getAssetPath('assets/models/card reader.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Card reader loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -3733,10 +3695,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           // Use material system to load vertex shader instead of inline definition
           // This ensures we're following the project organization guidelines
           vertexShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/common/vertex.txt"
+            getAssetPath("./src/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/wall.txt"
+            getAssetPath("./src/shaders/wall.txt")
           ),
           side: THREE.DoubleSide,
         });
@@ -3784,10 +3746,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           },
           // Use material system to load vertex shader instead of inline definition
           vertexShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/common/vertex.txt"
+            getAssetPath("./src/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "./src/shaders/corridor.txt"
+            getAssetPath("./src/shaders/corridor.txt")
           ),
           transparent: true,
           blending: THREE.AdditiveBlending,
@@ -5425,19 +5387,6 @@ export class SeveranceEnvironment extends BaseEnvironment {
   getCurrentLocation() {
     if (!this.camera) return "Unknown";
 
-    // Check if in any department - REMOVED departmentBounds check
-    /*
-    for (const [name, bounds] of this.departmentBounds) {
-      if (bounds.containsPoint(this.camera.position)) {
-        return name;
-      }
-    }
-    */
-
-    // TODO: Implement logic to detect which portfolio section the player is in,
-    // potentially based on proximity to section entrances or defined zones.
-    // For now, just return "CORRIDOR".
-
     // If not in a department, must be in a corridor
     return "CORRIDOR";
   }
@@ -5465,21 +5414,6 @@ export class SeveranceEnvironment extends BaseEnvironment {
         closestSegment = { id, segment };
       }
     }
-
-    // Get department information - REMOVED departmentBounds check
-    /*
-    for (const [deptName, bounds] of this.departmentBounds) {
-      if (bounds.containsPoint(position)) {
-        return {
-          department: deptName.toLowerCase(),
-          position: position.clone(),
-        };
-      }
-    }
-    */
-
-    // TODO: Adapt this to return portfolio section info later.
-    // For now, it primarily returns corridor info based on segments.
 
     // Return corridor segment info if found
     if (closestSegment) {
@@ -5550,11 +5484,8 @@ export class SeveranceEnvironment extends BaseEnvironment {
     this.systems.clear();
     this.doors.clear();
     this.interactiveObjects.clear();
-    // REMOVED: this.departmentBounds.clear();
     this.corridorSegments.clear();
     this.wayfinding.clear(); // Clear wayfinding elements
-
-    // Don't dispose movement controller here as it's managed by main.js
 
     // Clear global references
     window.doorLocations = [];
@@ -6717,22 +6648,22 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load chair.gltf
     const chairGltf = await new Promise((resolve, reject) => {
-      loader.load('/chair.glb', resolve, undefined, reject);
+      loader.load(getAssetPath('/chair.glb'), resolve, undefined, reject);
     });
     // Load lamp.gltf
     const lampGltf = await new Promise((resolve, reject) => {
-      loader.load('/lamp.glb', resolve, undefined, reject);
+      loader.load(getAssetPath('/lamp.glb'), resolve, undefined, reject);
     });
     // Load projector.glb
     const projectorGltf = await new Promise((resolve, reject) => {
-      loader.load('/projector.glb', resolve, undefined, reject);
+      loader.load(getAssetPath('/projector.glb'), resolve, undefined, reject);
     });
     const projectorScreenGltf = await new Promise((resolve, reject) => {
-      loader.load('/projector_screen.glb', resolve, undefined, reject);
+      loader.load(getAssetPath('/projector_screen.glb'), resolve, undefined, reject);
     });
     
     // Load poster textures
-    const poster1Texture = await textureLoader.loadAsync('/assets/textures/posters/poster1.jpg');
+    const poster1Texture = await textureLoader.loadAsync(getAssetPath('/assets/textures/posters/poster1.jpg'));
     // const poster2Texture = await textureLoader.loadAsync('/assets/textures/posters/Severance_Photo_0201.jpg');
 
     const chairMesh = chairGltf.scene;
@@ -7148,7 +7079,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     );
     // Load all still textures asynchronously
     const stillTextures = await Promise.all(
-      stillFilenames.map(filename => textureLoader.loadAsync(stillBasePath + filename))
+      stillFilenames.map(filename => textureLoader.loadAsync(getAssetPath(stillBasePath + filename)))
     );
     const collage = createFramedCollage(stillTextures, collagePosition, stillRotation);
     interiorGroup.add(collage);
@@ -7217,7 +7148,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load all favorite film textures
     const favoriteFilmTextures = await Promise.all(
-      favoriteFilms.map(film => textureLoader.loadAsync(`/assets/images/film/favorite films/${film.filename}`))
+      favoriteFilms.map(film => textureLoader.loadAsync(getAssetPath(`/assets/images/film/favorite films/${film.filename}`)))
     );
     
     // Define right wall position and rotation for gallery
@@ -7464,7 +7395,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
             const textureLoader = new THREE.TextureLoader();
             
             // Create the appropriate path based on posterTitle
-            const basePath = `/assets/Images/performance/solo performances/${posterTitle.toLowerCase()}/`;
+            const basePath = getAssetPath(`/assets/Images/performance/solo performances/${posterTitle.toLowerCase()}/`);
             console.log(`Looking for images at path: ${basePath}`);
             
             for (let i = 0; i < count; i++) {
@@ -7663,7 +7594,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
       console.log(`Creating MDR interior at ${center.x}, ${center.z}`);
         try {
           const loader = new GLTFLoader();
-          const gltf = await loader.loadAsync("/severance_tv_show_office.glb"); // Path relative to public/
+          const gltf = await loader.loadAsync(getAssetPath("/severance_tv_show_office.glb")); // Path relative to public/
           const model = gltf.scene;
 
           // --- Material Override & Collision Setup --- (Simplified)
@@ -9119,7 +9050,7 @@ function createKrugerTextTexture(text, { width = 1024, height = 256, bgColor = '
 // Helper function to get image paths for a given poster title
 const getArtPosterImagePaths = (title) => {
   // Path that matches the known directory structure
-  const correctBasePath = `/assets/Images/performance/solo performances/${title.toLowerCase()}/`; 
+  const correctBasePath = getAssetPath(`/assets/Images/performance/solo performances/${title.toLowerCase()}/`); 
   const urls = [];
   let count = 0;
 

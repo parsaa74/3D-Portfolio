@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { getAssetPath } from '../../../utils/assetPath.js';
 
 // Performance art related vocabulary
 const PERFORMANCE_ART_WORDS = [
@@ -24,7 +25,7 @@ const PERFORMANCE_ART_WORDS = [
   "power", "technology", "nature", "ecology", "social", "cultural"
 ];
 
-const FONT_PATH = '/assets/fonts/Noto Sans_Regular.typeface.json';
+const FONT_PATH = getAssetPath('/assets/fonts/Noto Sans_Regular.typeface.json');
 
 function shuffleArray(array) {
   // Fisher-Yates shuffle
