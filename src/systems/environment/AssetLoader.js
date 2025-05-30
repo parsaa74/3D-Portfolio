@@ -86,11 +86,11 @@ export class AssetLoader extends EventEmitter {
    */
   _loadTextures() {
     const texturesToLoad = {
-      wall: "./assets/textures/wall.jpg",
-      floor: "./assets/textures/floor.jpg",
-      ceiling: "./assets/textures/ceiling.jpg",
-      door: "./assets/textures/door.jpg",
-      trim: "./assets/textures/trim.jpg",
+      wall: "/assets/textures/wall.jpg",
+      floor: "/assets/textures/floor.jpg",
+      ceiling: "/assets/textures/ceiling.jpg",
+      door: "/assets/textures/door.jpg",
+      trim: "/assets/textures/trim.jpg",
     };
 
     return Object.entries(texturesToLoad).map(([name, path]) => {
