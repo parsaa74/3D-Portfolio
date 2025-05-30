@@ -676,8 +676,8 @@ function setup() {
   // Initialize camera interaction if supported
   setupCameraInteraction();
 
-  // Initialize audio system
-  setupAudio();
+  // Initialize audio system (deferred until user interaction to prevent AudioContext errors)
+  // setupAudio();
 
   // Select initial color palette
   paletteIndex = constrain(paletteIndex, 0, PALETTES.length - 1);
