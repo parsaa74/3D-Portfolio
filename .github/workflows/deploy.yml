@@ -33,6 +33,7 @@ jobs:
     - name: Build
       run: |
         NODE_ENV=production npm run build
+        touch dist/.nojekyll
         ls -la dist/
         ls -la dist/assets/
         cat dist/index.html | grep -E "(script|link)"
