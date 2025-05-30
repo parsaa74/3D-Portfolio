@@ -254,7 +254,7 @@ export class SeveranceMaterials {
           "Attempting to load vertex shader from src/shaders/common/vertex.glsl"
         );
         commonVertexShader = await this._loadShaderFile(
-          "./src/shaders/common/vertex.txt"
+          getAssetPath("./src/shaders/common/vertex.glsl")
         );
         console.log("Successfully loaded vertex shader");
       } catch (e) {
@@ -272,7 +272,7 @@ export class SeveranceMaterials {
           "Attempting to load wall shader from src/shaders/wall.glsl"
         );
         wallFragmentShader = await this._loadShaderFile(
-          "./src/shaders/wall.txt"
+          getAssetPath("./src/shaders/wall.glsl")
         );
         console.log("Successfully loaded wall shader");
         console.log(
@@ -288,7 +288,7 @@ export class SeveranceMaterials {
             "Attempting to load wall shader from public/src/shaders/wall.glsl"
           );
           wallFragmentShader = await this._loadShaderFile(
-            "./public/src/shaders/wall.glsl"
+            getAssetPath("./public/src/shaders/wall.glsl")
           );
           console.log("Successfully loaded wall shader from public path");
         } catch (e2) {
@@ -304,7 +304,7 @@ export class SeveranceMaterials {
           "Attempting to load corridor shader from src/shaders/corridor.glsl"
         );
         corridorFragmentShader = await this._loadShaderFile(
-          "./src/shaders/corridor.txt"
+          getAssetPath("./src/shaders/corridor.glsl")
         );
         console.log("Successfully loaded corridor shader");
       } catch (e) {
@@ -316,7 +316,7 @@ export class SeveranceMaterials {
         // Try fallback from /shaders/corridor.glsl (without src prefix)
         try {
           corridorFragmentShader = await this._loadShaderFile(
-            "/shaders/corridor.glsl"
+            getAssetPath("/shaders/corridor.glsl")
           );
         } catch (e2) {
           console.warn("Could not load corridor shader from any location");
@@ -413,241 +413,119 @@ export class SeveranceMaterials {
     try {
       // Load wall shaders
       let wallVertexShader;
-      try {
-        wallVertexShader = await this._loadShaderFile('./src/shaders/common/vertex.txt');
-        console.log('Successfully loaded wall vertex shader');
-      } catch (error) {
-        console.error('Failed to load wall vertex shader:', error);
-        throw error;
-      }
-
       let wallFragmentShader;
+      
       try {
-        wallFragmentShader = await this._loadShaderFile('./src/shaders/wall.txt');
-        console.log('Successfully loaded wall fragment shader');
+        wallVertexShader = await this._loadShaderFile(getAssetPath('./src/shaders/common/vertex.glsl'));
+        wallFragmentShader = await this._loadShaderFile(getAssetPath('./src/shaders/wall.glsl'));
+        console.log('Successfully loaded wall shaders');
+        
+        // Create wall material with uniforms
+        const wallMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            wallColor: { value: new THREE.Color(0xf5f5f5) },
+            wallRoughness: { value: 0.85 },
+            time: { value: 0.0 }
+          },
+          vertexShader: wallVertexShader,
+          fragmentShader: wallFragmentShader,
+          side: THREE.DoubleSide,
+          transparent: false
+        });
+
+        // Validate wall shader compilation
+        if (!this._checkShaderCompilation(wallMaterial, 'Wall')) {
+          throw new Error('Wall shader compilation failed');
+        }
+        
+        this.materials.set('wall', wallMaterial);
+        console.log('Wall shader material created successfully');
+        
       } catch (error) {
-        console.error('Failed to load wall fragment shader:', error);
-        throw error;
-      }
-
-      // Create wall material with uniforms
-      const wallMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          wallColor: { value: new THREE.Color(0xf5f5f5) },
-          wallRoughness: { value: 0.85 },
-          time: { value: 0.0 }
-        },
-        vertexShader: wallVertexShader,
-        fragmentShader: wallFragmentShader,
-        side: THREE.DoubleSide,
-        transparent: false
-      });
-
-      // Validate wall shader compilation
-      if (!this._checkShaderCompilation(wallMaterial, 'Wall')) {
-        console.error('Wall shader compilation failed, using fallback material');
-        // Create fallback material
-        const fallbackWallMaterial = new THREE.MeshStandardMaterial({
+        console.warn('Failed to load wall shaders, using fallback material:', error);
+        this.materials.set('wall', new THREE.MeshStandardMaterial({
           color: 0xf5f5f5,
           roughness: 0.85,
           metalness: 0.1,
           side: THREE.DoubleSide
-        });
-        this.materials.set('wall', fallbackWallMaterial);
-      } else {
-        this.materials.set('wall', wallMaterial);
-        console.log('Wall shader material created successfully');
+        }));
       }
 
       // Load corridor shaders
       let corridorVertexShader;
-      try {
-        corridorVertexShader = await this._loadShaderFile('./src/shaders/common/vertex.txt');
-        console.log('Successfully loaded corridor vertex shader');
-      } catch (error) {
-        console.error('Failed to load corridor vertex shader:', error);
-        throw error;
-      }
-
       let corridorFragmentShader;
+      
       try {
-        corridorFragmentShader = await this._loadShaderFile('./src/shaders/corridor.txt');
-        console.log('Successfully loaded corridor fragment shader');
+        corridorVertexShader = await this._loadShaderFile(getAssetPath('./src/shaders/common/vertex.glsl'));
+        corridorFragmentShader = await this._loadShaderFile(getAssetPath('./src/shaders/corridor.glsl'));
+        console.log('Successfully loaded corridor shaders');
+        
+        // Create corridor material with uniforms
+        const corridorMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            lightColor: { value: new THREE.Color(0xffffff) },
+            intensity: { value: 1.0 },
+            time: { value: 0.0 }
+          },
+          vertexShader: corridorVertexShader,
+          fragmentShader: corridorFragmentShader,
+          transparent: true,
+          blending: THREE.AdditiveBlending
+        });
+
+        // Validate corridor shader compilation
+        if (!this._checkShaderCompilation(corridorMaterial, 'Corridor')) {
+          throw new Error('Corridor shader compilation failed');
+        }
+        
+        this.materials.set('corridor', corridorMaterial);
+        console.log('Corridor shader material created successfully');
+        
       } catch (error) {
-        console.error('Failed to load corridor fragment shader:', error);
-        throw error;
-      }
-
-      // Create corridor material with uniforms
-      const corridorMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          lightColor: { value: new THREE.Color(0xffffff) },
-          intensity: { value: 1.0 },
-          time: { value: 0.0 }
-        },
-        vertexShader: corridorVertexShader,
-        fragmentShader: corridorFragmentShader,
-        transparent: true,
-        blending: THREE.AdditiveBlending
-      });
-
-      // Validate corridor shader compilation
-      if (!this._checkShaderCompilation(corridorMaterial, 'Corridor')) {
-        console.error('Corridor shader compilation failed, using fallback material');
-        // Create fallback material
-        const fallbackCorridorMaterial = new THREE.MeshStandardMaterial({
+        console.warn('Failed to load corridor shaders, using fallback material:', error);
+        this.materials.set('corridor', new THREE.MeshStandardMaterial({
           color: 0xffffff,
           emissive: 0xffffff,
           emissiveIntensity: 0.5,
           transparent: true,
           opacity: 0.5
-        });
-        this.materials.set('corridor', fallbackCorridorMaterial);
-      } else {
-        this.materials.set('corridor', corridorMaterial);
-        console.log('Corridor shader material created successfully');
-      }
-
-      // --- Add Tim Rodenbröker-inspired corridor wall shader ---
-      let corridorWallVertexShader;
-      try {
-        corridorWallVertexShader = await this._loadShaderFile('./src/shaders/common/vertex.txt');
-        console.log('Successfully loaded corridor wall vertex shader');
-      } catch (error) {
-        console.error('Failed to load corridor wall vertex shader:', error);
-        throw error;
-      }
-      let corridorWallFragmentShader;
-      try {
-        corridorWallFragmentShader = await this._loadShaderFile('./src/shaders/corridor_wall.txt');
-        console.log('Successfully loaded corridor wall fragment shader');
-      } catch (error) {
-        console.error('Failed to load corridor wall fragment shader:', error);
-        throw error;
-      }
-      const corridorWallMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          u_time: { value: 0.0 },
-          u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-          u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
-          u_depth: { value: 1.0 },
-          playerPos: { value: new THREE.Vector3(0, 0, 0) },
-          wallScale: { value: new THREE.Vector2(1.0, 1.0) },
-          uPrevFrame: { value: null }
-        },
-        vertexShader: corridorWallVertexShader,
-        fragmentShader: corridorWallFragmentShader,
-        side: THREE.DoubleSide,
-        transparent: false
-      });
-      if (!this._checkShaderCompilation(corridorWallMaterial, 'CorridorWall')) {
-        console.error('CorridorWall shader compilation failed, using fallback material');
-        this.materials.set('corridorWall', new THREE.MeshStandardMaterial({
-          color: 0xe10600,
-          roughness: 0.5,
-          metalness: 0.2,
-          side: THREE.DoubleSide
         }));
-      } else {
-        this.materials.set('corridorWall', corridorWallMaterial);
-        console.log('CorridorWall shader material created successfully');
       }
 
-      // --- Add Twin Peaks-inspired zigzag corridor floor shader ---
-      let corridorFloorVertexShader;
-      try {
-        corridorFloorVertexShader = await this._loadShaderFile('./src/shaders/common/vertex.txt');
-        console.log('Successfully loaded corridor floor vertex shader');
-      } catch (error) {
-        console.error('Failed to load corridor floor vertex shader:', error);
-        throw error;
-      }
-      let corridorFloorFragmentShader;
-      try {
-        corridorFloorFragmentShader = await this._loadShaderFile('./src/shaders/corridor_floor.txt');
-        console.log('Successfully loaded corridor floor fragment shader');
-      } catch (error) {
-        console.error('Failed to load corridor floor fragment shader:', error);
-        throw error;
-      }
-      const corridorFloorMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          time: { value: 0.0 },
-          playerPos: { value: new THREE.Vector3(0, 0, 0) }
-        },
-        vertexShader: corridorFloorVertexShader,
-        fragmentShader: corridorFloorFragmentShader,
-        side: THREE.FrontSide,
-        transparent: false
-      });
-      if (!this._checkShaderCompilation(corridorFloorMaterial, 'CorridorFloor')) {
-        console.error('CorridorFloor shader compilation failed, using fallback material');
-        this.materials.set('floor', new THREE.MeshStandardMaterial({
-          color: 0xf0f0f0,
-          roughness: 0.3,
-          metalness: 0.4,
-          side: THREE.FrontSide
-        }));
-      } else {
-        this.materials.set('floor', corridorFloorMaterial);
-        console.log('CorridorFloor shader material created successfully');
-      }
-
-      // --- Dreamy Night Sky Shader ---
-      let skyVertexShader;
-      try {
-        skyVertexShader = await this._loadShaderFile('./src/shaders/common/vertex.txt');
-        console.log('Successfully loaded sky vertex shader');
-      } catch (error) {
-        console.error('Failed to load sky vertex shader:', error);
-        throw error;
-      }
-      let skyFragmentShader;
-      try {
-        skyFragmentShader = await this._loadShaderFile('./src/shaders/sky_night_dreamy.txt');
-        console.log('Successfully loaded dreamy night sky fragment shader');
-      } catch (error) {
-        console.error('Failed to load dreamy night sky fragment shader:', error);
-        throw error;
-      }
-      const skyMaterial = new THREE.ShaderMaterial({
-        uniforms: {
-          time: { value: 0.0 }
-        },
-        vertexShader: skyVertexShader,
-        fragmentShader: skyFragmentShader,
-        side: THREE.DoubleSide,
-        transparent: false
-      });
-      if (!this._checkShaderCompilation(skyMaterial, 'Sky')) {
-        console.error('Sky shader compilation failed, using fallback material');
-        this.materials.set('sky', new THREE.MeshStandardMaterial({
-          color: 0x7ec0ee,
-          metalness: 0.0,
-          roughness: 1.0,
-          side: THREE.DoubleSide
-        }));
-      } else {
-        this.materials.set('sky', skyMaterial);
-        console.log('Dreamy night sky shader material created successfully');
-      }
-
-    } catch (error) {
-      console.error('Error creating shader materials:', error);
-      // Create fallback materials
-      this.materials.set('wall', new THREE.MeshStandardMaterial({
-        color: 0xf5f5f5,
-        roughness: 0.85,
-        metalness: 0.1,
+      // Create fallback materials for shaders that don't exist
+      console.log('Creating fallback materials for missing shaders...');
+      
+      // CorridorWall material (Tim Rodenbröker-inspired)
+      this.materials.set('corridorWall', new THREE.MeshStandardMaterial({
+        color: 0xe10600,
+        roughness: 0.5,
+        metalness: 0.2,
         side: THREE.DoubleSide
       }));
-      this.materials.set('corridor', new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        emissive: 0xffffff,
-        emissiveIntensity: 0.5,
-        transparent: true,
-        opacity: 0.5
+      console.log('Created fallback corridorWall material');
+
+      // Floor material (Twin Peaks-inspired)
+      this.materials.set('floor', new THREE.MeshStandardMaterial({
+        color: 0xf0f0f0,
+        roughness: 0.3,
+        metalness: 0.4,
+        side: THREE.FrontSide
       }));
+      console.log('Created fallback floor material');
+
+      // Sky material
+      this.materials.set('sky', new THREE.MeshStandardMaterial({
+        color: 0x7ec0ee,
+        metalness: 0.0,
+        roughness: 1.0,
+        side: THREE.DoubleSide
+      }));
+      console.log('Created fallback sky material');
+
+      console.log('Shader material creation complete');
+      
+    } catch (error) {
+      console.error('Error creating shader materials:', error);
       throw error;
     }
   }
