@@ -18,8 +18,6 @@ import { getAssetPath } from '../../../utils/assetPath.js';
 
 
 const DOORWAY_WIDTH = 1.8; // Widened from 1.2 for a more spacious doorframe
-
-
 export class SeveranceEnvironment extends BaseEnvironment {
   constructor(options = {}) {
     super({
@@ -1565,6 +1563,16 @@ export class SeveranceEnvironment extends BaseEnvironment {
     return doorGroup;
   }
 
+  /**
+   * Set up department locations and access points - REMOVED/TO BE REPLACED
+   * @private
+   */
+  /*
+  setupDepartments() {
+      // ... Entire function content removed ...
+  }
+  */ // KEEPING THE FUNCTION SIGNATURE AS A REMINDER TO ADD PORTFOLIO SETUP LATER
+
   // --- Portfolio Section Configuration ---
   portfolioSectionsConfig = {
       DESIGN: {
@@ -2143,21 +2151,6 @@ export class SeveranceEnvironment extends BaseEnvironment {
       }
     }
 
-    // Get department information - REMOVED departmentBounds check
-    /*
-    for (const [deptName, bounds] of this.departmentBounds) {
-      if (bounds.containsPoint(position)) {
-        return {
-          department: deptName.toLowerCase(),
-          position: position.clone(),
-        };
-      }
-    }
-    */
-
-    // TODO: Adapt this to return portfolio section info later.
-    // For now, it primarily returns corridor info based on segments.
-
     // Return corridor segment info if found
     if (closestSegment) {
       const segmentId = closestSegment.id;
@@ -2227,11 +2220,8 @@ export class SeveranceEnvironment extends BaseEnvironment {
     this.systems.clear();
     this.doors.clear();
     this.interactiveObjects.clear();
-    // REMOVED: this.departmentBounds.clear();
     this.corridorSegments.clear();
     this.wayfinding.clear(); // Clear wayfinding elements
-
-    // Don't dispose movement controller here as it's managed by main.js
 
     // Clear global references
     window.doorLocations = [];
@@ -2796,6 +2786,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         interiorGroup.add(backWall);
       } else {
         // Split the wall mesh into two, leaving a gap for the doorway
+        const DOORWAY_WIDTH = 1.8; // Should match the constant used elsewhere
         const wallLen = size.x;
         // Doorway center in world X
         const doorCoord = doorPosition.x;
@@ -3276,7 +3267,2436 @@ export class SeveranceEnvironment extends BaseEnvironment {
     eButtonCanvas.width = 320; // Keep width
     eButtonCanvas.height = 100; // Reduce height slightly
     const eButtonCtx = eButtonCanvas.getContext('2d');
+    
+    // Style similar to door interaction prompt
+    const borderRadius = 8;
+    const padding = 10;
+    const indicatorSize = 30;
+    const indicatorMargin = 15;
+    const text = "INTERACT";
+    
+    eButtonCtx.font = 'bold 28px "Neue Montreal", sans-serif'; // Match prompt font if possible
+    const textMetrics = eButtonCtx.measureText(text);
+    const textWidth = textMetrics.width;
+    const totalWidth = indicatorMargin + indicatorSize + indicatorMargin + textWidth + padding * 2;
+    const totalHeight = indicatorSize + padding * 2;
+    
+    // Readjust canvas size based on content
+    eButtonCanvas.width = totalWidth;
+    eButtonCanvas.height = totalHeight;
+    
+    // Draw background (dark, semi-transparent)
+    eButtonCtx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+    eButtonCtx.beginPath();
+    eButtonCtx.roundRect(0, 0, totalWidth, totalHeight, borderRadius);
+    eButtonCtx.fill();
+    
+    // Draw border (teal)
+    eButtonCtx.strokeStyle = '#5CDED3';
+    eButtonCtx.lineWidth = 2;
+    eButtonCtx.stroke();
+    
+    // Draw Key Indicator background (teal square)
+    const indicatorX = padding;
+    const indicatorY = padding;
+    eButtonCtx.fillStyle = '#5CDED3';
+    eButtonCtx.beginPath();
+    eButtonCtx.roundRect(indicatorX, indicatorY, indicatorSize, indicatorSize, 4); // Slightly rounded square
+    eButtonCtx.fill();
+    
+    // Draw 'E' inside indicator (black)
+    eButtonCtx.font = 'bold 24px "Neue Montreal", sans-serif';
+    eButtonCtx.fillStyle = '#000';
+    eButtonCtx.textAlign = 'center';
+    eButtonCtx.textBaseline = 'middle';
+    eButtonCtx.fillText('E', indicatorX + indicatorSize / 2, indicatorY + indicatorSize / 2 + 1); // Adjust baseline slightly
+    
+    // Draw Text ("INTERACT")
+    eButtonCtx.font = 'bold 28px "Neue Montreal", sans-serif';
+    eButtonCtx.fillStyle = '#FFFFFF'; // White text
+    eButtonCtx.textAlign = 'left';
+    eButtonCtx.textBaseline = 'middle';
+    eButtonCtx.fillText(text, indicatorX + indicatorSize + indicatorMargin, totalHeight / 2 + 1);
+    
+    // --- END: Update E button appearance ---
+    
+    const eButtonTex = new THREE.CanvasTexture(eButtonCanvas);
+    eButtonTex.needsUpdate = true;
+    eButtonTex.minFilter = THREE.LinearFilter;
+    eButtonTex.magFilter = THREE.LinearFilter;
+    const eButtonMat = new THREE.MeshBasicMaterial({ map: eButtonTex, transparent: true, side: THREE.DoubleSide });
+    // Adjust plane geometry aspect ratio to match new canvas
+    const buttonAspect = eButtonCanvas.width / eButtonCanvas.height;
+    const buttonHeight = 0.22; // Keep height relatively small
+    const buttonWidth = buttonHeight * buttonAspect;
+    const eButtonMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(buttonWidth, buttonHeight),
+      eButtonMat
+    );
+    eButtonMesh.position.set(terminal.position.x + 0.4, terminal.position.y, terminal.position.z);
+    eButtonMesh.rotation.y = Math.PI/2;
+    eButtonMesh.name = 'dev_terminal_ebutton';
+    eButtonMesh.visible = true; // TEMP: Always visible for debug
+    interiorGroup.add(eButtonMesh);
+    
+    // Create invisible interaction volume for terminal (no changes to original)
+    const terminalInteractionGeom = new THREE.BoxGeometry(1.0, 2.0, 2.0);
+    const terminalInteractionMat = new THREE.MeshBasicMaterial({ visible: false });
+    const terminalInteractionMesh = new THREE.Mesh(terminalInteractionGeom, terminalInteractionMat);
+    terminalInteractionMesh.position.set(center.x - size.x/2 + 0.4, center.y + 1.2, center.z);
+    terminalInteractionMesh.userData.interactable = true;
+    terminalInteractionMesh.userData.isDevTerminal = true;
+    terminalInteractionMesh.name = 'dev_terminal_interaction';
+    interiorGroup.add(terminalInteractionMesh);
+    
+    // Register for interaction and proximity logic
+    if (!this._devTerminalInteractable) this._devTerminalInteractable = [];
+    this._devTerminalInteractable.push({ mesh: terminal, eButton: eButtonMesh, interactionMesh: terminalInteractionMesh });
+  }
 
+  /** Creates interior for Film & Cinematography section. */
+  async _createFilmInterior(interiorGroup, center, size, doorPosition) {
+    console.log("[DEBUG FILM INTERIOR] Entered _createFilmInterior"); // <<< ADDED
+    console.log("[DEBUG FILM INTERIOR] interiorGroup name:", interiorGroup.name); // <<< ADDED
+    console.log(`Creating FILM interior at ${center.x}, ${center.z}`);
+    
+    // --- Special lighting at door entrance, similar to Design interior ---
+    if (doorPosition) {
+      // Create vector from door to center
+      const doorToCenter = new THREE.Vector3().subVectors(center, doorPosition).normalize();
+      
+      // Create a special warm amber light (matching film color theme) at the entryway
+      const entryLight = new THREE.SpotLight(0xfbbc05, 5.0, 8.0, Math.PI/4, 0.5, 1);
+      entryLight.position.copy(doorPosition.clone().add(new THREE.Vector3(0, 2.5, 0))); // Above the door
+      
+      // Point the spotlight into the room
+      entryLight.target.position.copy(center);
+      entryLight.target.updateMatrixWorld();
+      
+      interiorGroup.add(entryLight);
+      interiorGroup.add(entryLight.target);
+    }
+    
+    // --- Only add: GLTF chairs, lamps, screen, curtain, speakers, projector ---
+
+    const loader = new GLTFLoader();
+    const textureLoader = new TextureLoader(); // Create texture loader for posters
+    
+    // Load chair.gltf
+    const chairGltf = await new Promise((resolve, reject) => {
+      loader.load(getAssetPath('/chair.glb'), resolve, undefined, reject);
+    });
+    // Load lamp.gltf
+    const lampGltf = await new Promise((resolve, reject) => {
+      loader.load(getAssetPath('/lamp.glb'), resolve, undefined, reject);
+    });
+    // Load projector.glb
+    const projectorGltf = await new Promise((resolve, reject) => {
+      loader.load(getAssetPath('/projector.glb'), resolve, undefined, reject);
+    });
+    const projectorScreenGltf = await new Promise((resolve, reject) => {
+      loader.load(getAssetPath('/projector_screen.glb'), resolve, undefined, reject);
+    });
+    
+    // Load poster textures
+    const poster1Texture = await textureLoader.loadAsync(getAssetPath('/assets/textures/posters/poster1.jpg'));
+    // const poster2Texture = await textureLoader.loadAsync('/assets/textures/posters/Severance_Photo_0201.jpg');
+
+    const chairMesh = chairGltf.scene;
+    const lampMesh = lampGltf.scene;
+    const projectorMesh = projectorGltf.scene;
+    chairMesh.scale.set(1, 1, 1); // Adjust if needed
+    lampMesh.scale.set(1, 1, 1); // Adjust if needed
+    projectorMesh.scale.set(1, 1, 1); // Adjust if needed
+
+    // --- Apply custom light shader to lamp bulb ---
+    // Find the bulb mesh in lampMesh (by name or material)
+    let bulbMeshes = [];
+    lampMesh.traverse((child) => {
+      if (child.isMesh && (child.name.toLowerCase().includes('bulb') || child.name.toLowerCase().includes('light'))) {
+        bulbMeshes.push(child);
+      }
+    });
+    if (bulbMeshes.length === 0) {
+      // Try fallback: find mesh with high white/emissive material
+      lampMesh.traverse((child) => {
+        if (child.isMesh && child.material && child.material.emissive && child.material.emissive.getHex() === 0xffffff) {
+          bulbMeshes.push(child);
+        }
+      });
+    }
+    if (bulbMeshes.length === 0) {
+      console.warn('[Lamp Shader] No bulb mesh found in lamp.glb. No shader applied.');
+    } else {
+      const lampShaderMat = createLampLightShaderMaterial();
+      bulbMeshes.forEach(bulb => {
+        bulb.material = lampShaderMat;
+        bulb.material.needsUpdate = true;
+      });
+    }
+
+    // --- Place four GLTF chairs in a gentle arc facing the screen wall (assume screen is on +Z wall) ---
+    const chairPositions = [
+      { x: center.x - 1.2, z: center.z + 1.2, rot: 0.08 },
+      { x: center.x - 0.4, z: center.z + 1.4, rot: 0.03 },
+      { x: center.x + 0.4, z: center.z + 1.4, rot: -0.03 },
+      { x: center.x + 1.2, z: center.z + 1.2, rot: -0.08 },
+    ];
+    for (let i = 0; i < 4; i++) {
+      const chair = chairMesh.clone(true);
+      chair.position.set(chairPositions[i].x, center.y, chairPositions[i].z);
+      chair.rotation.y = chairPositions[i].rot;
+      chair.position.y = center.y;
+      interiorGroup.add(chair);
+    }
+
+    // --- Place projector.glb at a realistic position and scale ---
+    const projectorScale = 0.4;
+    projectorMesh.scale.set(projectorScale, projectorScale, projectorScale);
+    const projectorY = center.y + 2.2;
+    const projectorZ = center.z + size.z / 2 - 3.0;
+    projectorMesh.position.set(center.x, projectorY, projectorZ);
+    projectorMesh.rotation.set(-Math.PI / 16, 0, 0);
+    interiorGroup.add(projectorMesh);
+
+    // --- Add projector_screen.glb (realistic pull-down screen) ---
+    const screen = projectorScreenGltf.scene;
+    // Dynamically size and position the screen to fit the room and maintain aspect ratio
+    const screenAspect = 16 / 9;
+    const marginX = 0.5; // meters from each side wall
+    const marginTop = 0.4; // meters from ceiling
+    const marginBottom = 0.5; // Reset to previous value for size calculation
+    const maxWidth = size.x - 2 * marginX;
+    const maxHeight = size.y - marginTop - marginBottom;
+    // Compute width and height that fit the aspect ratio and room
+    let screenWidth = maxWidth;
+    let screenHeight = screenWidth / screenAspect;
+    if (screenHeight > maxHeight) {
+      screenHeight = maxHeight;
+      screenWidth = screenHeight * screenAspect;
+    }
+    // Scale the screen (reduced by 20% from previous 3x)
+    screenWidth *= 2.4; // Reduced from 3 to 2.4 (20% smaller)
+    screenHeight *= 2.4; // Reduced from 3 to 2.4 (20% smaller)
+    // The GLB's native size (from Blender) is 6.4 x 3.6 meters
+    const nativeWidth = 6.4;
+    const nativeHeight = 3.6;
+    const scaleX = screenWidth / nativeWidth;
+    const scaleY = screenHeight / nativeHeight;
+    // Use uniform scale for X and Y (Z can match X)
+    const scale = Math.min(scaleX, scaleY);
+    screen.scale.set(scale, scale, scale);
+    // Position: flush with +Z wall, centered horizontally, BOTTOM just above the floor
+    const screenZ = center.z + size.z / 2 - 0.08; // 8cm from wall
+    // Correct floor Y calculation and add height offset
+    const floorY = center.y - size.y / 2;
+    const heightOffset = 1.5; // Raise screen by 1 meter from base position
+    const screenY = floorY + marginBottom + heightOffset; // Add heightOffset to raise the screen
+    screen.position.set(center.x, screenY, screenZ);
+    screen.rotation.y = 0; // Facing -Z (into the room)
+    interiorGroup.add(screen);
+    // --- Place four lamp.glb in the four corners, each with a point light ---
+    const margin = 0.45;
+    const lampCorners = [
+      { x: center.x - size.x / 2 + margin, z: center.z - size.z / 2 + margin },
+      { x: center.x + size.x / 2 - margin, z: center.z - size.z / 2 + margin },
+      { x: center.x - size.x / 2 + margin, z: center.z + size.z / 2 - margin },
+      { x: center.x + size.x / 2 - margin, z: center.z + size.z / 2 - margin },
+    ];
+    for (let i = 0; i < 4; i++) {
+      const lamp = lampMesh.clone(true);
+      lamp.position.set(lampCorners[i].x, center.y, lampCorners[i].z);
+      interiorGroup.add(lamp);
+      // Add a point light at the bulb position (try to find bulb in this lamp instance)
+      let bulbPos = null;
+      lamp.traverse((child) => {
+        if (child.isMesh && (child.name.toLowerCase().includes('bulb') || child.name.toLowerCase().includes('light'))) {
+          bulbPos = child.getWorldPosition(new THREE.Vector3());
+        }
+      });
+      // If not found, use lamp's position
+      if (!bulbPos) bulbPos = lamp.position.clone();
+      const lampLight = new THREE.PointLight(0xffffcc, 2.0, 5.0, 1.0);
+      lampLight.position.copy(bulbPos);
+      interiorGroup.add(lampLight);
+    }
+
+    // --- Add two framed film posters on the wall ---
+    const createFramedPoster = (posterTexture, position, rotation) => {
+      // Create poster group
+      const posterGroup = new THREE.Group();
+      
+      // Get the aspect ratio from the texture
+      const imageAspect = posterTexture.image ? 
+        posterTexture.image.width / posterTexture.image.height : 
+        0.75; // Default aspect ratio if image data isn't available yet
+      
+      // Create frame with proper aspect ratio
+      const frameHeight = 1.4;
+      const frameWidth = frameHeight * imageAspect;
+      const frameDepth = 0.04;
+      const frameBorderSize = 0.05;
+      
+      // Frame material - matte black, matching Severance aesthetic
+      const frameMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111111,
+        roughness: 0.8,
+        metalness: 0.2
+      });
+      
+      // Poster material with texture
+      const posterMaterial = new THREE.MeshStandardMaterial({
+        map: posterTexture,
+        roughness: 0.6,
+        metalness: 0.0
+      });
+      
+      // Create outer frame
+      const outerFrameGeometry = new THREE.BoxGeometry(frameWidth, frameHeight, frameDepth);
+      const outerFrame = new THREE.Mesh(outerFrameGeometry, frameMaterial);
+      posterGroup.add(outerFrame);
+      
+      // Create inner poster (slightly smaller and in front of frame)
+      const posterWidth = frameWidth - (frameBorderSize * 2);
+      const posterHeight = frameHeight - (frameBorderSize * 2);
+      const posterGeometry = new THREE.PlaneGeometry(posterWidth, posterHeight);
+      const poster = new THREE.Mesh(posterGeometry, posterMaterial);
+      poster.position.z = frameDepth / 2 + 0.001; // Place slightly in front of frame
+      posterGroup.add(poster);
+      
+      // Add subtle matboard/matte between frame and poster
+      const matteWidth = frameWidth - frameBorderSize * 0.8;
+      const matteHeight = frameHeight - frameBorderSize * 0.8;
+      const matteGeometry = new THREE.PlaneGeometry(matteWidth, matteHeight);
+      const matteMaterial = new THREE.MeshStandardMaterial({
+        color: 0xeeeeee,
+        roughness: 0.9,
+        metalness: 0.0
+      });
+      const matte = new THREE.Mesh(matteGeometry, matteMaterial);
+      matte.position.z = frameDepth / 2 + 0.0005; // Between frame and poster
+      posterGroup.add(matte);
+      
+      // Add glass in front (slight reflection)
+      const glassGeometry = new THREE.PlaneGeometry(frameWidth - frameBorderSize * 0.3, frameHeight - frameBorderSize * 0.3);
+      const glassMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        roughness: 0.05,
+        metalness: 0.0,
+        transmission: 0.98,
+        transparent: true,
+        opacity: 0.1,
+        reflectivity: 0.5,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1
+      });
+      const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+      glass.position.z = frameDepth / 2 + 0.002; // In front of everything
+      posterGroup.add(glass);
+      
+      // Set position and rotation
+      posterGroup.position.copy(position);
+      posterGroup.rotation.set(rotation.x, rotation.y, rotation.z);
+      
+      return posterGroup;
+    };
+    
+    // --- Helper to create an interactable mesh and button ---
+    function addWatchInteractionToFrame(frameGroup, position, link, filmTitle, filmYear, filmCast, filmRole, filmSummary, interiorGroup) {
+      // Create an invisible box for interaction
+      const interactGeom = new THREE.BoxGeometry(1.3, 1.6, 0.2); // Slightly larger than frame
+      // Make interaction mesh invisible (no debugging needed in production)
+      const interactMat = new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true, visible: false });
+      const interactMesh = new THREE.Mesh(interactGeom, interactMat);
+
+      // --- DEBUG: Log poster and interiorGroup info ---
+      console.log(`[AWIF DEBUG] Poster Position (world): (${position.x.toFixed(2)}, ${position.y.toFixed(2)}, ${position.z.toFixed(2)})`);
+      console.log(`[AWIF DEBUG] Called for interiorGroup: ${interiorGroup.name}`);
+
+      // Position the interaction mesh at the frame origin (local coordinates)
+      interactMesh.position.set(0, 0, 0);
+      // Extract the orientation from the frame group's rotation
+      const frameRotation = frameGroup.rotation.clone();
+      const normalVector = new THREE.Vector3(0, 0, 1).applyEuler(frameRotation);
+      // Offset in the direction the frame is facing
+      interactMesh.position.add(normalVector.clone().multiplyScalar(0.25));
+      // Store frame data
+      interactMesh.userData.isWatchInteractable = true;
+      interactMesh.userData.interactable = true; // Consistent with doors
+      interactMesh.userData.watchLink = link;
+      interactMesh.userData.filmTitle = filmTitle;
+      interactMesh.userData.filmYear = filmYear;
+      interactMesh.userData.filmCast = filmCast;
+      interactMesh.userData.filmRole = filmRole;
+      interactMesh.userData.filmSummary = filmSummary;
+      interactMesh.userData.frameRotation = frameRotation;
+      // --- Add floating 3D 'E' button mesh - Updated Style ---
+      const eButtonCanvas = document.createElement('canvas');
+      eButtonCanvas.width = 320; 
+      eButtonCanvas.height = 100;
+      const eButtonCtx = eButtonCanvas.getContext('2d');
+      const borderRadius = 8;
+      const padding = 10;
+      const indicatorSize = 30;
+      const indicatorMargin = 15;
+      const text = "INTERACT";
+      eButtonCtx.font = 'bold 28px "Neue Montreal", sans-serif';
+      const textMetrics = eButtonCtx.measureText(text);
+      const textWidth = textMetrics.width;
+      const totalWidth = indicatorMargin + indicatorSize + indicatorMargin + textWidth + padding * 2;
+      const totalHeight = indicatorSize + padding * 2;
+      eButtonCanvas.width = totalWidth;
+      eButtonCanvas.height = totalHeight;
+      eButtonCtx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      eButtonCtx.beginPath();
+      eButtonCtx.roundRect(0, 0, totalWidth, totalHeight, borderRadius);
+      eButtonCtx.fill();
+      eButtonCtx.strokeStyle = '#5CDED3';
+      eButtonCtx.lineWidth = 2;
+      eButtonCtx.stroke();
+      const indicatorX = padding;
+      const indicatorY = padding;
+      eButtonCtx.fillStyle = '#5CDED3';
+      eButtonCtx.beginPath();
+      eButtonCtx.roundRect(indicatorX, indicatorY, indicatorSize, indicatorSize, 4);
+      eButtonCtx.fill();
+      eButtonCtx.font = 'bold 24px "Neue Montreal", sans-serif';
+      eButtonCtx.fillStyle = '#000';
+      eButtonCtx.textAlign = 'center';
+      eButtonCtx.textBaseline = 'middle';
+      eButtonCtx.fillText('E', indicatorX + indicatorSize / 2, indicatorY + indicatorSize / 2 + 1);
+      eButtonCtx.font = 'bold 28px "Neue Montreal", sans-serif';
+      eButtonCtx.fillStyle = '#FFFFFF';
+      eButtonCtx.textAlign = 'left';
+      eButtonCtx.textBaseline = 'middle';
+      eButtonCtx.fillText(text, indicatorX + indicatorSize + indicatorMargin, totalHeight / 2 + 1);
+      
+      const eButtonTex = new THREE.CanvasTexture(eButtonCanvas);
+      eButtonTex.needsUpdate = true;
+      eButtonTex.minFilter = THREE.LinearFilter;
+      eButtonTex.magFilter = THREE.LinearFilter;
+      const eButtonMat = new THREE.MeshBasicMaterial({ map: eButtonTex, transparent: true, side: THREE.DoubleSide });
+
+      const buttonAspect = eButtonCanvas.width / eButtonCanvas.height;
+      const buttonHeight = 0.22;
+      const buttonWidth = buttonHeight * buttonAspect;
+      const buttonMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(buttonWidth, buttonHeight),
+        eButtonMat
+      );
+      // Calculate world position for the button (above and in front of the poster)
+      const upVector = new THREE.Vector3(0, 1, 0);
+      const rightVector = new THREE.Vector3().crossVectors(normalVector, upVector).normalize();
+      const adjustedUpVector = new THREE.Vector3().crossVectors(rightVector, normalVector).normalize();
+      // World position: start at poster position, move up and out
+      const buttonWorldPos = position.clone();
+      buttonWorldPos.add(adjustedUpVector.clone().multiplyScalar(0.9)); // Move up
+      buttonWorldPos.add(normalVector.clone().multiplyScalar(1.5)); // Move out from frame - DEBUG INCREASED OFFSET
+      buttonMesh.position.copy(buttonWorldPos);
+      // Set rotation to match poster's facing direction
+      const lookAtMatrix = new THREE.Matrix4();
+      lookAtMatrix.lookAt(
+        new THREE.Vector3(0, 0, 0),
+        normalVector,
+        adjustedUpVector
+      );
+      buttonMesh.setRotationFromMatrix(lookAtMatrix);
+      buttonMesh.renderOrder = 9999;
+      buttonMesh.visible = true;
+      buttonMesh.name = 'posterEButton';
+      // Add button directly to the interiorGroup
+      interiorGroup.add(buttonMesh);
+      // --- DEBUG: Log button's parent ---
+      console.log(`[AWIF DEBUG] Added button to parent: ${buttonMesh.parent ? buttonMesh.parent.name : 'null'}, Expected parent: ${interiorGroup.name}`);
+      // Store reference for later
+      interactMesh.userData.eButtonMesh = buttonMesh;
+      // Add to frame group for interaction
+      frameGroup.add(interactMesh);
+      if (!frameGroup.userData.interactables) frameGroup.userData.interactables = [];
+      frameGroup.userData.interactables.push(interactMesh);
+      return interactMesh;
+    }
+
+    // First poster - left wall, closer to the screen
+    const poster1Position = new THREE.Vector3(
+      center.x - size.x / 2 + 0.1, // Left wall
+      center.y + 1.5, // Eye level
+      center.z + size.z / 2 - 2.0 // Near the screen
+    );
+    const poster1Rotation = new THREE.Vector3(0, Math.PI / 2, 0);
+    const framedPoster1 = createFramedPoster(poster1Texture, poster1Position, poster1Rotation);
+    interiorGroup.add(framedPoster1);
+    // Add interaction mesh and button to first poster
+    console.log("[DEBUG FILM INTERIOR] About to call addWatchInteractionToFrame for poster1"); // <<< ADDED
+    const poster1Interact = addWatchInteractionToFrame(
+      framedPoster1, poster1Position,
+      'https://your-link-here',
+      '38:01',
+      '2017',
+      'parsa azari',
+      'actor',
+      'A solitary watchmaker, tormented by every sound, becomes obsessed with a silent stranger in his shop, spiraling into a surreal inner crisis that reaches a startling, self-inflicted climax.',
+      interiorGroup
+    );
+
+    // --- Collage frame helper ---
+    function createFramedCollage(textures, position, rotation) {
+      // Collage config
+      const n = textures.length;
+      let gridRows = 1, gridCols = n;
+      if (n === 4) { gridRows = 2; gridCols = 2; }
+      else if (n === 3) { gridRows = 1; gridCols = 3; }
+      else if (n === 2) { gridRows = 1; gridCols = 2; }
+      // Frame size
+      const frameHeight = 1.4;
+      const frameWidth = frameHeight * gridCols / gridRows;
+      const frameDepth = 0.04;
+      const frameBorderSize = 0.05;
+      // Frame
+      const frameMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111111, roughness: 0.8, metalness: 0.2
+      });
+      const outerFrameGeometry = new THREE.BoxGeometry(frameWidth, frameHeight, frameDepth);
+      const outerFrame = new THREE.Mesh(outerFrameGeometry, frameMaterial);
+      // Matboard
+      const matteWidth = frameWidth - frameBorderSize * 0.8;
+      const matteHeight = frameHeight - frameBorderSize * 0.8;
+      const matteGeometry = new THREE.PlaneGeometry(matteWidth, matteHeight);
+      const matteMaterial = new THREE.MeshStandardMaterial({
+        color: 0xeeeeee, roughness: 0.9, metalness: 0.0
+      });
+      const matte = new THREE.Mesh(matteGeometry, matteMaterial);
+      matte.position.z = frameDepth / 2 + 0.0005;
+      // Glass
+      const glassGeometry = new THREE.PlaneGeometry(frameWidth - frameBorderSize * 0.3, frameHeight - frameBorderSize * 0.3);
+      const glassMaterial = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff, roughness: 0.05, metalness: 0.0, transmission: 0.98,
+        transparent: true, opacity: 0.1, reflectivity: 0.5, clearcoat: 1.0, clearcoatRoughness: 0.1
+      });
+      const glass = new THREE.Mesh(glassGeometry, glassMaterial);
+      glass.position.z = frameDepth / 2 + 0.002;
+      // Collage group
+      const group = new THREE.Group();
+      group.add(outerFrame);
+      group.add(matte);
+      // Add images in grid
+      const cellW = (matteWidth - 0.04) / gridCols;
+      const cellH = (matteHeight - 0.04) / gridRows;
+      for (let i = 0; i < n; i++) {
+        const row = Math.floor(i / gridCols);
+        const col = i % gridCols;
+        const x = -matteWidth/2 + cellW/2 + col*cellW;
+        const y = matteHeight/2 - cellH/2 - row*cellH;
+        const imgGeom = new THREE.PlaneGeometry(cellW*0.95, cellH*0.95);
+        const imgMat = new THREE.MeshStandardMaterial({ map: textures[i], roughness: 0.6, metalness: 0.0 });
+        const img = new THREE.Mesh(imgGeom, imgMat);
+        img.position.set(x, y, frameDepth/2 + 0.001);
+        group.add(img);
+      }
+      group.add(glass);
+      group.position.copy(position);
+      group.rotation.set(rotation.x, rotation.y, rotation.z);
+      return group;
+    }
+
+    // Film stills for the second film (collage)
+    const stillFilenames = [
+      'poster2(1).jpg',
+      'poster2(2).jpg',
+      'poster2(3).jpg',
+      'poster2(4).jpg'
+    ];
+    const stillBasePath = '/assets/textures/posters/';
+    const stillRotation = new THREE.Vector3(0, Math.PI / 2, 0);
+    const collagePosition = new THREE.Vector3(
+      center.x - size.x / 2 + 0.1,
+      center.y + 1.5,
+      center.z + size.z / 2 - 4.5 // Place further from the screen
+    );
+    // Load all still textures asynchronously
+    const stillTextures = await Promise.all(
+      stillFilenames.map(filename => textureLoader.loadAsync(getAssetPath(stillBasePath + filename)))
+    );
+    const collage = createFramedCollage(stillTextures, collagePosition, stillRotation);
+    interiorGroup.add(collage);
+    // Add interaction mesh and button to collage
+    console.log("[DEBUG FILM INTERIOR] About to call addWatchInteractionToFrame for collage"); // <<< ADDED
+    const collageInteract = addWatchInteractionToFrame(
+      collage, collagePosition,
+      'https://youtu.be/PuEuzuM9Mig?si=jDVdbPAFdwopsvJ6',
+      'The one who dances on your grave',
+      '2019',
+      'nastaran moradi',
+      'cinematographer',
+      'In a society of systematic erasure, Nastaran navigates her increasing invisibility. Poetic vignettes follow her through daily existence as economic pressures and patriarchal structures intensify around her.',
+      interiorGroup
+    );
+    // Add a spotlight above the collage
+    const collageSpotPos = collagePosition.clone();
+    collageSpotPos.x += 0.5;
+    collageSpotPos.y += 0.8;
+    // createPosterSpotlight(collageSpotPos, collagePosition); // Disabled: function not defined
+
+    // --- Add to interactables ---
+    if (!this._customWatchInteractables) this._customWatchInteractables = [];
+    this._customWatchInteractables.push(poster1Interact, collageInteract);
+    console.log('[DEBUG] _customWatchInteractables after push:', this._customWatchInteractables);
+    console.log('[DEBUG] Number of poster interactables:', this._customWatchInteractables.length);
+
+    // Spotlights for each poster
+    const poster1SpotPosition = poster1Position.clone();
+    poster1SpotPosition.x += 0.5;
+    poster1SpotPosition.y += 0.8;
+    // createPosterSpotlight(poster1SpotPosition, poster1Position); // Disabled: function not defined
+
+    const poster2SpotPosition = collagePosition.clone();
+    poster2SpotPosition.x += 0.5;
+    poster2SpotPosition.y += 0.8;
+    // createPosterSpotlight(poster2SpotPosition, collagePosition); // Disabled: function not defined
+    
+    // All other 3D elements (screen, curtain, speakers, primitives, lights) are removed for minimalism.
+    // DEBUG: Force visible test button at center of room
+    // const debugButtonGeom = new THREE.PlaneGeometry(1, 0.5);
+    // const debugButtonMat = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+    // const debugButtonMesh = new THREE.Mesh(debugButtonGeom, debugButtonMat);
+    // debugButtonMesh.position.set(0, 2, 0); // Center of room, 2m above floor
+    // debugButtonMesh.renderOrder = 9999;
+    // debugButtonMesh.visible = true;
+    // debugButtonMesh.name = 'posterEButton_DEBUG';
+    // interiorGroup.add(debugButtonMesh);
+    // console.log('[DEBUG] Added forced debug button at (0,2,0)', debugButtonMesh);
+
+    // --- Add Favorite Films Gallery on Right Wall ---
+    console.log("[DEBUG FILM INTERIOR] Creating favorite films gallery on right wall");
+    
+    // Define the favorite films from the attached folder with TMDB links
+    const favoriteFilms = [
+      { filename: 'mulholland-drive.jpg', title: 'Mulholland Drive', director: 'David Lynch', year: '2001', link: 'https://www.themoviedb.org/movie/1018-mulholland-drive' },
+      { filename: 'Morvern-Callar.jpg', title: 'Morvern Callar', director: 'Lynne Ramsay', year: '2002', link: 'https://www.themoviedb.org/movie/18602-morvern-callar' },
+      { filename: 'Still-life.jpg', title: 'Still Life', director: 'Sohrab Shahid-Saless', year: '1974', link: 'https://www.themoviedb.org/movie/213592' },
+      { filename: 'what-time-is-it-there.jpg', title: 'What Time Is It There?', director: 'Tsai Ming-liang', year: '2001', link: 'https://www.themoviedb.org/movie/24166' },
+      { filename: 'Wendy-and-Lucy.jpg', title: 'Wendy and Lucy', director: 'Kelly Reichardt', year: '2008', link: 'https://www.themoviedb.org/movie/8942-wendy-and-lucy' },
+      { filename: 'Scenes-from-a-Marriage.jpg', title: 'Scenes from a Marriage', director: 'Ingmar Bergman', year: '1973', link: 'https://www.themoviedb.org/tv/65170-scener-ur-ett-ktenskap' },
+      { filename: 'In-einem-Jahr-mit-13-Monden.webp', title: 'In a Year with 13 Moons', director: 'Rainer Werner Fassbinder', year: '1978', link: 'https://www.themoviedb.org/movie/42206-in-einem-jahr-mit-13-monden' },
+      { filename: 'A-Man-Escaped.jpg', title: 'A Man Escaped', director: 'Robert Bresson', year: '1956', link: 'https://www.themoviedb.org/movie/15244-un-condamne-a-mort-s-est-echappe' },
+      { filename: 'Old-Joy.webp', title: 'Old Joy', director: 'Kelly Reichardt', year: '2006', link: 'https://www.themoviedb.org/movie/26518-old-joy' }
+    ];
+    
+    // Load all favorite film textures
+    const favoriteFilmTextures = await Promise.all(
+      favoriteFilms.map(film => textureLoader.loadAsync(getAssetPath(`/assets/images/film/favorite films/${film.filename}`)))
+    );
+    
+    // Define right wall position and rotation for gallery
+    const rightWallX = center.x + size.x / 2 - 0.1; // Right wall position
+    const rightWallRotation = new THREE.Vector3(0, -Math.PI / 2, 0); // Face into room from right wall
+    
+    // Row layout parameters - single horizontal row
+    const totalFilms = favoriteFilms.length; // 9 films
+    const wallDepth = size.z; // Total depth of the room
+    const availableWallSpace = wallDepth * 0.8; // Use 80% of wall space for distribution
+    const spacingBetweenFrames = availableWallSpace / (totalFilms - 1); // Even distribution
+    
+    // Calculate starting position - lower height, centered on wall
+    const rowY = center.y + 1.2; // Brought down from 2.8 to 1.2 (more eye level)
+    const startZ = center.z - (wallDepth * 0.4); // Start from one end of the usable wall space
+    
+    // Create frames for each favorite film in a single row
+    for (let i = 0; i < favoriteFilms.length; i++) {
+      const x = rightWallX;
+      const y = rowY; // Same height for all (single row)
+      const z = startZ + (i * spacingBetweenFrames); // Evenly distributed along wall
+      const position = new THREE.Vector3(x, y, z);
+      
+      const frame = createFramedPoster(favoriteFilmTextures[i], position, rightWallRotation);
+      interiorGroup.add(frame);
+      
+      // Add interaction mesh and button to frame
+      const interact = addWatchInteractionToFrame(
+        frame, position,
+        favoriteFilms[i].link, // TMDB link for each film
+        favoriteFilms[i].title,
+        favoriteFilms[i].year,
+        favoriteFilms[i].director,
+        null, // No role for favorite films
+        `${favoriteFilms[i].title} (${favoriteFilms[i].year}) directed by ${favoriteFilms[i].director}`,
+        interiorGroup
+      );
+      
+      // Add to interactables
+      if (!this._customWatchInteractables) this._customWatchInteractables = [];
+      this._customWatchInteractables.push(interact);
+    }
+  }
+
+  /** Creates interior for Performance Art section. */
+  async _createArtInterior(interiorGroup, center, size, doorPosition) {
+    console.log(`Creating ART interior at ${center.x}, ${center.z}`);
+    
+    // Store reference to this environment instance for use in inner functions
+    const self = this;
+    
+    // Create a general interior light with warmer gallery lighting
+    const interiorLight = new THREE.PointLight(0xfff2e6, 0.8, 0, 1);
+    interiorLight.position.set(center.x, center.y + size.y * 0.8, center.z);
+    interiorGroup.add(interiorLight);
+    
+    // Create a central circular stage (kept from original)
+    const stageGeometry = new THREE.CylinderGeometry(2.0, 2.0, 0.2, 32);
+    const stageMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0xdddddd, 
+      roughness: 0.2,
+      metalness: 0.3 
+    });
+    const stage = new THREE.Mesh(stageGeometry, stageMaterial);
+    stage.position.set(center.x, center.y + 0.1, center.z);
+    interiorGroup.add(stage);
+
+    // --- Create the Performance Art Letter Generator ---
+    try {
+      console.log("Creating Performance Art Letter Generator...");
+      this.letterGenerator = new PerformanceArtLetterGenerator(
+        interiorGroup, 
+        new THREE.Vector3(center.x, center.y + 1.2, center.z), // Position above stage
+        2.0  // Radius of generator sphere
+      );
+      
+      // Add to art room animations to ensure it's updated each frame
+      if (!this._artRoomAnimations) this._artRoomAnimations = [];
+      this._artRoomAnimations.push((deltaTime) => {
+        if (this.letterGenerator) {
+          this.letterGenerator.update(deltaTime);
+        }
+      });
+      console.log("Performance Art Letter Generator created successfully");
+    } catch (error) {
+      console.error("Failed to create Performance Art Letter Generator:", error);
+    }
+
+    // --- Create Gallery Wall ---
+    const addInfoInteractionToArtPoster = (imageGroup, position, interiorGroup, posterTitle) => {
+      // Create an invisible box for interaction
+      const interactGeom = new THREE.BoxGeometry(1.3, 1.6, 0.2);
+      const interactMat = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true, visible: false });
+      const interactMesh = new THREE.Mesh(interactGeom, interactMat);
+      interactMesh.position.set(0, 0, 0);
+      // Offset in the direction the poster is facing (z+)
+      const normalVector = new THREE.Vector3(0, 0, 1).applyEuler(imageGroup.rotation.clone());
+      interactMesh.position.add(normalVector.clone().multiplyScalar(0.25));
+      interactMesh.userData.isArtInfoInteractable = true;
+      interactMesh.userData.interactable = true;
+      interactMesh.userData.posterTitle = posterTitle;
+      interactMesh.userData.imageUrls = getArtPosterImagePaths(posterTitle); // Get and store image URLs
+
+      if (posterTitle === "Circle of Confusion") {
+        interactMesh.userData.infoContent =
+          "Circle of Confusion was a collaborative video-performance between Parsa Azari and Parsa Samadpour which came out of an idea: a sense of discomfort that we go through both in terms of our identity forming and our bodily as we grow.\n" +
+          "This led to a video which was testament to our physical boundaries as two performers inside a studio and this video was projected in a rather vulnerable but transparent space to try to convey a shameful secret to the audience by showing it publicly.\n" +
+          "The video was of us both practicing rope jumping as much as we could. Both were restricted by different types of barriers throughout the shoot and this clips of us trying and retrying was dissolved into one other to create an impossible image.\n" +
+          "Audience was tested by the performers and went through trial to be able to move the secret part of the gallery.\n" +
+          "This performance was part of the 7th annual 30 Performances 30 Artists 30 Days Festival which were held in TMoCA (Tehran Museum of Contemporary Arts), curated by Amir Rad.\n" +
+          "Link: https://vimeo.com/327524174";
+      } else if (posterTitle === "Friends") {
+        interactMesh.userData.infoContent =
+          "04/01/2016 – 04/01/2016\n" +
+          "InstaMeet (Friend) (Performance Art, 30 min) (2016, 6th Annual 30 Performances 30 Artists 30 Days\n" +
+          "Festival, TMoCA)\n" +
+          "InstaMeet/Friend, was a multi-media effort which was attempting to capture a real life virtualization of networking\n" +
+          "effects of social media on the nature of communication. this was done through a gamification of the relationship\n" +
+          "between the performer and the audience throughout the performance. each person would be given an ID card\n" +
+          "(containing their real life username on Instagram) and a mask to which they would wear in the gallery. the audience\n" +
+          "interacted with the performer via his instagram account which was livestreamed in the gallery for everyone to see\n" +
+          "where performer did posted various videos and photos of the event, replied to comments, took pictures of audience\n" +
+          "and himself and so on. performer handpicked and brought them out to a deserted corner of the gallery, and before\n" +
+          "taking their pictures, he unmasked the subjects to reveal their irl IDs in the photos with their username tagged. this\n" +
+          "sort of doxxing (a rather newer term that's more widely used these days) generated a reactionary affect in the\n" +
+          "audience and did encouraged them to interact more and more in the aforementioned website all awhile experiencing\n" +
+          "all this in the hollowed out space of gallery.\n" +
+          "this performance was part of the 5th annual festival of \"30 performances 30 artists 30 days\" in the Tehran Museum of\n" +
+          "Contemporary Arts, Curated by Amir Rad. Performer did a reperformance based on InstaMeet in the Radical\n" +
+          "Performance festival a year later in 2017.\n" +
+          "شخب - رابخا -2/5162- یس - سنمروفرپ - یس - دنمرنه - یس - زور /ir.honaronline.www://https Link";
+      } else if (posterTitle === "Dissolve") {
+        interactMesh.userData.infoContent =
+          "14/12/2016 – 14/12/2016\n" +
+          "Dissolve (Video/Performance Art, 30 min) (2016, 6th Annual 30 Performances 30 Artists 30 Days\n" +
+          "Festival, TMoCA)\n" +
+          "Dissolve, was initially conceived as a meditation on the ephemeral nature of the modern day lives and and an\n" +
+          "exploration of the challenging effects that the accelerated speed of our lives have had on the familial and on a bigger\n" +
+          "scale, societal roles that we've been burdened with.\n" +
+          "the Performance art piece that was accompanied by a video which portrayed the Performer in a rather performative\n" +
+          "situations, doing transient and mundane chores of everyday life; entering rooms, exiting them, going to sleep and\n" +
+          "waking from it. these short clips gets repeatedly dissolved into another, just as the different places and tasks get\n" +
+          "dissolve into one another in an absolute displacement; meanwhile the performer who was placed in the middle of\n" +
+          "gallery and with canvas behind him, had obtained the figure of a painter, who instead of brushing the canvas with\n" +
+          "paint was looking through multiple volumes of Persian dictionaries for words, hand picking a few and writing them on\n" +
+          "DIGITAL SKILLS\n" +
+          "CREATIVE WORKS \n" +
+          "the canvas. the words were picked randomly in a dadaian fashion but maintained a coherent sense over (fabricated or\n" +
+          "not) definitions of roles and groundings of humans within societal norms and traditions within familial bonds. he\n" +
+          "gradually tried to interact with the audience in the room to give them the opportunity to rethink words, pick and write\n" +
+          "them. eventually the canvas got filled with words and their definitions that made it utterly unreadable and totally\n" +
+          "black.This performance piece was part of 6th Annual \"30 Performances, 30 Artists, 30 Days Festival\" which was\n" +
+          "annually held at Tehran Museum of Contemporary Art.\n" +
+          "- شخب - یمسجت -4/91566- یتقو - یانعم - گنهرف - تغل - گنر - یم - دزاب - یزاب - اب - تاملک - انعم - هتخاب - رد - نیموس - یارجا /ir.honaronline.www://https Link\n" +
+          "لاویتسف - یس - سنمروفرپ - یس - دنمرنه - یس - زو";
+      } else {
+      interactMesh.userData.infoContent = `Boilerplate info for ${posterTitle}`;
+      }
+      // --- Add floating 3D 'E' button mesh ---
+      const eButtonCanvas = document.createElement('canvas');
+      eButtonCanvas.width = 320; 
+      eButtonCanvas.height = 100;
+      const eButtonCtx = eButtonCanvas.getContext('2d');
+      const borderRadius = 8;
+      const padding = 10;
+      const indicatorSize = 30;
+      const indicatorMargin = 15;
+      const text = "INFO";
+      eButtonCtx.font = 'bold 28px "Neue Montreal", sans-serif';
+      const textMetrics = eButtonCtx.measureText(text);
+      const textWidth = textMetrics.width;
+      const totalWidth = indicatorMargin + indicatorSize + indicatorMargin + textWidth + padding * 2;
+      const totalHeight = indicatorSize + padding * 2;
+      eButtonCanvas.width = totalWidth;
+      eButtonCanvas.height = totalHeight;
+      eButtonCtx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+      eButtonCtx.beginPath();
+      eButtonCtx.roundRect(0, 0, totalWidth, totalHeight, borderRadius);
+      eButtonCtx.fill();
+      eButtonCtx.strokeStyle = '#5CDED3';
+      eButtonCtx.lineWidth = 2;
+      eButtonCtx.stroke();
+      const indicatorX = padding;
+      const indicatorY = padding;
+      eButtonCtx.fillStyle = '#5CDED3';
+      eButtonCtx.beginPath();
+      eButtonCtx.roundRect(indicatorX, indicatorY, indicatorSize, indicatorSize, 4);
+      eButtonCtx.fill();
+      eButtonCtx.font = 'bold 24px "Neue Montreal", sans-serif';
+      eButtonCtx.fillStyle = '#000';
+      eButtonCtx.textAlign = 'center';
+      eButtonCtx.textBaseline = 'middle';
+      eButtonCtx.fillText('E', indicatorX + indicatorSize / 2, indicatorY + indicatorSize / 2 + 1);
+      eButtonCtx.font = 'bold 28px "Neue Montreal", sans-serif';
+      eButtonCtx.fillStyle = '#FFFFFF';
+      eButtonCtx.textAlign = 'left';
+      eButtonCtx.textBaseline = 'middle';
+      eButtonCtx.fillText(text, indicatorX + indicatorSize + indicatorMargin, totalHeight / 2 + 1);
+      const eButtonTex = new THREE.CanvasTexture(eButtonCanvas);
+      eButtonTex.needsUpdate = true;
+      eButtonTex.minFilter = THREE.LinearFilter;
+      eButtonTex.magFilter = THREE.LinearFilter;
+      const eButtonMat = new THREE.MeshBasicMaterial({ map: eButtonTex, transparent: true, side: THREE.DoubleSide });
+      const buttonAspect = eButtonCanvas.width / eButtonCanvas.height;
+      const buttonHeight = 0.22;
+      const buttonWidth = buttonHeight * buttonAspect;
+      const buttonMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(buttonWidth, buttonHeight),
+        eButtonMat
+      );
+      // Place button above and in front of the poster (local coordinates)
+      buttonMesh.position.set(0, 0.9, 1.5); // up and out in local space
+      // Set rotation to face forward (z+)
+      buttonMesh.rotation.set(0, 0, 0);
+      buttonMesh.renderOrder = 9999;
+      buttonMesh.visible = true;
+      buttonMesh.name = 'artPosterEButton';
+      imageGroup.add(buttonMesh); // <-- add to imageGroup, not interiorGroup
+      interactMesh.userData.eButtonMesh = buttonMesh;
+      imageGroup.add(interactMesh);
+      if (!imageGroup.userData.interactables) imageGroup.userData.interactables = [];
+      imageGroup.userData.interactables.push(interactMesh);
+      
+      // Add to art poster interactables collection for getInteractableObjects
+      if (!self._artPosterInteractables) self._artPosterInteractables = [];
+      self._artPosterInteractables.push(interactMesh);
+      console.log(`[DEBUG] Added art poster interactable for '${posterTitle}' with ${interactMesh.userData.imageUrls.length} images.`);
+      
+      return interactMesh;
+    };
+
+    const createGalleryWall = async (wallPosition, wallRotation, posterTitle, count = 6) => {
+        console.log(`Creating gallery wall for ${posterTitle} with ${count} images`);
+        const wallGroup = new THREE.Group();
+        
+        try {
+            // Create grid layout for images
+            const imageHeight = 1.1; // Smaller posters
+            const imageWidth = imageHeight * 1.5; // Fixed aspect ratio
+            const imageSpacing = 0.2;
+            const imagesPerRow = 3;
+            
+            // Set the texture loader
+            const textureLoader = new THREE.TextureLoader();
+            
+            // Create the appropriate path based on posterTitle
+            const basePath = getAssetPath(`/assets/Images/performance/solo performances/${posterTitle.toLowerCase()}/`);
+            console.log(`Looking for images at path: ${basePath}`);
+            
+            for (let i = 0; i < count; i++) {
+                const row = Math.floor(i / imagesPerRow);
+                const col = i % imagesPerRow;
+                // Create image group
+                const imageGroup = new THREE.Group();
+                
+                // Create a colored rectangle with a border
+                const fallbackGeometry = new THREE.PlaneGeometry(imageWidth, imageHeight);
+                
+                // Use specific colors for each gallery wall (as fallback)
+                let color;
+                if (posterTitle === 'Circle of Confusion') {
+                    color = new THREE.Color(0.2 + Math.random() * 0.3, 0.1 + Math.random() * 0.2, 0.6 + Math.random() * 0.4); // Blues/purples
+                } else if (posterTitle === 'Dissolve') {
+                    color = new THREE.Color(0.6 + Math.random() * 0.4, 0.2 + Math.random() * 0.3, 0.1 + Math.random() * 0.2); // Oranges/reds
+                } else { // Friends
+                    color = new THREE.Color(0.1 + Math.random() * 0.2, 0.6 + Math.random() * 0.4, 0.2 + Math.random() * 0.3); // Greens
+                }
+                
+                // First, create the frame
+                const frameGeometry = new THREE.PlaneGeometry(imageWidth + 0.1, imageHeight + 0.1);
+                const frameMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xf0f0f0,
+                    roughness: 0.5,
+                    metalness: 0.3
+                });
+                
+                const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+                frame.position.z = 0.01;
+                imageGroup.add(frame);
+                
+                // Get appropriate image filename based on gallery type
+                let imageName = null;
+                
+                if (posterTitle === 'Circle of Confusion') {
+                    // Files are named: photo_2025-05-01_17-25-22.jpg, photo_2025-05-01_17-25-22 (2).jpg, etc.
+                    // Note: No (1) file, starts with no suffix then goes to (2)
+                    if (i === 0) {
+                        imageName = 'photo_2025-05-01_17-25-22.jpg';
+                    } else if (i < 6) {
+                        // Use (2) through (6) for indexes 1-5
+                        imageName = `photo_2025-05-01_17-25-22 (${i+1}).jpg`;
+                    }
+                } else if (posterTitle === 'Dissolve') {
+                    // Files are named: dissolve-base.jpg, dissolve-1.jpg, dissolve-2.jpg, etc.
+                    if (i === 0) {
+                        imageName = 'dissolve-base.jpg';
+                    } else if (i < 18) {
+                        imageName = `dissolve-${i}.jpg`;
+                    }
+                } else if (posterTitle === 'Friends') {
+                    // Files have various names, map them explicitly
+                    const friendsImages = [
+                        'photo_2025-05-01_17-29-01.jpg',
+                        'M2RjNjJmMjZk.jpg',
+                        'NzIwYjJkZmQ1.jpg',
+                        'ZTBjZDc1NzQ4.jpg',
+                        'ZTgyOGRjYjRj.jpg',
+                        'MGE1ZjJiODcw.jpg',
+                        'YmQ4YmZlY2U4.jpg',
+                        'N2MyYTc3OWFj.jpg',
+                        'NDc1MWY3OGM2.jpg',
+                        'M2MwYmIyMzY4.jpg',
+                        'NDc2M2NhOTc3.jpg',
+                        'MzkyNmRjZDFm.jpg',
+                        'ZDY5ZmU5Njg2.jpg'
+                    ];
+                    if (i < friendsImages.length) {
+                        imageName = friendsImages[i];
+                    }
+                }
+                
+                let imageMaterial;
+                
+                if (imageName) {
+                    try {
+                        const imagePath = `${basePath}${imageName}`;
+                        console.log(`Trying to load image: ${imagePath}`);
+                        
+                        const texture = await new Promise((resolve, reject) => {
+                            textureLoader.load(
+                                imagePath,
+                                (texture) => {
+                                    texture.minFilter = THREE.LinearFilter;
+                                    texture.magFilter = THREE.LinearFilter;
+                                    console.log(`Successfully loaded texture: ${imagePath}`);
+                                    resolve(texture);
+                                },
+                                (progress) => {
+                                    // Log progress for debugging
+                                    if (progress.lengthComputable) {
+                                        const percentComplete = (progress.loaded / progress.total) * 100;
+                                        console.log(`Loading ${imagePath}: ${Math.round(percentComplete)}%`);
+                                    }
+                                },
+                                (error) => {
+                                    console.warn(`Failed to load texture ${imagePath}:`, error);
+                                    reject(error);
+                                }
+                            );
+                        });
+                        
+                        // Create material with loaded texture
+                        imageMaterial = new THREE.MeshStandardMaterial({
+                            map: texture,
+                            roughness: 0.7,
+                            metalness: 0.2
+                        });
+                    } catch (error) {
+                        // Fallback to colored rectangle
+                        console.warn(`Using fallback for ${imageName}:`, error);
+                        imageMaterial = new THREE.MeshStandardMaterial({
+                            color: color,
+                            roughness: 0.7,
+                            metalness: 0.2
+                        });
+                    }
+                } else {
+                    // Fallback to colored rectangle if no image name
+                    imageMaterial = new THREE.MeshStandardMaterial({
+                        color: color,
+                        roughness: 0.7,
+                        metalness: 0.2
+                    });
+                }
+                
+                const photo = new THREE.Mesh(fallbackGeometry, imageMaterial);
+                photo.position.z = 0.02;
+                imageGroup.add(photo);
+                imageGroup.position.x = (col - 1) * (imageWidth + imageSpacing);
+                imageGroup.position.y = center.y + 1.2 + row * (imageHeight + imageSpacing);
+                wallGroup.add(imageGroup);
+                
+                // Add subtle spotlight for each image
+                const spotlight = new THREE.SpotLight(0xfff2e6, 1.5, 4.0, Math.PI/6, 0.5, 1.0);
+                spotlight.position.set(
+                    imageGroup.position.x,
+                    imageGroup.position.y + imageHeight/2 + 0.3,
+                    0.8
+                );
+                spotlight.target = imageGroup;
+                wallGroup.add(spotlight);
+                wallGroup.add(spotlight.target);
+                
+                // Add info button only to the first image of each wall
+                if (i === 0) {
+                    addInfoInteractionToArtPoster(imageGroup, imageGroup.position.clone().applyMatrix4(wallGroup.matrixWorld), interiorGroup, posterTitle);
+                }
+            }
+            
+            // Position and add the wall group
+            wallGroup.position.copy(wallPosition);
+            wallGroup.rotation.y = wallRotation;
+            interiorGroup.add(wallGroup);
+            console.log(`Gallery wall for ${posterTitle} created successfully`);
+        } catch (error) {
+            console.error(`Failed to create gallery wall for ${posterTitle}:`, error);
+        }
+    };
+
+    // --- Wall Definitions (robust to door orientation) ---
+    try {
+        console.log("Setting up gallery walls...");
+        const wallOffset = 0.2;
+        const doorDir = new THREE.Vector3().subVectors(doorPosition, center).normalize();
+        const up = new THREE.Vector3(0, 1, 0);
+        const rightVec = new THREE.Vector3().crossVectors(up, doorDir).normalize();
+
+        // Back wall (Friends)
+        const backWallPos = new THREE.Vector3().copy(center).addScaledVector(doorDir, -(size.z/2 - wallOffset));
+        const backWallRot = Math.atan2(doorDir.x, doorDir.z);
+        await createGalleryWall(backWallPos, backWallRot, 'Friends');
+
+        // Left wall (Circle of Confusion)
+        const leftWallPos = new THREE.Vector3().copy(center).addScaledVector(rightVec, -(size.x/2 - wallOffset));
+        const leftWallRot = Math.atan2(rightVec.x, rightVec.z);
+        await createGalleryWall(leftWallPos, leftWallRot, 'Circle of Confusion');
+
+        // Right wall (Dissolve)
+        const rightWallPos = new THREE.Vector3().copy(center).addScaledVector(rightVec, (size.x/2 - wallOffset));
+        const rightWallRot = Math.atan2(-rightVec.x, -rightVec.z);
+        await createGalleryWall(rightWallPos, rightWallRot, 'Dissolve');
+        
+        console.log("All gallery walls created successfully");
+    } catch (error) {
+        console.error("Failed to create gallery walls:", error);
+    }
+
+    console.log('Created sophisticated art gallery interior with robust wall placement and empty door wall.');
+}
+
+  /** Loads and places the MDR model */
+  async _createMdrInterior(interiorGroup, center, size, doorPosition) { // Added doorPosition
+      console.log(`Creating MDR interior at ${center.x}, ${center.z}`);
+        try {
+          const loader = new GLTFLoader();
+          const gltf = await loader.loadAsync(getAssetPath("/severance_tv_show_office.glb")); // Path relative to public/
+          const model = gltf.scene;
+
+          // --- Material Override & Collision Setup --- (Simplified)
+          const wallMaterial = this.materialSystem.getMaterial("wall");
+          const floorMaterial = this.materialSystem.getMaterial("floor");
+          const ceilingMaterial = this.materialSystem.getMaterial("ceiling");
+          const trimMaterial = this.materialSystem.getMaterial("trim"); // Example for desks
+
+          model.traverse((child) => {
+            if (child.isMesh) {
+              // Simplified material assignment - NEEDS ADJUSTMENT BASED ON MODEL
+              if (child.name.toLowerCase().includes("wall")) {
+                const wallWorldPos = new THREE.Vector3();
+                child.getWorldPosition(wallWorldPos);
+                const distanceToDoor = wallWorldPos.distanceTo(doorPosition);
+                const entranceWallThreshold = 1.5; // How close to door pos to be considered entrance wall
+
+                if (distanceToDoor < entranceWallThreshold) {
+                  console.log(`[MDR Interior] Skipping collidable wall near door: ${child.name}, dist: ${distanceToDoor.toFixed(2)}`);
+                  // Optionally make the entrance wall invisible or remove it if needed
+                  // child.visible = false;
+                } else {
+                  child.material = wallMaterial; // Apply material
+                  this._addCollidableWall(child); // Add *other* model walls to collision
+                }
+              } else if (child.name.toLowerCase().includes("floor")) {
+                 child.material = floorMaterial;
+              } else if (child.name.toLowerCase().includes("ceiling")) {
+                 child.material = ceilingMaterial;
+              } else if (child.name.toLowerCase().includes("desk")) {
+                 child.material = trimMaterial;
+                 // Potentially add desks as collidable obstacles too
+                 // this._addCollidableWall(child); // If desks should block movement
+              } else {
+                 // Apply a default or keep original if needed
+              }
+              child.castShadow = false;
+              child.receiveShadow = false;
+            }
+          });
+
+          // --- Scaling & Positioning --- (Copied from original, needs verification)
+          const modelBox = new THREE.Box3().setFromObject(model);
+          const modelSize = modelBox.getSize(new THREE.Vector3());
+          const desiredSize = size.clone().multiplyScalar(0.9); // Fit within 90% of bounds
+          const scaleFactor = Math.min(desiredSize.x / modelSize.x, desiredSize.y / modelSize.y, desiredSize.z / modelSize.z);
+
+          console.log(`MDR Scaling: DeptSize=${size.x.toFixed(2)},${size.z.toFixed(2)} ModelSize=${modelSize.x.toFixed(2)},${modelSize.z.toFixed(2)} ScaleFactor=${scaleFactor.toFixed(2)}`);
+          model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+          // Re-center model within bounds AFTER scaling
+          // Note: Positioning might need adjustment based on model's origin
+          model.position.copy(center); // Start at the section center
+          const scaledModelBox = new THREE.Box3().setFromObject(model); // Recalculate bounds after scaling
+          const scaledModelCenterOffset = scaledModelBox.getCenter(new THREE.Vector3()).sub(model.position); // How far is the model's geom center from its origin
+          model.position.sub(scaledModelCenterOffset); // Adjust position to align geometric center with the section center
+          model.position.y = center.y; // Ensure floor alignment (assuming model origin is at its base)
+
+          interiorGroup.add(model);
+          console.log(`Loaded and processed MDR model: severance_tv_show_office.glb`);
+        } catch (error) {
+          console.error("Error loading or processing MDR model:", error);
+          // Fallback to placeholder if model loading fails
+          this._createPlaceholderInterior(interiorGroup, center, size, doorPosition);
+      }
+  }
+
+
+  /**
+   * Create department interior elements based on department type - REPURPOSED
+   * Dispatches to specific interior creation methods based on sectionType.
+   * @param {string} sectionName - The portfolio section name (used for naming the group)
+   * @param {THREE.Vector3} center - The calculated center of the section bounds
+   * @param {THREE.Vector3} size - The calculated size of the section bounds
+   * @param {string} sectionType - Identifier for the type of interior to create (e.g., 'DESIGN', 'MDR')
+   * @private
+   */
+  async createPortfolioSectionInteriors(sectionName, center, size, sectionType, doorPosition) {
+    console.log(`Creating interior elements for ${sectionName} (Type: ${sectionType}) at center: (${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)})`);
+
+    const interiorGroup = new THREE.Group();
+    interiorGroup.name = `interior_${sectionName}`; // Use sectionName
+    // interiorGroup.position.copy(center); // REVERTED: Set the group's world position to the section's center
+
+    // --- DEBUG: Log the doorPosition if available ---
+    if (doorPosition) {
+      console.log(`[Interior Debug] Door position for ${sectionName}: (${doorPosition.x.toFixed(2)}, ${doorPosition.y.toFixed(2)}, ${doorPosition.z.toFixed(2)})`);
+    } else {
+      console.warn(`[Interior Debug] No door position provided for ${sectionName}, using center instead.`);
+      doorPosition = center.clone();
+    }
+
+    // --- Create Bounding Walls --- (Common for most types, except maybe MDR if model includes walls)
+    const wallMaterial = this.materialSystem.getMaterial("corridorWall");
+    if (sectionType !== 'MDR') { // Only add procedural walls if not using MDR model's walls
+        // Create walls but with a CLEAR DOORWAY
+        this._createSectionWalls(center, size, wallMaterial, interiorGroup, doorPosition);
+    } // MDR method needs to handle its own walls via _addCollidableWall
+
+    // --- Common Floor --- (Always add a floor plane)
+    const floorMaterial = this.materialSystem.getMaterial("floor");
+    
+    const floorGeom = new THREE.PlaneGeometry(size.x, size.z);
+    const floor = new THREE.Mesh(floorGeom, floorMaterial);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.copy(center);
+    floor.position.y = center.y; // Place floor at the base Y
+    interiorGroup.add(floor);
+
+    // --- Common Ceiling --- (Always add a ceiling plane)
+    const ceilingMaterial = this.materialSystem.getMaterial("ceiling");
+    const ceilingGeom = new THREE.PlaneGeometry(size.x, size.z);
+    const ceiling = new THREE.Mesh(ceilingGeom, ceilingMaterial);
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.copy(center);
+    ceiling.position.y = center.y + size.y; // Place ceiling at the top Y
+    interiorGroup.add(ceiling);
+    
+    // Add ceiling to the ceilingMeshes array for indoor rain occlusion detection
+    this.ceilingMeshes.push(ceiling);
+
+    // --- FIX: Create a VERY bright entryway light right inside the door ---
+    // Create light direction from door to center
+    const doorToCenterDir = new THREE.Vector3()
+      .subVectors(center, doorPosition)
+      .normalize();
+    
+    // Place MULTIPLE bright lights inside the door
+    // First light: Right at the entrance
+    const entryLightPos = new THREE.Vector3()
+      .copy(doorPosition)
+      .add(doorToCenterDir.clone().multiplyScalar(0.5)); // 0.5 unit inside the door
+    
+    entryLightPos.y = center.y + 1.8; // Head height
+    
+    // Create an extremely bright light with a useful falloff
+    const entryLight = new THREE.PointLight(0xffffff, 8.0, 12.0, 1.0); // Increased intensity from 5.0 to 8.0
+    entryLight.position.copy(entryLightPos);
+    interiorGroup.add(entryLight);
+    
+    // Second light: Further inside to illuminate deeper
+    const innerLightPos = new THREE.Vector3()
+      .copy(doorPosition)
+      .add(doorToCenterDir.clone().multiplyScalar(3.0)); // 3 units inside
+    
+    innerLightPos.y = center.y + 2.0; // Slightly higher
+    
+    // Create a second bright light with wider radius
+    const innerLight = new THREE.PointLight(0xffffff, 4.0, 15.0, 1.0);
+    innerLight.position.copy(innerLightPos);
+    interiorGroup.add(innerLight);
+    
+    console.log(`[Interior Debug] Added bright entry lights at entry (${entryLightPos.x.toFixed(2)}, ${entryLightPos.y.toFixed(2)}, ${entryLightPos.z.toFixed(2)}) and inside (${innerLightPos.x.toFixed(2)}, ${innerLightPos.y.toFixed(2)}, ${innerLightPos.z.toFixed(2)})`);
+    
+    // --- FIX: Create a bright colored entry marker ---
+    // Choose a color based on section type
+    const sectionColors = {
+      'DESIGN': 0x4285f4, // Blue
+      'DEV': 0x34a853,    // Green
+      'FILM': 0xfbbc05,   // Yellow/gold
+      'ART': 0xea4335,    // Red
+      'MDR': 0xffffff     // White
+    };
+    
+    const markerColor = sectionColors[sectionType] || 0xffffff;
+    
+    // Create a visible floor marker at the entrance
+    const markerGeometry = new THREE.CircleGeometry(1.0, 32);
+    const markerMaterial = new THREE.MeshStandardMaterial({
+      color: markerColor,
+      emissive: markerColor,
+      emissiveIntensity: 0.5,
+      transparent: true,
+      opacity: 0.7,
+      roughness: 0.3
+    });
+    
+    const entryMarker = new THREE.Mesh(markerGeometry, markerMaterial);
+    entryMarker.rotation.x = -Math.PI / 2; // Flat on floor
+    
+    // Position marker right at the entrance
+    const markerPos = doorPosition.clone();
+    markerPos.y = center.y + 0.01; // Just above floor
+    entryMarker.position.copy(markerPos);
+    
+    // interiorGroup.add(entryMarker); // <<< REMOVED - Don't add the floor marker
+    // console.log(`[Interior Debug] Added entry marker at (${markerPos.x.toFixed(2)}, ${markerPos.y.toFixed(2)}, ${markerPos.z.toFixed(2)})`);
+
+    // --- Dispatch to specific interior creation method --- //
+    try {
+      console.log(`[Interior Debug] Creating ${sectionType} interior with doorPosition passed`);
+      // <<< ADD LOG FOR sectionType BEFORE SWITCH >>>
+      console.log(`[CPSI DEBUG] sectionType before switch: '${sectionType}'`);
+
+      switch (sectionType) {
+          case 'DESIGN':
+              this._createDesignInterior(interiorGroup, center, size, doorPosition);
+              break;
+          case 'DEV':
+              this._createDevInterior(interiorGroup, center, size, doorPosition);
+              break;
+          case 'FILM':
+              // <<< ADD LOG INSIDE CASE 'FILM' >>>
+              console.log("[CPSI DEBUG] Inside case 'FILM'. About to call _createFilmInterior.");
+              console.log('[DEBUG] Calling _createFilmInterior', {interiorGroup, center, size, doorPosition});
+              this._createFilmInterior(interiorGroup, center, size, doorPosition);
+              break;
+          case 'ART':
+              await this._createArtInterior(interiorGroup, center, size, doorPosition);
+              break;
+          case 'MDR':
+              await this._createMdrInterior(interiorGroup, center, size, doorPosition);
+              break;
+          default:
+              console.warn(`Unknown portfolio section type: ${sectionType}. Creating placeholder.`);
+              this._createPlaceholderInterior(interiorGroup, center, size, doorPosition);
+          break;
+      }
+    } catch (error) {
+      console.error(`[Interior Error] Failed to create interior for ${sectionName}: ${error.message}`);
+      console.log(error.stack);
+      // Ensure there's something visible even if creation fails
+      this._createEmergencyBackupInterior(interiorGroup, center, doorPosition);
+    }
+
+    this.scene.add(interiorGroup);
+    console.log(`Finished creating interior for ${sectionName} at world position: (${interiorGroup.position.x.toFixed(2)}, ${interiorGroup.position.y.toFixed(2)}, ${interiorGroup.position.z.toFixed(2)})`);
+  }
+
+  // --- FIX: Add emergency backup interior if all else fails ---
+  _createEmergencyBackupInterior(interiorGroup, center, doorPosition) {
+    console.log(`[EMERGENCY] Creating backup interior visible objects`);
+    
+    // Create fallback direction if doorPosition is not available
+    let doorDir = new THREE.Vector3(1, 0, 0);
+    if (doorPosition) {
+      doorDir.subVectors(center, doorPosition).normalize();
+    }
+    
+    // Create bright lights along path from door to center
+    for (let i = 0; i < 5; i++) {
+      const lightPos = doorPosition ? doorPosition.clone().add(doorDir.clone().multiplyScalar(i * 2)) : 
+                                      center.clone().add(new THREE.Vector3(i-2, 0, i-2));
+      lightPos.y = center.y + 1.5;
+      
+      const emergencyLight = new THREE.PointLight(0xffffff, 2.0, 5.0, 1.0); // Renamed from 'light' to 'emergencyLight'
+      emergencyLight.position.copy(lightPos);
+      interiorGroup.add(emergencyLight);
+      
+      // Add visible light bulb
+      const bulbGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+      const bulbMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const bulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
+      bulb.position.copy(lightPos);
+      interiorGroup.add(bulb);
+    }
+    
+    // Create bright colored cubes - REMOVED
+    /*
+    const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff];
+    for (let i = 0; i < 5; i++) {
+      const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+      const cubeMaterial = new THREE.MeshBasicMaterial({ color: colors[i] });
+      const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+      
+      // Position cubes in a line from door to center
+      const cubePos = doorPosition ? doorPosition.clone().add(doorDir.clone().multiplyScalar(i * 1.5 + 1)) :
+                                    new THREE.Vector3(center.x + i - 2, center.y + 1, center.z + i - 2);
+      cube.position.copy(cubePos);
+      interiorGroup.add(cube);
+    }
+    */
+  }
+  
+  /**
+   * Updated placeholder interior with doorPosition parameter
+   */
+  _createPlaceholderInterior(interiorGroup, center, size, doorPosition) {
+    // Create a general interior light
+    const placeholderLight = new THREE.PointLight(0xffffff, 3.0, 0, 1); // Renamed from interiorLight to placeholderLight
+    placeholderLight.position.set(center.x, center.y + size.y * 0.8, center.z);
+    interiorGroup.add(placeholderLight);
+    
+    // If we have a doorPosition, add a special entry area light
+    if (doorPosition) {
+      // Direction from door to center
+      const doorToCenter = new THREE.Vector3().subVectors(center, doorPosition).normalize();
+      
+      // Place a bright light near the entry
+      const entryLightPos = new THREE.Vector3()
+        .copy(doorPosition)
+        .add(doorToCenter.clone().multiplyScalar(1.5)); // 1.5 units inside from door
+      
+      entryLightPos.y = center.y + 1.8; // Head height
+      
+      // Create a bright entry light
+      const entryLight = new THREE.PointLight(0xffffff, 3.0, 6.0, 1.0);
+      entryLight.position.copy(entryLightPos);
+      interiorGroup.add(entryLight);
+      
+      console.log(`[Placeholder] Added entry light at (${entryLightPos.x.toFixed(2)}, ${entryLightPos.y.toFixed(2)}, ${entryLightPos.z.toFixed(2)})`);
+    }
+    
+    // Add some ceiling lights
+    const ceilingLightCount = 4;
+    for (let i = 0; i < ceilingLightCount; i++) {
+      const lightX = center.x + (Math.random() - 0.5) * size.x * 0.8;
+      const lightZ = center.z + (Math.random() - 0.5) * size.z * 0.8;
+      
+      // Create ceiling light fixture
+      const lightFixture = new THREE.Group();
+      
+      // Light housing
+      const housingGeometry = new THREE.CylinderGeometry(0.2, 0.2, 0.1, 16);
+      const housingMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xcccccc, 
+        roughness: 0.5,
+        metalness: 0.8 
+      });
+      const housing = new THREE.Mesh(housingGeometry, housingMaterial);
+      housing.position.y = -0.05;
+      lightFixture.add(housing);
+      
+      // Light lens
+      const lensGeometry = new THREE.CylinderGeometry(0.18, 0.18, 0.02, 16);
+      const lensMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff, 
+        emissive: 0xffffff,
+        emissiveIntensity: 0.5,
+        roughness: 0.1
+      });
+      const lens = new THREE.Mesh(lensGeometry, lensMaterial);
+      lens.position.y = -0.09;
+      lightFixture.add(lens);
+      
+      // Position the fixture
+      lightFixture.position.set(lightX, center.y + size.y - 0.05, lightZ);
+      interiorGroup.add(lightFixture);
+      
+      // Add the actual light source below the fixture
+      const light = new THREE.PointLight(0xffffee, 1.5, size.y * 2.5, 1); // Increased range
+      light.position.set(lightX, center.y + size.y - 0.2, lightZ);
+      interiorGroup.add(light);
+    }
+    
+    // Create furniture
+    /*
+    const placeholderGeometry = new THREE.BoxGeometry(size.x * 0.8, size.y * 0.75, size.z * 0.8);
+    const placeholderMaterial = new THREE.MeshStandardMaterial({
+        color: 0x666666,
+        roughness: 0.8,
+        wireframe: false // Change to solid rather than wireframe
+    });
+    const placeholderMesh = new THREE.Mesh(placeholderGeometry, placeholderMaterial);
+    // Position placeholder centered within the section bounds
+    placeholderMesh.position.set(center.x, center.y + size.y * 0.375, center.z);
+    interiorGroup.add(placeholderMesh);
+    */
+    
+    console.log(`Added placeholder interior with lighting for ${interiorGroup.name}`);
+  }
+
+  /**
+   * Creates a simple security console for the security department - KEEPING AS EXAMPLE
+   * @param {THREE.Vector3} position - Position for the console
+   * @param {THREE.Group} parentGroup - Parent group to add to
+   * @private
+   */
+  createSecurityConsole(position, parentGroup) {
+    const group = new THREE.Group();
+    group.position.copy(position);
+
+    // Console desk
+    const deskGeometry = new THREE.BoxGeometry(2.5, 0.8, 1.0);
+    const deskMaterial = this.materialSystem.getMaterial("trim");
+    const desk = new THREE.Mesh(deskGeometry, deskMaterial);
+    desk.position.y = 0.4;
+    group.add(desk);
+
+    // Monitors
+    const monitorGeometry = new THREE.BoxGeometry(0.6, 0.4, 0.05);
+    const monitorMaterial = new THREE.MeshStandardMaterial({
+      color: 0x222222,
+      emissive: 0x333335,
+      emissiveIntensity: 0.5,
+    });
+
+    // Create multiple monitors
+    for (let i = -1; i <= 1; i++) {
+      const monitor = new THREE.Mesh(monitorGeometry, monitorMaterial);
+      monitor.position.set(i * 0.7, 0.9, -0.3);
+      monitor.rotation.x = -Math.PI / 12;
+      group.add(monitor);
+
+      // Screen
+      const screenGeometry = new THREE.PlaneGeometry(0.55, 0.35);
+      const screenMaterial = new THREE.MeshStandardMaterial({
+        color: 0x222222,
+        emissive: 0x0066ff,
+        emissiveIntensity: 0.2,
+        roughness: 0.3,
+        metalness: 0.8,
+      });
+      const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+      screen.position.z = 0.03;
+      monitor.add(screen);
+    }
+
+    parentGroup.add(group);
+    return group;
+  }
+
+  /**
+   * Builds a new corridor layout based on the CORRIDOR_MAP configuration
+   * @private
+   */
+  async buildNewCorridorLayout() {
+    console.log("Building corridor layout from CORRIDOR_MAP...");
+
+    // Get the corridor system (needed for bounds update)
+    const corridorSystem = this.systems.get("corridor");
+    if (!corridorSystem) {
+      console.error("Corridor system not found");
+      return;
+    }
+
+    // Ensure corridor system is initialized (might still be needed for helper functions)
+    if (!corridorSystem.initialized) {
+      console.warn("Corridor system not initialized, initializing now...");
+      await corridorSystem.initialize(this.container);
+    }
+
+    // Create the corridor network based *only* on the map
+    this.createCorridorNetwork(); // This now builds the entire structure
+
+    // Create elevator vestibule at the entrance (node 'ELV' at [0,0])
+    const elevatorNode = CORRIDOR_MAP.nodes.find(n => n.id === 'ELV');
+    const elevatorPos = elevatorNode
+        ? new THREE.Vector3(elevatorNode.pos[0] * SEGMENT_LENGTH, 0, -elevatorNode.pos[1] * SEGMENT_LENGTH)
+        : new THREE.Vector3(0, 0, 0); // Fallback to origin
+    this.createElevatorVestibule(elevatorPos);
+
+    // VALIDATION STEP: Check for and fix potential wall inconsistencies
+    this._validateAndFixCorridorWalls();
+
+    // Update corridor bounds and navigation (if the system handles this)
+    if (corridorSystem.updateCorridorBounds) {
+        corridorSystem.updateCorridorBounds();
+    } else {
+        console.warn("CorridorSystem does not have updateCorridorBounds method.");
+    }
+
+    // Register all generated corridor walls for collision (BoxGeometry meshes)
+    for (const segment of this.corridorSegments.values()) {
+      segment.traverse((child) => {
+        if (child.isMesh && child.geometry instanceof THREE.BoxGeometry) {
+          this._addCollidableWall(child);
+        }
+      });
+    }
+    console.log("Completed building corridor layout from map.");
+  }
+
+  /**
+   * Validates corridor walls and fixes inconsistencies
+   * @private
+   */
+  _validateAndFixCorridorWalls() {
+    console.log("Validating corridor walls...");
+    let wallsRemoved = 0;
+
+    // Restore original check for Performance_Art door
+    const checkPerformanceArtDoor = () => {
+      if (window.performanceArtDoorPosition) {
+        const doorPosition = window.performanceArtDoorPosition;
+        console.log(`Precisely checking for walls blocking Performance_Art doorway at (${doorPosition.x.toFixed(2)}, ${doorPosition.z.toFixed(2)})`);
+        for (let i = this.wallMeshes.length - 1; i >= 0; i--) {
+          const wall = this.wallMeshes[i];
+          if (!wall || !wall.position) continue;
+          const wallWorldPos = new THREE.Vector3();
+          wall.getWorldPosition(wallWorldPos);
+          const isInDoorwayOpening = Math.abs(wallWorldPos.x - doorPosition.x) < DOORWAY_WIDTH / 2 &&
+                                     Math.abs(wallWorldPos.z - doorPosition.z) < 1.0;
+          if (isInDoorwayOpening && wallWorldPos.distanceTo(doorPosition) < 2.0) {
+            console.log(`Removing wall directly blocking Performance_Art doorway at (${wallWorldPos.x.toFixed(2)}, ${wallWorldPos.z.toFixed(2)})`);
+            if (wall.parent) wall.parent.remove(wall);
+            this.wallMeshes.splice(i, 1);
+            wallsRemoved++;
+          }
+        }
+      }
+    };
+
+    // First, run the special Performance_Art door check
+    checkPerformanceArtDoor();
+
+    // Restore original check for general junction/doorway blockages
+    for (let i = this.wallMeshes.length - 1; i >= 0; i--) {
+      const wall = this.wallMeshes[i];
+      if (!wall || !wall.parent) continue;
+      const atJunctionConnection = this._isAtJunctionConnection(wall.parent, wall);
+      const wallPosition = new THREE.Vector3();
+      wall.getWorldPosition(wallPosition);
+      const isBlockingDoor = this._isBlockingDoorway(wallPosition);
+      if (atJunctionConnection || isBlockingDoor) {
+        if (wall.parent) wall.parent.remove(wall);
+        this.wallMeshes.splice(i, 1);
+        wallsRemoved++;
+      }
+    }
+    
+    // Additionally remove any walls still standing in the Security/Testing branch corridor at C6
+    // Branch corridor runs at the C6 Z position
+    const branchZ = -(-30) * SEGMENT_LENGTH; // C6 map pos [0,-30]
+    for (let i = this.wallMeshes.length - 1; i >= 0; i--) {
+      const wall = this.wallMeshes[i];
+      const worldPos = new THREE.Vector3();
+      wall.getWorldPosition(worldPos);
+      // If wall lies near branch corridor Z and within side range
+      if (Math.abs(worldPos.z - branchZ) < SEGMENT_LENGTH / 2) {
+        console.log(`[Env Collision] Removing branch corridor wall at (${worldPos.x.toFixed(2)}, ${worldPos.z.toFixed(2)})`);
+        if (wall.parent) wall.parent.remove(wall);
+        this.wallMeshes.splice(i, 1);
+        wallsRemoved++;
+      }
+    }
+    console.log(`Validation complete. Removed ${wallsRemoved} problematic walls.`);
+  }
+
+  /**
+   * Checks if a wall is positioned at a junction connection point
+   * @private
+   */
+  _isAtJunctionConnection(parentGroup, wall) {
+    if (!parentGroup || !parentGroup.userData) return false;
+    
+    // For junction parents
+    if (parentGroup.name && parentGroup.name.startsWith('junction_')) {
+      const nodeId = parentGroup.name.split('_')[1];
+      if (!nodeId) return false;
+      
+      // Find all edges connected to this junction
+      const connectedEdges = CORRIDOR_MAP.edges.filter(
+        edge => edge.from === nodeId || edge.to === nodeId
+      );
+      
+      if (connectedEdges.length > 0) {
+        // The wall might be blocking a corridor connection
+        // A more sophisticated check would compare wall orientation to edge direction
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  /**
+   * Checks if a wall is blocking a doorway
+   * @private
+   */
+  _isBlockingDoorway(wallPosition) {
+    if (!window.doorLocations) return false;
+    for (const door of window.doorLocations) {
+      if (!door.position) continue;
+      // Remove: const doorwayWidth = DOORWAY_WIDTH; and const doorwayWidth = 1.8;
+      // Use DOORWAY_WIDTH directly below
+      if (door.name === "Performance_Art") {
+        const distance = wallPosition.distanceTo(door.position);
+        const isDirectlyBlockingEntry = Math.abs(wallPosition.x - door.position.x) < DOORWAY_WIDTH/2 && 
+                                      Math.abs(wallPosition.z - door.position.z) < 1.0;
+        if (distance < 2.0 && isDirectlyBlockingEntry) {
+          console.log(`Wall at ${wallPosition.x.toFixed(2)}, ${wallPosition.z.toFixed(2)} is directly blocking ${door.name} doorway - removing`);
+          return true;
+        }
+        return false;
+      } else if (door.name === "Film_Cinema") {
+        const distance = wallPosition.distanceTo(door.position);
+        const isDirectlyBlockingEntry = Math.abs(wallPosition.x - door.position.x) < DOORWAY_WIDTH/2 && 
+                                      Math.abs(wallPosition.z - door.position.z) < 1.0;
+        if (distance < 2.0 && isDirectlyBlockingEntry) {
+          console.log(`Wall at ${wallPosition.x.toFixed(2)}, ${wallPosition.z.toFixed(2)} is directly blocking ${door.name} doorway - removing`);
+          return true;
+        }
+        return false;
+      } else {
+        const distance = wallPosition.distanceTo(door.position);
+        if (distance < door.radius + 0.8) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // --- Added from LumonEnvironment ---
+
+  /**
+   * Create wayfinding elements (like colored floor strips) to help navigate.
+   * This is an optional feature, potentially enabled via config.
+   */
+  async createWayfinding() {
+    // Check if wayfinding should be enabled (e.g., via options)
+    if (!this.options.enableWayfinding) {
+      console.log("Wayfinding disabled.");
+      return;
+    }
+
+    console.log("Creating wayfinding elements...");
+
+    // Define department colors for wayfinding strips
+    const deptColors = {
+      MDR: 0x4285f4, // Blue
+      O_AND_D: 0xea4335, // Red (Optics & Design)
+      WELLNESS: 0x34a853, // Green
+      BREAK_ROOM: 0x666666, // Gray
+      PERPETUITY: 0xfbbc05, // Yellow
+      TESTING: 0x9c27b0, // Purple
+      SECURITY: 0x000000, // Black
+      HUB: 0xffffff, // White (Optional)
+    };
+
+    // Define wayfinding paths (example paths, adjust based on final layout)
+    // These assume connections radiating from a central point (0,0,0) or junction 'J1'
+    const hubPosition = new THREE.Vector3(0, 0.01, 0); // Assuming origin
+
+    const paths = [
+      { to: "MDR", color: deptColors.MDR, targetPos: new THREE.Vector3(CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 2) },
+      { to: "O_AND_D", color: deptColors.O_AND_D, targetPos: new THREE.Vector3(-CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 2) },
+      { to: "WELLNESS", color: deptColors.WELLNESS, targetPos: new THREE.Vector3(CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 4) },
+      { to: "BREAK_ROOM", color: deptColors.BREAK_ROOM, targetPos: new THREE.Vector3(-CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 4) },
+      { to: "PERPETUITY", color: deptColors.PERPETUITY, targetPos: new THREE.Vector3(0, 0.01, -SEGMENT_LENGTH * 9) },
+      { to: "TESTING", color: deptColors.TESTING, targetPos: new THREE.Vector3(CORRIDOR_WIDTH * 3, 0.01, -SEGMENT_LENGTH * 9) },
+      { to: "SECURITY", color: deptColors.SECURITY, targetPos: new THREE.Vector3(-CORRIDOR_WIDTH * 3, 0.01, -SEGMENT_LENGTH * 9) },
+    ];
+
+    // Create strips for each defined path
+    paths.forEach(path => {
+      // Find the nearest junction to the target department door
+      // This provides a more logical endpoint for the wayfinding strip
+      const nearestJunctionPos = this.findNearestJunction(path.targetPos);
+      if (nearestJunctionPos) {
+        this.createWayfindingStrip(hubPosition, nearestJunctionPos, path.color);
+      } else {
+        // Fallback: draw directly to the department door position if no junction found
+        this.createWayfindingStrip(hubPosition, path.targetPos, path.color);
+      }
+    });
+  }
+
+  /**
+   * Create a colored strip on the floor for wayfinding.
+   * @param {THREE.Vector3} start - Start position (slightly above floor)
+   * @param {THREE.Vector3} end - End position (slightly above floor)
+   * @param {number} color - Strip color
+   * @private
+   */
+  createWayfindingStrip(start, end, color) {
+    // Calculate direction and length
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const length = direction.length();
+    if (length < 0.1) return; // Avoid creating zero-length strips
+    direction.normalize();
+
+    // Create strip geometry
+    const stripWidth = 0.1; // Width of the wayfinding line
+    const stripGeometry = new THREE.PlaneGeometry(stripWidth, length);
+    const stripMaterial = new THREE.MeshBasicMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.7,
+      side: THREE.DoubleSide,
+    });
+
+    // Create and position the strip
+    const strip = new THREE.Mesh(stripGeometry, stripMaterial);
+
+    // Position at midpoint between start and end
+    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    strip.position.copy(midpoint);
+    strip.position.y = 0.015; // Ensure slightly above floor to avoid z-fighting
+
+    // Rotate to align with direction
+    strip.rotation.x = -Math.PI / 2; // Flat on floor
+
+    // Calculate angle in XZ plane (for wayfinding direction)
+    const angle = Math.atan2(direction.x, direction.z);
+    strip.rotation.z = -angle; // Rotate around Y-axis (which is now Z after X rotation)
+
+    this.scene.add(strip);
+    const stripId = `strip_${start.x}_${start.z}_${end.x}_${end.z}`;
+    this.wayfinding.set(stripId, strip);
+    this.registerDisposable(stripGeometry);
+    this.registerDisposable(stripMaterial);
+  }
+
+  /**
+   * Returns an array of meshes that the player can collide with.
+   * @returns {THREE.Mesh[]} List of collidable wall meshes.
+   */
+  getCollidableWalls() {
+    // Filter out any potentially null or undefined entries just in case
+    const validWalls = this.wallMeshes.filter(mesh => mesh instanceof THREE.Mesh);
+    console.log(`[Env] getCollidableWalls called. Returning ${validWalls.length} initial wall meshes.`); // DEBUG - Updated log
+
+    // Add closed door panels to the collidable list
+    for (const [doorName, doorState] of this.doorStates) {
+      // Check if the door is considered closed (angle close to 0)
+      if (Math.abs(doorState.currentAngle) < 0.1) { 
+        // Find the corresponding door data in the main doors map
+        const doorData = this.doors.get(doorName);
+        if (doorData && doorData.doorPanel instanceof THREE.Mesh) {
+          validWalls.push(doorData.doorPanel);
+          console.log(`[Env Collision] Added closed door panel to collidables: ${doorName}`);
+        }
+      }
+    }
+
+    if (validWalls.length === 0) {
+      console.warn("[Env] getCollidableWalls returning 0 meshes. Collision will not work.");
+    }
+    return validWalls; // Use the filtered array
+  }
+
+  /**
+   * Returns an array of meshes that the player can interact with.
+   * Currently, this includes the main panel of each portfolio door.
+   * @returns {THREE.Mesh[]} List of interactable door panel meshes.
+   */
+  getInteractableObjects() {
+      const interactables = [];
+      // Always include the invisible interaction meshes for doors
+      if (this._doorInteractionMeshes) {
+        for (const mesh of this._doorInteractionMeshes.values()) {
+          interactables.push(mesh);
+        }
+      }
+      // Optionally, still include door panels, groups, and frames for legacy/other interactions
+      for (const [name, doorData] of this.doors) {
+          if (doorData && doorData.doorPanel instanceof THREE.Mesh) {
+              doorData.doorPanel.userData.doorName = name;
+              doorData.doorPanel.userData.name = name;
+              doorData.doorPanel.name = name;
+              doorData.doorPanel.userData.interactable = true;
+              interactables.push(doorData.doorPanel);
+              if (doorData.doorGroup) {
+                  doorData.doorGroup.userData.doorName = name;
+                  doorData.doorGroup.userData.isParentObject = true;
+                  interactables.push(doorData.doorGroup);
+              }
+              if (doorData.frame) {
+                  doorData.frame.userData.doorName = name;
+                  doorData.frame.userData.isFrameObject = true;
+                  interactables.push(doorData.frame);
+              }
+          }
+      }
+      // === Add dev terminal and E button as interactables ===
+      if (this._devTerminalInteractable) {
+        for (const obj of this._devTerminalInteractable) {
+          if (obj.mesh) {
+            obj.mesh.userData.interactable = true;
+            obj.mesh.userData.isDevTerminal = true;
+            interactables.push(obj.mesh);
+          }
+          if (obj.eButton) {
+            obj.eButton.userData.interactable = true;
+            obj.eButton.userData.isDevTerminalEButton = true;
+            interactables.push(obj.eButton);
+              }
+          }
+      }
+      // Add film posters (watch interactables)
+      if (this._customWatchInteractables) {
+        for (const obj of this._customWatchInteractables) {
+          if (obj) {
+            interactables.push(obj);
+            console.log('[DEBUG] getInteractableObjects: found custom watch interactable', obj.userData.filmTitle, obj.position);
+          }
+        }
+      }
+      
+      // Add art posters (art info interactables)
+      if (this._artPosterInteractables) {
+        for (const obj of this._artPosterInteractables) {
+          if (obj) {
+            interactables.push(obj);
+            console.log('[DEBUG] getInteractableObjects: found art poster interactable', obj.userData.posterTitle, obj.position);
+          }
+        }
+      }
+      
+      // Add node info interactables
+      if (this._nodeInfoInteractables) {
+        for (const obj of this._nodeInfoInteractables) {
+          if (obj) {
+            interactables.push(obj);
+            console.log('[DEBUG] getInteractableObjects: found node info interactable', obj.userData.nodeType, obj.position);
+          }
+        }
+      }
+      
+      console.log(`[Env Interaction] getInteractableObjects returning ${interactables.length} meshes.`);
+      return interactables;
+  }
+
+  // Add new method for door animation update
+  updateDoorAnimations(deltaTime) {
+    if (!this.camera) return;
+
+    // Update each door's state based on player proximity
+    for (const [doorName, doorState] of this.doorStates) {
+      // Skip if current angle already matches target angle
+      if (Math.abs(doorState.currentAngle - doorState.targetAngle) < 0.01) {
+        doorState.currentAngle = doorState.targetAngle;
+        // Animation is done
+        doorState.isAnimating = false;
+        continue;
+      }
+      // Animation is in progress
+      doorState.isAnimating = true;
+      // Calculate angle difference and step
+      const angleDiff = doorState.targetAngle - doorState.currentAngle;
+      const step = Math.sign(angleDiff) * this.DOOR_ANIMATION_SPEED * deltaTime;
+      // Apply easing to make animation more natural
+      const easedStep = step * (1 - Math.pow(1 - Math.abs(angleDiff / this.DOOR_MAX_ANGLE), 3));
+      // Update angle with easing and clamping
+      doorState.currentAngle += easedStep;
+      // Prevent overshoot
+      if (Math.abs(doorState.targetAngle - doorState.currentAngle) < Math.abs(easedStep)) {
+        doorState.currentAngle = doorState.targetAngle;
+      }
+      // Apply rotation to pivot
+      doorState.pivot.rotation.y = doorState.currentAngle;
+    }
+  }
+
+  /**
+   * Toggles the open/closed state of a specific door by setting its target angle.
+   * Called by interaction logic (e.g., UnifiedMovementController).
+   * @param {string} doorName The name of the door to toggle (matching keys in this.doorStates and doorData.doorPanel.userData.doorName)
+   */
+  toggleDoorState(doorName) {
+    console.log(`[Door Toggle] Attempting to toggle door: ${doorName}`);
+    let doorState = this.doorStates.get(doorName);
+    // If not found directly, search case-insensitively
+    if (!doorState) {
+        console.log(`[Door Toggle] Direct lookup failed, trying case-insensitive match`);
+        for (const [key, state] of this.doorStates.entries()) {
+            if (key.toLowerCase() === doorName.toLowerCase()) {
+                doorName = key; // Use the correct case
+                doorState = state;
+                console.log(`[Door Toggle] Found match with key: ${key}`);
+                break;
+            }
+        }
+    }
+    if (!doorState) {
+        console.warn(`[Door Toggle] Door state not found for: ${doorName}`);
+        console.log(`[Door Toggle] Available doors: ${Array.from(this.doorStates.keys()).join(', ')}`);
+        return;
+    }
+    // Prevent toggling if the door is currently animating
+    if (doorState.isAnimating) {
+      console.log(`[Door Toggle] Door '${doorName}' is currently animating. Ignoring toggle request.`);
+      return;
+    }
+    // Toggle the door's open/closed state
+    doorState.isOpen = !doorState.isOpen;
+    // Set the target angle based on the door's state
+    if (doorState.isOpen) {
+        doorState.targetAngle = this.DOOR_MAX_ANGLE * doorState.openDirection;
+    } else {
+        doorState.targetAngle = 0;
+    }
+    // Mark as animating (will be cleared in updateDoorAnimations)
+    doorState.isAnimating = true;
+    console.log(`[Door Toggle] Door '${doorName}' ${doorState.isOpen ? 'opening' : 'closing'} to angle ${doorState.targetAngle}`);
+  }
+
+  // Add method to update post-processing effects
+  updatePostProcessing(deltaTime) {
+    if (this.postProcessingPasses) {
+      // Subtle animation of chromatic aberration
+      if (this.postProcessingPasses.chromaticAberration) {
+        const offset = Math.sin(deltaTime * 2) * 0.0005 + this.postProcessingConfig.chromaticAberration.offset;
+        this.postProcessingPasses.chromaticAberration.uniforms.offset.value = offset;
+      }
+
+      // Subtle bloom pulse
+      if (this.postProcessingPasses.bloom) {
+        const strength = Math.sin(deltaTime) * 0.1 + this.postProcessingConfig.bloom.strength;
+        this.postProcessingPasses.bloom.strength = strength;
+      }
+    }
+  }
+
+  // Add a new method to create doorframe walls around doors
+  createDoorFrameWalls() {
+    console.log("Creating door frame walls...");
+    
+    if (!window.doorLocations) return;
+    
+    // Retrieve door configs to get rotation information
+    const doorConfigs = this.portfolioSectionsConfig;
+
+    for (const doorLocation of window.doorLocations) {
+      if (!doorLocation.position || !doorLocation.name) continue;
+      
+      // Find the corresponding config for rotation
+      const config = Object.values(doorConfigs).find(c => c.name === doorLocation.name);
+      if (!config) {
+          console.warn(`Config not found for door: ${doorLocation.name}`);
+          continue;
+      }
+
+      const doorPos = doorLocation.position;
+      const doorWidth = 1.2; // Standard door width
+      const doorHeight = 2.5; // Standard door height
+      const wallThickness = 0.1;
+      
+      // Identify if this is a problem door
+      const needsExtraExtension = ["Interaction_Design", "Development"].includes(doorLocation.name);
+      
+      // Increase frame dimensions - especially height and vertical extension
+      const frameWidth = 1.0; // Width of the side frame pieces
+      const frameDepth = 0.4; // Depth of the frame
+      const topFrameHeight = 0.3; // Increased height of the top frame piece
+      
+      // Extend the side walls significantly higher above the door for problem doors
+      const extensionFactor = needsExtraExtension ? 1.5 : 1.0;
+      // Make the side pieces much taller for problem doors
+      const sideWallHeight = needsExtraExtension ? doorHeight * 1.8 : doorHeight;
+      // Add extra height to the side walls to extend above the door
+      const sideWallYOffset = needsExtraExtension ? doorHeight * 0.4 : 0;
+
+      // Create wall material
+      const wallMaterial = this.materialSystem.getMaterial("wall").clone();
+      if (wallMaterial.uniforms && wallMaterial.uniforms.wallColor) {
+        wallMaterial.uniforms.wallColor.value = new THREE.Color(0xffffff);
+        wallMaterial.needsUpdate = true;
+      } else if (wallMaterial.color) {
+        wallMaterial.color.setHex(0xffffff);
+      }
+      
+      // Make the wall material transparent to allow seeing through when doors are open
+      wallMaterial.transparent = true;
+      wallMaterial.opacity = 1.0;
+      wallMaterial.depthWrite = true;
+      wallMaterial.side = THREE.DoubleSide;
+      wallMaterial.needsUpdate = true;
+      
+      const doorFrameGroup = new THREE.Group();
+      doorFrameGroup.name = `doorframe_${doorLocation.name}`;
+      
+      // Get door's rotation from the config, ensuring it's normalized
+      const doorRotation = (config.rotation + Math.PI * 2) % (Math.PI * 2); // Normalize rotation
+
+      // Create frame pieces using BoxGeometry - making side pieces taller
+      const leftWallGeom = new THREE.BoxGeometry(frameWidth, sideWallHeight, frameDepth * extensionFactor);
+      const rightWallGeom = new THREE.BoxGeometry(frameWidth, sideWallHeight, frameDepth * extensionFactor);
+      // Make top piece wider to better connect with side pieces
+      const topWallGeom = new THREE.BoxGeometry(doorWidth + frameWidth * 3, topFrameHeight, frameDepth * extensionFactor);
+      
+      const leftWall = new THREE.Mesh(leftWallGeom, wallMaterial.clone());
+      const rightWall = new THREE.Mesh(rightWallGeom, wallMaterial.clone());
+      const topWall = new THREE.Mesh(topWallGeom, wallMaterial.clone());
+
+      // Position frame pieces relative to the door center, then apply door rotation
+      // Adjust center offset to extend deeper into the wall
+      const centerOffset = new THREE.Vector3(0, 0, -frameDepth * extensionFactor / 2);
+
+      // Position left wall relative to center - added Y offset to make it taller
+      const leftOffset = new THREE.Vector3(-doorWidth / 2 - frameWidth / 2, doorHeight / 2 + sideWallYOffset, 0);
+      leftWall.position.copy(centerOffset).add(leftOffset);
+      
+      // Position right wall relative to center - added Y offset to make it taller
+      const rightOffset = new THREE.Vector3(doorWidth / 2 + frameWidth / 2, doorHeight / 2 + sideWallYOffset, 0);
+      rightWall.position.copy(centerOffset).add(rightOffset);
+
+      // Position top wall relative to center - make it higher for problem doors
+      const topWallY = needsExtraExtension ? doorHeight + topFrameHeight : doorHeight + topFrameHeight / 2;
+      const topOffset = new THREE.Vector3(0, topWallY, 0);
+      topWall.position.copy(centerOffset).add(topOffset);
+
+      // Add pieces to the group BEFORE rotating the group
+      doorFrameGroup.add(leftWall);
+      doorFrameGroup.add(rightWall);
+      doorFrameGroup.add(topWall);
+
+      // For problem doors, create additional extension walls to ensure complete coverage
+      if (needsExtraExtension) {
+        console.log(`Adding extra wall extensions for ${doorLocation.name} door frame`);
+        
+        // Extended wall height (much taller than door)
+        const extendedHeight = doorHeight * 1.5;
+        
+        // Create extension walls on both sides that extend further into the corridor and higher up
+        const extensionDepth = 0.6; // Deep extension into wall
+        const extensionWidth = 0.5; // Wider than frame for better coverage
+        
+        // Create left and right extension walls that go deeper into the corridor wall and extend higher
+        const leftExtGeom = new THREE.BoxGeometry(extensionWidth, extendedHeight, extensionDepth);
+        const rightExtGeom = new THREE.BoxGeometry(extensionWidth, extendedHeight, extensionDepth);
+        
+        const leftExt = new THREE.Mesh(leftExtGeom, wallMaterial.clone());
+        const rightExt = new THREE.Mesh(rightExtGeom, wallMaterial.clone());
+        
+        // Position these extensions further back (deeper into the wall) and higher up
+        const deeperOffset = new THREE.Vector3(0, 0, -extensionDepth/2 - frameDepth/2);
+        
+        // Position left extension - adding extra height
+        const leftExtOffset = new THREE.Vector3(-doorWidth / 2 - extensionWidth / 2, doorHeight / 2 + extendedHeight * 0.15, 0);
+        leftExt.position.copy(deeperOffset).add(leftExtOffset);
+        
+        // Position right extension - adding extra height
+        const rightExtOffset = new THREE.Vector3(doorWidth / 2 + extensionWidth / 2, doorHeight / 2 + extendedHeight * 0.15, 0);
+        rightExt.position.copy(deeperOffset).add(rightExtOffset);
+        
+        // Add the extensions to the door frame group
+        doorFrameGroup.add(leftExt);
+        doorFrameGroup.add(rightExt);
+        
+        // Add them to collidable walls
+        this._addCollidableWall(leftExt);
+        this._addCollidableWall(rightExt);
+        
+        // Add horizontal extension above the door to connect the side pieces
+        const topExtGeom = new THREE.BoxGeometry(doorWidth + extensionWidth * 2, 0.4, extensionDepth);
+        const topExt = new THREE.Mesh(topExtGeom, wallMaterial.clone());
+        
+        // Position it above the door, connecting the left and right extensions
+        topExt.position.copy(deeperOffset).add(new THREE.Vector3(0, doorHeight + 0.8, 0));
+        
+        doorFrameGroup.add(topExt);
+        this._addCollidableWall(topExt);
+      }
+
+      // Position and rotate the entire frame group
+      doorFrameGroup.position.copy(doorPos);
+      doorFrameGroup.rotation.y = doorRotation;
+
+      // Link this door frame group to the door state for visibility toggling
+      const doorObj = this.doors.get(doorLocation.name);
+      if (doorObj && doorObj.doorPanel) {
+        // Store reference to frame group in door panel's userData
+        doorObj.doorPanel.userData.doorFrameWalls = doorFrameGroup;
+      }
+
+      // Add to scene and collidable walls list
+      this.scene.add(doorFrameGroup);
+      this._addCollidableWall(leftWall);
+      this._addCollidableWall(rightWall);
+      this._addCollidableWall(topWall);
+      
+      console.log(`Created doorframe for ${doorLocation.name} at position (${doorPos.x.toFixed(2)}, ${doorPos.y.toFixed(2)}, ${doorPos.z.toFixed(2)}) with rotation ${doorRotation.toFixed(2)}`);
+    }
+  }
+
+  /**
+   * Update weather effects
+   * @private
+   */
+  updateWeather(deltaTime) {
+    const currentTime = Date.now();
+    const rainSystem = this.systems.get("rain");
+    if (!rainSystem) return;
+
+    // Check if enough time has passed since last weather change
+    if (currentTime - this.weatherState.lastWeatherChange > this.weatherState.minWeatherDuration) {
+      // 5% chance to change weather state every update when enough time has passed
+      if (Math.random() < 0.0005) { // Adjusted for deltaTime assuming ~60fps
+        this.weatherState.isRaining = !this.weatherState.isRaining;
+        this.weatherState.lastWeatherChange = currentTime;
+      }
+    }
+
+    // Always enable/disable rain system based on isRaining
+    if (this.weatherState.isRaining) {
+      if (!rainSystem.enabled) rainSystem.enable();
+      // Always update outdoors state for sound/visuals
+      rainSystem.setOutdoors(this.isPlayerOutdoors());
+      rainSystem.update(deltaTime);
+    } else {
+      if (rainSystem.enabled) rainSystem.disable();
+    }
+  }
+
+  /**
+   * Check if the player is in an outdoor area
+   * @private
+   * @returns {boolean} True if player is outdoors
+   */
+  isPlayerOutdoors() {
+    if (!this.camera) return false;
+    // Raycast upward to detect nearby ceilings
+    const origin = this.camera.position.clone();
+    const upward = new THREE.Vector3(0, 1, 0);
+    const maxDistance = 5.0; // Check up to 5 units above
+    const raycaster = new THREE.Raycaster(origin, upward, 0, maxDistance);
+    const hits = raycaster.intersectObjects(this.ceilingMeshes, true);
+    if (hits.length > 0) {
+      // Ceiling detected overhead: indoors
+      return false;
+    }
+    // No ceiling overhead: outdoors
+    return true;
+  }
+
+  updateInteractionButtons(camera) {
+    // Skip if no watch interactables or no camera
+    if (!this._customWatchInteractables || !this._customWatchInteractables.length || !camera) {
+      return;
+    }
+    
+    // Get current time for animations
+    const time = performance.now() * 0.001; // Convert to seconds
+    
+    // Update each E button to face the camera
+    for (const interactable of this._customWatchInteractables) {
+      if (!interactable || !interactable.userData.eButtonMesh) continue;
+      
+      const eButton = interactable.userData.eButtonMesh;
+      
+      // Skip if not visible
+      if (!eButton.visible) continue;
+      
+      // Simple billboard effect - make button face the camera
+      eButton.lookAt(camera.position);
+      
+      // Add a pulsing animation to the button when visible
+      // Scale between 0.9 and 1.1 of original size
+      const pulseFactor = 0.1; // 10% size variation
+      const pulseSpeed = 1.5; // Full cycle in 1.5 seconds
+      const pulse = 1 + pulseFactor * Math.sin(time * pulseSpeed * Math.PI);
+      
+      // Apply pulse to scale
+      eButton.scale.set(pulse, pulse, 1);
+      
+      // Apply a small hover effect
+      const hoverOffset = Math.sin(time * 2) * 0.03; // Subtle float up/down
+      
+      // Get original position or set it if not already stored
+      if (!eButton.userData.originalY) {
+        eButton.userData.originalY = eButton.position.y;
+      }
+      
+      // Apply hover effect to y position
+      eButton.position.y = eButton.userData.originalY + hoverOffset;
+    }
+    
+    // --- Terminal E button proximity logic ---
+    if (this._devTerminalInteractable && camera) {
+      const playerPos = camera.position;
+      for (const obj of this._devTerminalInteractable) {
+        if (!obj.eButton || !obj.interactionMesh) continue;
+        
+        // Calculate distance to terminal interaction volume
+        const interactionPos = new THREE.Vector3();
+        obj.interactionMesh.getWorldPosition(interactionPos);
+        
+        const distanceToPlayer = playerPos.distanceTo(interactionPos);
+        const proximityThreshold = 3.0; // Show E button when within 3 units
+        
+        // Debug log for E button state
+        console.log('[Dev Terminal] E button debug:', {
+          visible: obj.eButton.visible,
+          position: obj.eButton.position,
+          distanceToPlayer,
+          interactionPos
+        });
+        // Show/hide E button based on proximity
+        if (distanceToPlayer < proximityThreshold) {
+          if (!obj.eButton.visible) {
+            obj.eButton.visible = true;
+            console.log('[Dev Terminal] Player in proximity, showing E button');
+          }
+          
+          // Make E button face the camera (billboard effect)
+          obj.eButton.lookAt(camera.position);
+          
+          // Add pulse animation
+          const pulseFactor = 0.1;
+          const pulseSpeed = 1.5;
+          const pulse = 1 + pulseFactor * Math.sin(time * pulseSpeed * Math.PI);
+          
+          // Store original scale if not already set
+          if (!obj.eButton.userData.originalScale) {
+            obj.eButton.userData.originalScale = { 
+              x: obj.eButton.scale.x,
+              y: obj.eButton.scale.y,
+              z: obj.eButton.scale.z
+            };
+          }
+          
+          // Apply pulse to scale
+          const origScale = obj.eButton.userData.originalScale;
+          obj.eButton.scale.set(
+            origScale.x * pulse,
+            origScale.y * pulse,
+            origScale.z
+          );
+          
+          // Add hover animation
+          const hoverOffset = Math.sin(time * 2) * 0.03;
+          
+          // Store original Y position if not already set
+          if (!obj.eButton.userData.originalY) {
+            obj.eButton.userData.originalY = obj.eButton.position.y;
+          }
+          
+          // Apply hover effect
+          obj.eButton.position.y = obj.eButton.userData.originalY + hoverOffset;
+        } else if (obj.eButton.visible) {
+          obj.eButton.visible = false;
+          console.log('[Dev Terminal] Player moved away, hiding E button');
+        }
+      }
+    }
+  }
+
+  /**
+   * Finds the nearest point on the main corridor wall to the given door position.
+   * Returns { point: THREE.Vector3, segment: THREE.Group } or null if not found.
+   */
+  _findNearestCorridorWallPoint(doorPos) {
+    let minDist = Infinity;
+    let bestPoint = null;
+    let bestSegment = null;
+    // Only consider main corridor segments
+    for (const [id, segment] of this.corridorSegments) {
+      if (!id.startsWith('C')) continue; // Only main corridor segments
+      const start = segment.userData.startPoint;
+      const end = segment.userData.endPoint;
+      // Project doorPos onto segment line (XZ only)
+      const segVec = new THREE.Vector3().subVectors(end, start);
+      const segLen = segVec.length();
+      if (segLen === 0) continue;
+      const segDir = segVec.clone().normalize();
+      const doorVec = new THREE.Vector3().subVectors(doorPos, start);
+      const t = Math.max(0, Math.min(1, segDir.dot(doorVec) / segLen));
+      const proj = start.clone().add(segDir.clone().multiplyScalar(segLen * t));
+      // Find perpendicular direction (in XZ)
+      const perp = new THREE.Vector3(-segDir.z, 0, segDir.x).normalize();
+      // Offset to the wall (assume right wall for now, can be improved)
+      const wallPoint = proj.clone().add(perp.clone().multiplyScalar(CORRIDOR_WIDTH / 2));
+      const dist = wallPoint.distanceTo(doorPos);
+      if (dist < minDist) {
+        minDist = dist;
+        bestPoint = wallPoint;
+        bestSegment = segment;
+      }
+      // Also check left wall
+      const wallPointLeft = proj.clone().add(perp.clone().multiplyScalar(-CORRIDOR_WIDTH / 2));
+      const distLeft = wallPointLeft.distanceTo(doorPos);
+      if (distLeft < minDist) {
+        minDist = distLeft;
+        bestPoint = wallPointLeft;
+        bestSegment = segment;
+      }
+    }
+    if (bestPoint) {
+      return { point: bestPoint, segment: bestSegment };
+    }
+    return null;
+  }
+
+  /**
+   * Creates a tunnel from the main corridor wall to the door.
+   * @param {THREE.Vector3} corridorPoint - Start point on the corridor wall
+   * @param {THREE.Vector3} doorPos - End point at the door
+   * @param {number} width - Tunnel width
+   * @param {number} height - Tunnel height
+   */
+  _createCorridorToDoorTunnel(corridorPoint, doorPos, width, height) {
+    const depth = corridorPoint.distanceTo(doorPos);
+    if (depth < 0.05) return;
+    const wallThickness = 0.12;
+    const ceilingHeight = height;
+    // Widen tunnel to fit both corridor and room wall, plus a small overlap to prevent leaks
+    const vestibuleWidth = Math.max(width, CORRIDOR_WIDTH) + 0.15;
+    const dir = new THREE.Vector3().subVectors(doorPos, corridorPoint).normalize();
+    const up = new THREE.Vector3(0, 1, 0);
+    const right = new THREE.Vector3().crossVectors(dir, up).normalize();
+    const wallMaterial = this.materialSystem.getMaterial('corridorWall').clone();
+    if (wallMaterial.uniforms && wallMaterial.uniforms.wallColor) {
+      wallMaterial.uniforms.wallColor.value = new THREE.Color(0xffffff);
+      wallMaterial.needsUpdate = true;
+    } else if (wallMaterial.color) {
+      wallMaterial.color.setHex(0xffffff);
+    }
+
+    // Calculate the four corners of the tunnel
+    const leftOffset = right.clone().multiplyScalar(-(vestibuleWidth/2 - wallThickness/2));
+    const rightOffset = right.clone().multiplyScalar((vestibuleWidth/2 - wallThickness/2));
+    const corridorLeft = corridorPoint.clone().add(leftOffset);
+    const corridorRight = corridorPoint.clone().add(rightOffset);
+    const doorLeft = doorPos.clone().add(leftOffset);
+    const doorRight = doorPos.clone().add(rightOffset);
+
+    // Ceiling (spans the rectangle defined by the four corners)
+    const ceilingCenter = corridorPoint.clone().add(doorPos).multiplyScalar(0.5);
+    ceilingCenter.y = corridorPoint.y + ceilingHeight - wallThickness/2;
+    const ceilingLength = depth;
+    const ceilingWidth = vestibuleWidth;
+    const ceilingGeom = new THREE.BoxGeometry(ceilingWidth, wallThickness, ceilingLength);
+    const ceiling = new THREE.Mesh(ceilingGeom, wallMaterial.clone());
+    ceiling.position.copy(ceilingCenter);
+    // Align ceiling with tunnel direction
+    const tunnelQuat = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 0, 1),
+      dir
+    );
+    ceiling.setRotationFromQuaternion(tunnelQuat);
+    // Set wallScale uniform for ceiling
+    if (ceiling.material.uniforms && ceiling.material.uniforms.wallScale) {
+        ceiling.material.uniforms.wallScale.value.set(ceilingWidth, wallThickness);
+    }
+    this.scene.add(ceiling);
+    this._addCollidableWall(ceiling);
+    this.ceilingMeshes.push(ceiling);
+    this.tunnelWallMeshes.push(ceiling); // Track for uniform updates
+
+    // --- Add tunnel floor with chevron pattern ---
+    const floorMaterial = this.materialSystem.getMaterial('floor');
+    const floorGeom = new THREE.BoxGeometry(ceilingWidth, wallThickness, ceilingLength);
+    const floor = new THREE.Mesh(floorGeom, floorMaterial);
+    const floorCenter = corridorPoint.clone().add(doorPos).multiplyScalar(0.5);
+    floorCenter.y = corridorPoint.y + wallThickness/2; // At ground level
+    floor.position.copy(floorCenter);
+    floor.setRotationFromQuaternion(tunnelQuat);
+    this.scene.add(floor);
+    // Optionally add to collidables if needed
+
+    // Side walls (left and right)
+    const wallLength = depth;
+    const wallGeom = new THREE.BoxGeometry(wallThickness, height, wallLength);
+
+    // Left wall
+    const leftWallCenter = corridorLeft.clone().add(doorLeft).multiplyScalar(0.5);
+    leftWallCenter.y = corridorPoint.y + height/2;
+    const leftWall = new THREE.Mesh(wallGeom, wallMaterial.clone());
+    leftWall.position.copy(leftWallCenter);
+    leftWall.setRotationFromQuaternion(tunnelQuat);
+    // Set wallScale uniform for left wall
+    if (leftWall.material.uniforms && leftWall.material.uniforms.wallScale) {
+        leftWall.material.uniforms.wallScale.value.set(wallThickness, height);
+    }
+    this.scene.add(leftWall);
+    this._addCollidableWall(leftWall);
+    this.tunnelWallMeshes.push(leftWall); // Track for uniform updates
+
+    // Right wall
+    const rightWallCenter = corridorRight.clone().add(doorRight).multiplyScalar(0.5);
+    rightWallCenter.y = corridorPoint.y + height/2;
+    const rightWall = new THREE.Mesh(wallGeom, wallMaterial.clone());
+    rightWall.position.copy(rightWallCenter);
+    rightWall.setRotationFromQuaternion(tunnelQuat);
+    // Set wallScale uniform for right wall
+    if (rightWall.material.uniforms && rightWall.material.uniforms.wallScale) {
+        rightWall.material.uniforms.wallScale.value.set(wallThickness, height);
+    }
+    this.scene.add(rightWall);
+    this._addCollidableWall(rightWall);
+    this.tunnelWallMeshes.push(rightWall); // Track for uniform updates
+
+    // Log
     console.log(`[Corridor Tunnel] Created tunnel from corridor to door (rectangular prism) with width ${ceilingWidth}, depth ${ceilingLength}`);
   }
 
@@ -3298,7 +5718,6 @@ export class SeveranceEnvironment extends BaseEnvironment {
     }
   }
 }
-
 
 // Helper to create a glowing lamp bulb shader material
 function createLampLightShaderMaterial() {
@@ -3361,6 +5780,8 @@ function createKrugerTextTexture(text, { width = 1024, height = 256, bgColor = '
   lines.forEach((l, i) => ctx.fillText(l.trim(), width/2, yStart + i*lineHeight));
   return new THREE.CanvasTexture(canvas);
 }
+
+
 
 // Helper function to get image paths for a given poster title
 const getArtPosterImagePaths = (title) => {
