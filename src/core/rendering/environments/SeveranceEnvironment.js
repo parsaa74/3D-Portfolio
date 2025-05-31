@@ -243,7 +243,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door frame model...");
         const doorFrameResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                getAssetPath('assets/models/door frame.glb'),
+                getAssetPath('/assets/models/glb/door-frame.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Frame loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -261,7 +261,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door pivot model...");
         const doorPivotResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                getAssetPath('assets/models/door pivot.glb'),
+                getAssetPath('/assets/models/glb/door-pivot.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Pivot loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -279,7 +279,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading card reader model...");
         const cardReaderResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                getAssetPath('assets/models/card reader.glb'),
+                getAssetPath('/assets/models/glb/card-reader.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Card reader loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -3292,5 +3292,5 @@ export class SeveranceEnvironment extends BaseEnvironment {
   // ... existing code ...
   getAssetPath("./src/shaders/corridor.txt")
   // ... existing code ...
-  getAssetPath('assets/models/door frame.glb'),
+  getAssetPath('assets/models/glb/door-frame.glb'),
   // ... existing code ...

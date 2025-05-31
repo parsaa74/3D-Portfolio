@@ -163,7 +163,7 @@ export class AssetLoader extends EventEmitter {
   _loadModels() {
     const modelsToLoad = {
       door: getAssetPath("/assets/models/door.json"),
-      chair: getAssetPath("/assets/models/chair.json"),
+      chair: getAssetPath("/assets/models/glb/chair.glb"),
       desk: getAssetPath("/assets/models/desk.json"),
     };
 
