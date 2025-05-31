@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Abstract 3D geometric shape with Rodenbroeker-inspired minimalism -->
+  <rect width="64" height="64" fill="#000000"/>
+  
+  <!-- Shapes representing 3D elements -->
+  <path d="M20 18L44 12L50 38L26 44L20 18Z" fill="none" stroke="#5CDED3" stroke-width="1.5"/>
+  <path d="M16 24L40 18L46 44L22 50L16 24Z" fill="none" stroke="#ffffff" stroke-width="1"/>
+  
+  <!-- Minimal P for Parsa -->
+  <path d="M32 24V40" stroke="#5CDED3" stroke-width="2"/>
+  <path d="M32 24C38 24 40 24 40 28C40 32 38 32 32 32" stroke="#5CDED3" stroke-width="2"/>
+</svg>
