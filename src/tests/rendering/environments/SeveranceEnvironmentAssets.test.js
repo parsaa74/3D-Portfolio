@@ -22,9 +22,16 @@ const imageAssets = [
   '/assets/textures/posters/poster2(3).jpg',
   '/assets/textures/posters/poster2(4).jpg',
   // Optionally add a few performance art images:
-  '/assets/Images/performance/solo performances/friends/photo_2025-05-01_17-29-01.jpg',
-  '/assets/Images/performance/solo performances/dissolve/سی پرفورمنس ،سی هنرمند، سی روز 3.jpg',
-  '/assets/Images/performance/solo performances/circle of confusion/photo_2025-05-01_17-25-22.jpg',
+  '/assets/Images/performance/solo-performances/friends/photo_2025-05-01_17-29-01.jpg',
+  '/assets/Images/performance/solo-performances/dissolve/dissolve-base.jpg',
+  '/assets/Images/performance/solo-performances/dissolve/dissolve-1.jpg',
+  '/assets/Images/performance/solo-performances/dissolve/dissolve-2.jpg',
+  '/assets/Images/performance/solo-performances/circle-of-confusion/photo_2025-05-01_17-25-22.jpg',
+  '/assets/Images/performance/solo-performances/circle-of-confusion/photo_2025-05-01_17-25-22_(2).jpg',
+  '/assets/Images/performance/solo-performances/circle-of-confusion/photo_2025-05-01_17-25-22_(3).jpg',
+  '/assets/Images/performance/solo-performances/circle-of-confusion/photo_2025-05-01_17-25-22_(4).jpg',
+  '/assets/Images/performance/solo-performances/circle-of-confusion/photo_2025-05-01_17-25-22_(5).jpg',
+  '/assets/Images/performance/solo-performances/circle-of-confusion/photo_2025-05-01_17-25-22_(6).jpg',
 ];
 
 // --- Loader-based tests (browser context required) ---
