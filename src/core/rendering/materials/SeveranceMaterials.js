@@ -323,19 +323,63 @@ export class SeveranceMaterials {
         }
       }
 
-      // Create corridor lighting shader if fragment shader was loaded
+      // Create corridor wall shader if corridor shader was loaded
       if (corridorFragmentShader) {
-        console.log("Creating corridor shader with loaded fragment shader");
-        const corridorShader = {
+        console.log("Creating corridor wall shader with loaded fragment shader");
+        const corridorWallShader = {
           vertexShader: commonVertexShader,
           fragmentShader: corridorFragmentShader,
           uniforms: {
-            lightColor: { value: new THREE.Color(0xf0f7ff) },
-            intensity: { value: 0.8 },
+            lightColor: { value: new THREE.Color(0xffffff) },
+            intensity: { value: 1.0 },
             time: { value: 0 },
           },
         };
-        this.shaders.set("corridor", corridorShader);
+        this.shaders.set("corridorWall", corridorWallShader);
+      }
+
+      // Load corridor wall shaders
+      let corridorWallVertexShader;
+      let corridorWallFragmentShader;
+      
+      try {
+        corridorWallVertexShader = await this._loadShaderFile(getAssetPath('./src/shaders/common/vertex.glsl'));
+        corridorWallFragmentShader = await this._loadShaderFile(getAssetPath('./src/shaders/corridor_wall.glsl'));
+        console.log('Successfully loaded corridor wall shaders');
+        
+        // Create corridor wall material with uniforms
+        const corridorWallMaterial = new THREE.ShaderMaterial({
+          uniforms: {
+            u_time: { value: 0.0 },
+            u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+            u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+            u_depth: { value: 1.0 },
+            playerPos: { value: new THREE.Vector3(0, 0, 0) },
+            wallScale: { value: new THREE.Vector2(1, 1) },
+            uPrevFrame: { value: null }
+          },
+          vertexShader: corridorWallVertexShader,
+          fragmentShader: corridorWallFragmentShader,
+          side: THREE.DoubleSide,
+          transparent: false
+        });
+
+        // Validate corridor wall shader compilation
+        if (!this._checkShaderCompilation(corridorWallMaterial, 'CorridorWall')) {
+          throw new Error('CorridorWall shader compilation failed');
+        }
+        
+        this.materials.set('corridorWall', corridorWallMaterial);
+        console.log('CorridorWall shader material created successfully');
+        
+      } catch (error) {
+        console.warn('Failed to load corridor wall shaders, using fallback material:', error);
+        this.materials.set('corridorWall', new THREE.MeshStandardMaterial({
+          color: 0xe10600,
+          roughness: 0.5,
+          metalness: 0.2,
+          side: THREE.DoubleSide
+        }));
       }
 
       await this._createShaderMaterials();
@@ -492,18 +536,24 @@ export class SeveranceMaterials {
         }));
       }
 
+      // Create corridor wall shader if corridor shader was loaded
+      if (corridorFragmentShader) {
+        console.log("Creating corridor wall shader with loaded fragment shader");
+        const corridorWallShader = {
+          vertexShader: commonVertexShader,
+          fragmentShader: corridorFragmentShader,
+          uniforms: {
+            lightColor: { value: new THREE.Color(0xffffff) },
+            intensity: { value: 1.0 },
+            time: { value: 0 },
+          },
+        };
+        this.shaders.set("corridorWall", corridorWallShader);
+      }
+
       // Create fallback materials for shaders that don't exist
       console.log('Creating fallback materials for missing shaders...');
       
-      // CorridorWall material (Tim Rodenbröker-inspired)
-      this.materials.set('corridorWall', new THREE.MeshStandardMaterial({
-        color: 0xe10600,
-        roughness: 0.5,
-        metalness: 0.2,
-        side: THREE.DoubleSide
-      }));
-      console.log('Created fallback corridorWall material');
-
       // Floor material (Twin Peaks-inspired)
       this.materials.set('floor', new THREE.MeshStandardMaterial({
         color: 0xf0f0f0,
