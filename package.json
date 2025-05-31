@@ -1,8 +1,8 @@
 {
-  "name": "severance-game",
+  "name": "interactive-3d-experience",
   "private": true,
   "version": "1.0.0",
-  "description": "A 3D game based on the Apple TV+ show Severance",
+  "description": "An interactive 3D corridor exploration experience",
   "type": "module",
   "scripts": {
     "dev": "vite",

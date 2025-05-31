@@ -1,7 +1,7 @@
 /**
- * Severance Experience - Main Entry Point
- * @author Mr. Doob's Severance Project
- * @description A Three.js-powered recreation of the Lumon Industries office environment
+ * Interactive 3D Experience - Main Entry Point
+ * @author Parsa Azari's Project
+ * @description A Three.js-powered exploration of corridor environments
  */
 
 import "./styles/main.css";
@@ -110,7 +110,7 @@ export const memoryMonitor = {
 
 /**
  * @class SeveranceApp
- * @description Main application class for the Severance experience
+ * @description Main application class for the interactive corridor experience
  */
 class SeveranceApp {
   constructor() {
@@ -148,16 +148,16 @@ class SeveranceApp {
     this.showInteractionPrompt = this.showInteractionPrompt.bind(this);
     this.handleNodeInfoInteraction = this.handleNodeInfoInteraction.bind(this);
     
-    console.log("SeveranceApp constructor complete, methods bound");
+    console.log("App constructor complete, methods bound");
   }
 
   /**
    * @method initialize
-   * @description Initialize the Severance experience
+   * @description Initialize the corridor experience
    */
   async initialize() {
     try {
-      console.log("Initializing Severance experience...");
+      console.log("Initializing 3D experience...");
 
       // Check WebGL compatibility first
       if (!checkWebGL()) {
@@ -230,10 +230,10 @@ class SeveranceApp {
       // Safety: ensure aspect ratio is correct after initialization
       this.onWindowResize();
       this.isInitialized = true;
-      console.log("Severance experience successfully initialized");
+      console.log("3D experience successfully initialized");
 
     } catch (error) {
-      console.error("Failed to initialize Severance experience:", error);
+      console.error("Failed to initialize 3D experience:", error);
       this.showErrorMessage(error);
     }
   }
