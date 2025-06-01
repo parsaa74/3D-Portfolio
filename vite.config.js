@@ -1,15 +1,12 @@
 // vite.config.js
-export default {
-  base: '/3D-Portfolio/',
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  base: './', // Important for GitHub Pages
   build: {
-    sourcemap: true,
-    assetsDir: 'assets',
     outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
-      },
-    },
+    assetsDir: 'assets',
+    sourcemap: true
   },
-}
+  publicDir: 'public'
+})
