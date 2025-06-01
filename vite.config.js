@@ -1,7 +1,9 @@
 // vite.config.js
 import { defineConfig } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import glsl from 'vite-plugin-glsl'
+
+// Use dynamic import for ESM-only package
+const glsl = (await import('vite-plugin-glsl')).default;
 
 export default defineConfig({
   base: './', // Important for GitHub Pages
