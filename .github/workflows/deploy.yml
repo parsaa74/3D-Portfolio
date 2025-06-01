@@ -40,10 +40,8 @@ jobs:
         
     - name: Deploy built files to root for GitHub Pages
       run: |
-        # Backup development files
-        mkdir -p backup-dev
-        cp index.html backup-dev/
-        cp -r src backup-dev/ 2>/dev/null || true
+        # Remove everything except .git, .github, and dist
+        find . -maxdepth 1 ! -name '.' ! -name '.git' ! -name '.github' ! -name 'dist' -exec rm -rf {} +
         
         # Copy built files to root
         cp -r dist/* .
