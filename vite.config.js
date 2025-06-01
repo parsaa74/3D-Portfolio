@@ -4,5 +4,12 @@ export default {
   build: {
     sourcemap: true,
     assetsDir: 'assets',
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
   },
 }
