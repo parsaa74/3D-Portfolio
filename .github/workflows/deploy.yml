@@ -47,7 +47,7 @@ jobs:
           mkdir -p dist/assets/Images/performance/solo-performances/friends
           mkdir -p dist/assets/fonts
           
-      - name: Define copy function
+      - name: Copy assets
         run: |
           # Function to copy files safely
           safe_copy() {
@@ -59,14 +59,6 @@ jobs:
               echo "Directory $1 not found, skipping"
             fi
           }
-          
-          # Export function to be used in next steps
-          echo "safe_copy() { if [ -d \"\$1\" ]; then echo \"Copying from \$1 to \$2\"; mkdir -p \"\$2\"; cp -r \"\$1\"/* \"\$2\"/ 2>/dev/null || echo \"No files found in \$1\"; else echo \"Directory \$1 not found, skipping\"; fi; }" >> $GITHUB_ENV
-          
-      - name: Copy assets
-        run: |
-          # Source the function
-          source $GITHUB_ENV
           
           # Copy performance images with the correct folder structure
           safe_copy "assets/Images/performance/solo-performances" "dist/assets/Images/performance/solo-performances"
