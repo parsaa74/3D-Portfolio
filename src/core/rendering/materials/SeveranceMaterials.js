@@ -1,5 +1,12 @@
 import * as THREE from "three";
 import { getAssetPath } from '../../../utils/assetPath.js';
+import {
+  vertexShader,
+  wallVertexShader,
+  wallFragmentShader,
+  corridorShader,
+  corridorFragmentShader
+} from '../../shaders/shaderStrings.js';
 
 /**
  * Material system for the Severance aesthetic
@@ -227,84 +234,37 @@ export class SeveranceMaterials {
    */
   async _loadShaders() {
     try {
-      console.log("Loading shaders...");
+      console.log("Loading shaders from embedded strings...");
 
-      // Create a default vertex shader if we can't load the file
-      const defaultVertexShader = `
-        varying vec2 vUv;
-        varying vec3 vNormal;
-        varying vec3 vViewDir;
-        varying vec4 vWorldPosition;
-        varying vec3 vPosition;
-        
-        void main() {
-          vUv = uv;
-          vNormal = normalize(normalMatrix * normal);
-          vViewDir = normalize(-modelViewMatrix[3].xyz);
-          vWorldPosition = modelMatrix * vec4(position, 1.0);
-          vPosition = position;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `;
-
-      // Try to load common vertex shader
-      let commonVertexShader;
-      try {
-        console.log("Attempting to load vertex shader");
-        commonVertexShader = await this._loadShaderFile(
-          getAssetPath("/shaders/common/vertex.glsl")
-        );
-        console.log("Successfully loaded vertex shader");
-      } catch (e) {
-        console.warn("Could not load common vertex shader, using default", e);
-        commonVertexShader = defaultVertexShader;
-      }
+      // Use imported shader strings instead of loading from files
+      const commonVertexShader = vertexShader;
+      console.log("Using embedded vertex shader");
 
       // Initialize a default environment map
       const defaultEnvMap = this._createDefaultEnvMap();
 
-      // Load wall shader
-      let wallFragmentShader;
-      try {
-        console.log("Attempting to load wall shader");
-        wallFragmentShader = await this._loadShaderFile(
-          getAssetPath("/shaders/wall.glsl")
-        );
-        console.log("Successfully loaded wall shader");
-      } catch (e) {
-        console.error("Could not load wall shader from file", e);
-        wallFragmentShader = null;
-      }
+      // Use embedded wall shader
+      const wallFragmentShaderCode = wallFragmentShader;
+      console.log("Using embedded wall shader");
 
-      // Load corridor shader
-      let corridorFragmentShader;
-      try {
-        console.log("Attempting to load corridor shader");
-        corridorFragmentShader = await this._loadShaderFile(
-          getAssetPath("/shaders/corridor.glsl")
-        );
-        console.log("Successfully loaded corridor shader");
-      } catch (e) {
-        console.warn("Could not load corridor shader", e);
-        corridorFragmentShader = null;
-      }
+      // Use embedded corridor shader
+      const corridorFragmentShaderCode = corridorShader;
+      console.log("Using embedded corridor shader");
 
-      // Create corridor wall shader if corridor shader was loaded
-      if (corridorFragmentShader) {
-        console.log("Creating corridor wall shader with loaded fragment shader");
-        const corridorWallShader = {
-          vertexShader: commonVertexShader,
-          fragmentShader: corridorFragmentShader,
-          uniforms: {
-            lightColor: { value: new THREE.Color(0xffffff) },
-            intensity: { value: 1.0 },
-            time: { value: 0 },
-          },
-        };
-        this.shaders.set("corridorWall", corridorWallShader);
-      }
+      // Create corridor wall shader
+      console.log("Creating corridor wall shader with embedded fragment shader");
+      const corridorWallShader = {
+        vertexShader: commonVertexShader,
+        fragmentShader: corridorFragmentShaderCode,
+        uniforms: {
+          lightColor: { value: new THREE.Color(0xffffff) },
+          intensity: { value: 1.0 },
+          time: { value: 0 },
+        },
+      };
+      this.shaders.set("corridorWall", corridorWallShader);
 
-      await this._createShaderMaterials(commonVertexShader);
+      await this._createShaderMaterials(commonVertexShader, wallFragmentShaderCode, corridorFragmentShaderCode);
 
       console.log("Shader loading complete");
     } catch (error) {
@@ -379,15 +339,13 @@ export class SeveranceMaterials {
    * Creates shader materials for walls and corridors
    * @private
    */
-  async _createShaderMaterials(commonVertexShader) {
+  async _createShaderMaterials(commonVertexShader, wallFragmentShaderCode, corridorFragmentShaderCode) {
     try {
-      // Load wall shaders
+      // Create wall material with embedded shaders
       let wallVertexShader = commonVertexShader;
-      let wallFragmentShader;
       
       try {
-        wallFragmentShader = await this._loadShaderFile(getAssetPath('/shaders/wall.glsl'));
-        console.log('Successfully loaded wall shaders');
+        console.log('Creating wall shader material with embedded shaders');
         
         // Create wall material with uniforms
         const wallMaterial = new THREE.ShaderMaterial({
@@ -397,7 +355,7 @@ export class SeveranceMaterials {
             time: { value: 0.0 }
           },
           vertexShader: wallVertexShader,
-          fragmentShader: wallFragmentShader,
+          fragmentShader: wallFragmentShaderCode,
           side: THREE.DoubleSide,
           transparent: false
         });
@@ -411,7 +369,7 @@ export class SeveranceMaterials {
         console.log('Wall shader material created successfully');
         
       } catch (error) {
-        console.warn('Failed to load wall shaders, using fallback material:', error);
+        console.warn('Failed to create wall shader material, using fallback material:', error);
         this.materials.set('wall', new THREE.MeshStandardMaterial({
           color: 0xf5f5f5,
           roughness: 0.85,
@@ -420,25 +378,24 @@ export class SeveranceMaterials {
         }));
       }
 
-      // Load corridor shaders
+      // Create corridor material with embedded shaders
       let corridorVertexShader = commonVertexShader;
-      let corridorFragmentShader;
       
       try {
-        corridorFragmentShader = await this._loadShaderFile(getAssetPath('/shaders/corridor.glsl'));
-        console.log('Successfully loaded corridor shaders');
+        console.log('Creating corridor shader material with embedded shaders');
         
         // Create corridor material with uniforms
         const corridorMaterial = new THREE.ShaderMaterial({
           uniforms: {
             lightColor: { value: new THREE.Color(0xffffff) },
-            intensity: { value: 1.0 },
+            lightIntensity: { value: 1.0 },
+            ambientLight: { value: new THREE.Color(0x404040) },
             time: { value: 0.0 }
           },
           vertexShader: corridorVertexShader,
-          fragmentShader: corridorFragmentShader,
-          transparent: true,
-          blending: THREE.AdditiveBlending
+          fragmentShader: corridorFragmentShaderCode,
+          transparent: false,
+          side: THREE.DoubleSide
         });
 
         // Validate corridor shader compilation
@@ -450,7 +407,7 @@ export class SeveranceMaterials {
         console.log('Corridor shader material created successfully');
         
       } catch (error) {
-        console.warn('Failed to load corridor shaders, using fallback material:', error);
+        console.warn('Failed to create corridor shader material, using fallback material:', error);
         this.materials.set('corridor', new THREE.MeshStandardMaterial({
           color: 0xffffff,
           emissive: 0xffffff,
@@ -460,25 +417,20 @@ export class SeveranceMaterials {
         }));
       }
 
-      // Load corridor wall shaders
-      let corridorWallFragmentShader;
-      
+      // Create corridor wall material with embedded shaders
       try {
-        corridorWallFragmentShader = await this._loadShaderFile(getAssetPath('/shaders/corridor_wall.glsl'));
-        console.log('Successfully loaded corridor wall shaders');
+        console.log('Creating corridor wall shader material with embedded shaders');
         
         // Create corridor wall material with uniforms
         const corridorWallMaterial = new THREE.ShaderMaterial({
           uniforms: {
-            u_time: { value: 0.0 },
-            u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-            u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
-            u_depth: { value: 1.0 },
-            playerPos: { value: new THREE.Vector3(0, 0, 0) },
-            wallScale: { value: new THREE.Vector2(1, 1) }
+            lightColor: { value: new THREE.Color(0xffffff) },
+            lightIntensity: { value: 1.0 },
+            ambientLight: { value: new THREE.Color(0x404040) },
+            time: { value: 0.0 }
           },
           vertexShader: commonVertexShader,
-          fragmentShader: corridorWallFragmentShader,
+          fragmentShader: corridorFragmentShaderCode,
           side: THREE.DoubleSide,
           transparent: false
         });
@@ -492,7 +444,7 @@ export class SeveranceMaterials {
         console.log('CorridorWall shader material created successfully');
         
       } catch (error) {
-        console.warn('Failed to load corridor wall shaders, using fallback material:', error);
+        console.warn('Failed to create corridor wall shader material, using fallback material:', error);
         this.materials.set('corridorWall', new THREE.MeshStandardMaterial({
           color: 0xe10600,
           roughness: 0.5,
@@ -500,8 +452,9 @@ export class SeveranceMaterials {
           side: THREE.DoubleSide
         }));
       }
+      
     } catch (error) {
-      console.error("Error creating shader materials:", error);
+      console.error('Error creating shader materials:', error);
       throw error;
     }
   }

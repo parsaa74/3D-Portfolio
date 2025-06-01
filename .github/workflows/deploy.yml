@@ -2,48 +2,78 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main # or your default branch
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-      
+          
       - name: Install dependencies
         run: npm ci
-      
+        
       - name: Build
         run: npm run build
-      
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      
+        
+      - name: Copy 3D models to root
+        run: cp *.glb dist/
+        
       - name: Create .nojekyll file
         run: touch dist/.nojekyll
-      
+        
+      - name: Setup directories
+        run: |
+          mkdir -p dist/assets/Images/performance/solo-performances/circle-of-confusion
+          mkdir -p dist/assets/Images/performance/solo-performances/dissolve
+          mkdir -p dist/assets/Images/performance/solo-performances/friends
+          mkdir -p dist/assets/fonts
+          
+      - name: Copy assets
+        run: |
+          if [ -d "assets/Images/performance/solo-performances" ]; then
+            cp -r assets/Images/performance/solo-performances/* dist/assets/Images/performance/solo-performances/
+          fi
+          
+          if [ -d "assets/Images/performance/solo%20performances" ]; then
+            cp -r "assets/Images/performance/solo%20performances"/* dist/assets/Images/performance/solo-performances/
+          fi
+          
+          if [ -d "assets/Images/performance/solo performances" ]; then
+            cp -r "assets/Images/performance/solo performances"/* dist/assets/Images/performance/solo-performances/
+          fi
+          
+          if [ -d "assets/fonts" ]; then
+            cp -r assets/fonts/* dist/assets/fonts/
+          fi
+          
+          if [ -d "fonts" ]; then
+            cp -r fonts/* dist/assets/fonts/
+          fi
+          
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v1
         with:
           path: ./dist
-
+  
   deploy:
     environment:
       name: github-pages
@@ -53,4 +83,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v1
