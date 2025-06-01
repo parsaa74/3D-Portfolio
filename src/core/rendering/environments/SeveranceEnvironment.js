@@ -3294,3 +3294,73 @@ export class SeveranceEnvironment extends BaseEnvironment {
   // ... existing code ...
   getAssetPath('assets/models/glb/door-frame.glb'),
   // ... existing code ...
+
+  // ... existing code ...
+  async _createFilmInterior(interiorGroup, center, size, doorPosition) {
+    console.log(`[DEBUG FILM INTERIOR] Entered _createFilmInterior`);
+    console.log(`[DEBUG FILM INTERIOR] interiorGroup name:`, interiorGroup.name);
+    console.log(`Creating FILM interior at ${center.x}, ${center.z}`);
+    // --- Lighting at door entrance ---
+    if (doorPosition) {
+      const doorToCenter = new THREE.Vector3().subVectors(center, doorPosition).normalize();
+      const entryLight = new THREE.SpotLight(0xfad02e, 5.0, 8.0, Math.PI/4, 0.5, 1);
+      entryLight.position.copy(doorPosition.clone().add(new THREE.Vector3(0, 2.5, 0)));
+      entryLight.target.position.copy(center);
+      entryLight.target.updateMatrixWorld();
+      interiorGroup.add(entryLight);
+      interiorGroup.add(entryLight.target);
+    }
+    // Load models and textures using getAssetPath
+    const gltfLoader = this.gltfLoader || new THREE.GLTFLoader();
+    const textureLoader = new THREE.TextureLoader();
+    // Load assets
+    const [chairGLB, lampGLB, projectorGLB, screenGLB, posterTex] = await Promise.all([
+      new Promise((resolve, reject) => gltfLoader.load(getAssetPath('/assets/models/glb/chair.glb'), resolve, undefined, reject)),
+      new Promise((resolve, reject) => gltfLoader.load(getAssetPath('/assets/models/glb/lamp.glb'), resolve, undefined, reject)),
+      new Promise((resolve, reject) => gltfLoader.load(getAssetPath('/assets/models/glb/projector.glb'), resolve, undefined, reject)),
+      new Promise((resolve, reject) => gltfLoader.load(getAssetPath('/assets/models/glb/projector_screen.glb'), resolve, undefined, reject)),
+      new Promise((resolve, reject) => textureLoader.load(getAssetPath('/assets/textures/posters/poster1.jpg'), resolve, undefined, reject)),
+    ]);
+    // Place chairs
+    const chairPositions = [
+      { x: center.x - 1.2, z: center.z + 1.2, rot: 0.08 },
+      { x: center.x - 0.4, z: center.z + 1.4, rot: 0.03 },
+      { x: center.x + 0.4, z: center.z + 1.4, rot: -0.03 },
+      { x: center.x + 1.2, z: center.z + 1.2, rot: -0.08 },
+    ];
+    for (let i = 0; i < 4; i++) {
+      const chair = chairGLB.scene.clone(true);
+      chair.position.set(chairPositions[i].x, center.y, chairPositions[i].z);
+      chair.rotation.y = chairPositions[i].rot;
+      interiorGroup.add(chair);
+    }
+    // Place lamp
+    const lamp = lampGLB.scene.clone(true);
+    lamp.position.set(center.x, center.y, center.z + size.z / 2 - 1.5);
+    lamp.scale.set(1, 1, 1);
+    interiorGroup.add(lamp);
+    // Place projector
+    const projector = projectorGLB.scene.clone(true);
+    projector.position.set(center.x, center.y + 2.2, center.z + size.z / 2 - 3);
+    projector.rotation.set(-Math.PI / 16, 0, 0);
+    projector.scale.set(0.4, 0.4, 0.4);
+    interiorGroup.add(projector);
+    // Place screen
+    const screen = screenGLB.scene.clone(true);
+    const screenWidth = size.x * 0.8;
+    const screenHeight = screenWidth / (16 / 9);
+    screen.position.set(center.x, center.y + 1.5, center.z + size.z / 2 - 0.08);
+    screen.scale.set(screenWidth, screenHeight, 1);
+    interiorGroup.add(screen);
+    // Place poster
+    const posterMaterial = new THREE.MeshBasicMaterial({ map: posterTex });
+    const posterMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.6), posterMaterial);
+    posterMesh.position.set(center.x - size.x / 2 + 0.1, center.y + 1.5, center.z + size.z / 2 - 2);
+    posterMesh.rotation.y = Math.PI / 2;
+    interiorGroup.add(posterMesh);
+    // TODO: Add more posters, favorite films gallery, and interactions as in the minified logic
+    // (This can be expanded further as needed)
+    console.log('[DEBUG FILM INTERIOR] _createFilmInterior completed.');
+  }
+// ... existing code ...
+}
