@@ -2,18 +2,17 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main # or your default branch
+    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -27,154 +26,24 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          
+      
       - name: Install dependencies
         run: npm ci
-        
+      
       - name: Build
         run: npm run build
-        
-      - name: Copy 3D models to root
-        run: cp -f *.glb dist/ 2>/dev/null || echo "No .glb files found in root directory"
-        
-      - name: Create .nojekyll file
-        run: touch dist/.nojekyll
-        
-      - name: Setup directories
-        run: |
-          mkdir -p dist/assets/Images/performance/solo-performances/circle-of-confusion
-          mkdir -p dist/assets/Images/performance/solo-performances/dissolve
-          mkdir -p dist/assets/Images/performance/solo-performances/friends
-          mkdir -p dist/assets/fonts
-          
-      - name: Copy assets
-        run: |
-          # Function to copy files safely
-          safe_copy() {
-            if [ -d "$1" ]; then
-              echo "Copying from $1 to $2"
-              mkdir -p "$2"
-              cp -r "$1"/* "$2"/ 2>/dev/null || echo "No files found in $1"
-            else
-              echo "Directory $1 not found, skipping"
-            fi
-          }
-          
-          # Copy performance images with the correct folder structure
-          safe_copy "assets/Images/performance/solo-performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "assets/Images/performance/solo%20performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "assets/Images/performance/solo performances" "dist/assets/Images/performance/solo-performances"
-          
-          # Also try with lowercase "images" directory
-          safe_copy "assets/images/performance/solo-performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "assets/images/performance/solo%20performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "assets/images/performance/solo performances" "dist/assets/Images/performance/solo-performances"
-          
-          # Copy from public directory as well
-          safe_copy "public/assets/Images/performance/solo-performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "public/assets/Images/performance/solo%20performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "public/assets/Images/performance/solo performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "public/Images/performance/solo-performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "public/Images/performance/solo%20performances" "dist/assets/Images/performance/solo-performances"
-          safe_copy "public/Images/performance/solo performances" "dist/assets/Images/performance/solo-performances"
-          
-          # Copy fonts
-          safe_copy "assets/fonts" "dist/assets/fonts"
-          safe_copy "fonts" "dist/assets/fonts"
-          safe_copy "public/fonts" "dist/assets/fonts"
-          safe_copy "public/assets/fonts" "dist/assets/fonts"
-          
-          # Ensure required files are in place
-          if [ ! -f "dist/chair.glb" ]; then
-            echo "Warning: chair.glb not found in dist. Checking other locations..."
-            find . -name "chair.glb" -exec cp {} dist/ \; -quit
-          fi
       
-      - name: Fix paths in JavaScript files
-        run: |
-          cat > fix-paths.js << 'EOL'
-          // Fix paths in JavaScript files
-          import fs from 'fs';
-          import path from 'path';
-          import { fileURLToPath } from 'url';
-
-          // Get current file's directory
-          const __filename = fileURLToPath(import.meta.url);
-          const __dirname = path.dirname(__filename);
-
-          // Configuration
-          const distDir = 'dist';
-          const jsFilesPattern = /\.js$/;
-          const mapFilesPattern = /\.js\.map$/;
-
-          // Paths to fix - this matches absolute paths that start with "/" that need to be relative
-          const pathsToFix = [
-            { pattern: /load\("\/chair\.glb"/g, replacement: 'load("./chair.glb"' },
-            { pattern: /load\("\/lamp\.glb"/g, replacement: 'load("./lamp.glb"' },
-            { pattern: /load\("\/projector\.glb"/g, replacement: 'load("./projector.glb"' },
-            { pattern: /load\("\/projector_screen\.glb"/g, replacement: 'load("./projector_screen.glb"' },
-            { pattern: /load\("\/severance_tv_show_office\.glb"/g, replacement: 'load("./severance_tv_show_office.glb"' },
-            { pattern: /\/assets\//g, replacement: './assets/' },
-            { pattern: /\/fonts\//g, replacement: './fonts/' },
-            { pattern: /\/models\//g, replacement: './models/' },
-            { pattern: /\/sounds\//g, replacement: './sounds/' },
-            { pattern: /\/textures\//g, replacement: './textures/' },
-            { pattern: /\/images\//g, replacement: './images/' },
-            { pattern: /\/Images\//g, replacement: './assets/Images/' },
-            { pattern: /\/performance\/solo%20performances\//g, replacement: '/performance/solo-performances/' },
-            { pattern: /\/performance\/solo performances\//g, replacement: '/performance/solo-performances/' }
-          ];
-
-          // Process a file
-          function processFile(filePath) {
-            console.log(`Processing ${filePath}`);
-            let content = fs.readFileSync(filePath, 'utf8');
-            let modified = false;
-
-            for (const { pattern, replacement } of pathsToFix) {
-              if (pattern.test(content)) {
-                content = content.replace(pattern, replacement);
-                modified = true;
-              }
-            }
-
-            if (modified) {
-              console.log(`- Modified paths in ${filePath}`);
-              fs.writeFileSync(filePath, content, 'utf8');
-            }
-          }
-
-          // Walk through the dist directory and process JS files
-          function processDirectory(dir) {
-            const entries = fs.readdirSync(dir, { withFileTypes: true });
-
-            for (const entry of entries) {
-              const fullPath = path.join(dir, entry.name);
-              
-              if (entry.isDirectory()) {
-                processDirectory(fullPath);
-              } else if (jsFilesPattern.test(entry.name) && !mapFilesPattern.test(entry.name)) {
-                processFile(fullPath);
-              }
-            }
-          }
-
-          // Start processing
-          console.log('Starting path fixing process...');
-          processDirectory(path.join(__dirname, distDir));
-          console.log('Path fixing completed!');
-          EOL
-          
-          node fix-paths.js
-          
       - name: Setup Pages
         uses: actions/configure-pages@v4
-          
+      
+      - name: Create .nojekyll file
+        run: touch dist/.nojekyll
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-  
+
   deploy:
     environment:
       name: github-pages
