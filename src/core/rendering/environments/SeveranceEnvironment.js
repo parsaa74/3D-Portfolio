@@ -433,10 +433,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           // Use material system to load vertex shader instead of inline definition
           // This ensures we're following the project organization guidelines
           vertexShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/common/vertex.txt")
+            getAssetPath("/assets/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/wall.txt")
+            getAssetPath("/assets/shaders/wall.txt")
           ),
           side: THREE.DoubleSide,
         });
@@ -484,10 +484,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           },
           // Use material system to load vertex shader instead of inline definition
           vertexShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/common/vertex.txt")
+            getAssetPath("/assets/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/corridor.txt")
+            getAssetPath("/assets/shaders/corridor.txt")
           ),
           transparent: true,
           blending: THREE.AdditiveBlending,
@@ -3695,10 +3695,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           // Use material system to load vertex shader instead of inline definition
           // This ensures we're following the project organization guidelines
           vertexShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/common/vertex.txt")
+            getAssetPath("/assets/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/wall.txt")
+            getAssetPath("/assets/shaders/wall.txt")
           ),
           side: THREE.DoubleSide,
         });
@@ -3746,10 +3746,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           },
           // Use material system to load vertex shader instead of inline definition
           vertexShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/common/vertex.txt")
+            getAssetPath("/assets/shaders/common/vertex.txt")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            getAssetPath("/shaders/corridor.txt")
+            getAssetPath("/assets/shaders/corridor.txt")
           ),
           transparent: true,
           blending: THREE.AdditiveBlending,

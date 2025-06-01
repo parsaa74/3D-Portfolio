@@ -163,12 +163,12 @@ export class SeveranceMaterials {
   async _loadTextures() {
     const textureLoader = new THREE.TextureLoader();
     const texturePaths = {
-      wall: getAssetPath("/textures/wall.jpg"),
-      floor: getAssetPath("/textures/floor.jpg"),
-      ceiling: getAssetPath("/textures/ceiling.jpg"),
-      trim: getAssetPath("/textures/trim.jpg"),
-      door: getAssetPath("/textures/door.jpg"),
-      outsideGround: getAssetPath("/textures/wall.jpg"),
+      wall: getAssetPath("/assets/textures/wall.jpg"),
+      floor: getAssetPath("/assets/textures/floor.jpg"),
+      ceiling: getAssetPath("/assets/textures/ceiling.jpg"),
+      trim: getAssetPath("/assets/textures/trim.jpg"),
+      door: getAssetPath("/assets/textures/door.jpg"),
+      outsideGround: getAssetPath("/assets/textures/wall.jpg"),
     };
 
     const loadTexture = (path) => {
@@ -254,7 +254,7 @@ export class SeveranceMaterials {
           "Attempting to load vertex shader from src/shaders/common/vertex.glsl"
         );
         commonVertexShader = await this._loadShaderFile(
-          getAssetPath("/shaders/common/vertex.glsl")
+          getAssetPath("/assets/shaders/common/vertex.glsl")
         );
         console.log("Successfully loaded vertex shader");
       } catch (e) {
@@ -272,7 +272,7 @@ export class SeveranceMaterials {
           "Attempting to load wall shader from src/shaders/wall.glsl"
         );
         wallFragmentShader = await this._loadShaderFile(
-          getAssetPath("/shaders/wall.glsl")
+          getAssetPath("/assets/shaders/wall.glsl")
         );
         console.log("Successfully loaded wall shader");
         console.log(
@@ -288,7 +288,7 @@ export class SeveranceMaterials {
             "Attempting to load wall shader from public/src/shaders/wall.glsl"
           );
           wallFragmentShader = await this._loadShaderFile(
-            getAssetPath("/shaders/wall.glsl")
+            getAssetPath("/assets/shaders/wall.glsl")
           );
           console.log("Successfully loaded wall shader from public path");
         } catch (e2) {
@@ -304,7 +304,7 @@ export class SeveranceMaterials {
           "Attempting to load corridor shader from src/shaders/corridor.glsl"
         );
         corridorFragmentShader = await this._loadShaderFile(
-          getAssetPath("/shaders/corridor.glsl")
+          getAssetPath("/assets/shaders/corridor.glsl")
         );
         console.log("Successfully loaded corridor shader");
       } catch (e) {
@@ -316,7 +316,7 @@ export class SeveranceMaterials {
         // Try fallback from /shaders/corridor.glsl (without src prefix)
         try {
           corridorFragmentShader = await this._loadShaderFile(
-            getAssetPath("/shaders/corridor.glsl")
+            getAssetPath("/assets/shaders/corridor.glsl")
           );
         } catch (e2) {
           console.warn("Could not load corridor shader from any location");
