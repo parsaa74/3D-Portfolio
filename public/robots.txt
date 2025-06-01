@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://parsaa74.github.io/3D-Portfolio/sitemap.xml 

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found</title>
+  <script>
+    // Redirect to the home page
+    const segmentCount = 1;
+    const redirectPath = window.location.pathname.split('/').slice(0, segmentCount + 1).join('/');
+    window.location.replace(`${redirectPath}/`);
+  </script>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: #000;
+      color: #fff;
+    }
+    h1 {
+      margin-top: 50px;
+      color: #5CDED3;
+    }
+    p {
+      margin: 20px 0;
+    }
+    a {
+      color: #5CDED3;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Page Not Found</h1>
+  <p>Redirecting to the home page...</p>
+  <p>If you are not redirected automatically, <a href="/3D-Portfolio/">click here</a>.</p>
+</body>
+</html> 
