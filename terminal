@@ -1,0 +1,2 @@
+mkdir -p public/shaders
+cp src/shaders/* public/shaders/ 
