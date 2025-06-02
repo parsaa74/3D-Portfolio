@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // Added GLTFLoader import
-import { TextureLoader } from "three"; // Add TextureLoader import
+import { TextureLoader, Vector3, Quaternion } from "three"; // Add TextureLoader import
 import { BaseEnvironment } from "./BaseEnvironment";
 import { MapSystem } from "../../../systems/map/MapSystem";
 import { SeveranceMaterials } from "../materials/SeveranceMaterials";
@@ -14,7 +14,7 @@ import {
 } from "../../../systems/corridorSystem";
 import { CORRIDOR_MAP } from "../../../systems/map/SeveranceCorridorMap.js";
 import PerformanceArtLetterGenerator from '../performance/PerformanceArtLetterGenerator.js';
-import { getAssetPath } from '../../../utils/assetPath.js';
+import { getAssetPath, loadWithFallbacks, loadWithFallbacksAsync } from '../../../utils/assetPath.js';
 
 
 const DOORWAY_WIDTH = 1.8; // Widened from 1.2 for a more spacious doorframe
@@ -6648,22 +6648,22 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load chair.gltf
     const chairGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/models/chair.glb'), resolve, undefined, reject);
+      loadWithFallbacks(loader, '/models/chair.glb', resolve, undefined, reject);
     });
     // Load lamp.gltf
     const lampGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/assets/lamp.glb'), resolve, undefined, reject);
+      loadWithFallbacks(loader, '/assets/lamp.glb', resolve, undefined, reject);
     });
     // Load projector.glb
     const projectorGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/assets/projector.glb'), resolve, undefined, reject);
+      loadWithFallbacks(loader, '/assets/projector.glb', resolve, undefined, reject);
     });
     const projectorScreenGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/assets/projector_screen.glb'), resolve, undefined, reject);
+      loadWithFallbacks(loader, '/assets/projector_screen.glb', resolve, undefined, reject);
     });
     
     // Load poster textures
-    const poster1Texture = await textureLoader.loadAsync(getAssetPath('/assets/textures/posters/poster1.jpg'));
+    const poster1Texture = await loadWithFallbacksAsync(textureLoader, '/assets/textures/posters/poster1.jpg');
     // const poster2Texture = await textureLoader.loadAsync('/assets/textures/posters/Severance_Photo_0201.jpg');
 
     const chairMesh = chairGltf.scene;
@@ -7079,7 +7079,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     );
     // Load all still textures asynchronously
     const stillTextures = await Promise.all(
-      stillFilenames.map(filename => textureLoader.loadAsync(getAssetPath(stillBasePath + filename)))
+      stillFilenames.map(filename => loadWithFallbacksAsync(textureLoader, stillBasePath + filename))
     );
     const collage = createFramedCollage(stillTextures, collagePosition, stillRotation);
     interiorGroup.add(collage);
@@ -7148,7 +7148,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load all favorite film textures
     const favoriteFilmTextures = await Promise.all(
-      favoriteFilms.map(film => textureLoader.loadAsync(getAssetPath(`/assets/images/film/favorite films/${film.filename}`)))
+      favoriteFilms.map(film => loadWithFallbacksAsync(textureLoader, `/assets/images/film/favorite films/${film.filename}`))
     );
     
     // Define right wall position and rotation for gallery
@@ -8968,11 +8968,33 @@ export class SeveranceEnvironment extends BaseEnvironment {
    */
   async _loadShaderFile(path) {
     try {
-      const response = await fetch(path);
-      if (!response.ok) {
-        throw new Error(`Failed to load shader at ${path}: ${response.status} ${response.statusText}`);
+      // Try multiple paths for the shader file
+      const alternativePaths = [
+        path,
+        getAssetPath(path),
+        path.replace('./src/shaders/', '/shaders/'),
+        getAssetPath(path.replace('./src/shaders/', '/shaders/')),
+        path.replace('./src/', '/'),
+        getAssetPath(path.replace('./src/', '/')),
+      ];
+      
+      // Try each path until one succeeds
+      for (const attemptPath of alternativePaths) {
+        try {
+          console.log(`Attempting to load shader from: ${attemptPath}`);
+          const response = await fetch(attemptPath);
+          if (response.ok) {
+            console.log(`Successfully loaded shader from: ${attemptPath}`);
+            return await response.text();
+          }
+        } catch (innerError) {
+          console.warn(`Failed to load shader from ${attemptPath}:`, innerError);
+          // Continue to next path
+        }
       }
-      return await response.text();
+      
+      // If we get here, all paths failed
+      throw new Error(`Failed to load shader from any path variant of ${path}`);
     } catch (error) {
       console.error(`Error loading shader file ${path}:`, error);
       throw error;
