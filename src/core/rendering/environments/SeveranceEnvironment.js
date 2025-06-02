@@ -6648,7 +6648,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load chair.gltf
     const chairGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/chair.glb'), resolve, undefined, reject);
+      loader.load(getAssetPath('/models/chair.glb'), resolve, undefined, reject);
     });
     // Load lamp.gltf
     const lampGltf = await new Promise((resolve, reject) => {
