@@ -6652,14 +6652,14 @@ export class SeveranceEnvironment extends BaseEnvironment {
     });
     // Load lamp.gltf
     const lampGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/lamp.glb'), resolve, undefined, reject);
+      loader.load(getAssetPath('/assets/lamp.glb'), resolve, undefined, reject);
     });
     // Load projector.glb
     const projectorGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/projector.glb'), resolve, undefined, reject);
+      loader.load(getAssetPath('/assets/projector.glb'), resolve, undefined, reject);
     });
     const projectorScreenGltf = await new Promise((resolve, reject) => {
-      loader.load(getAssetPath('/projector_screen.glb'), resolve, undefined, reject);
+      loader.load(getAssetPath('/assets/projector_screen.glb'), resolve, undefined, reject);
     });
     
     // Load poster textures
