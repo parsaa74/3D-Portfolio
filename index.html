@@ -339,31 +339,6 @@
     };
   </script>
   
-  <!-- Shader path fix - Intercept fetch requests to fix shader paths -->
-  <script>
-    // Store the original fetch function
-    const originalFetch = window.fetch;
-    
-    // Override fetch to intercept shader file requests
-    window.fetch = function(url, options) {
-      // Only intercept string URLs that are looking for shader files
-      if (typeof url === 'string') {
-        // Check if this is a shader file request with incorrect path
-        if (url.includes('src/shaders/') || url.includes('public/src/shaders/')) {
-          // Fix the path to point to the correct location
-          const fixedUrl = url.replace('./src/shaders/', './shaders/')
-                             .replace('./public/src/shaders/', './shaders/')
-                             .replace('/src/shaders/', '/shaders/');
-          
-          console.log(`Shader path fixed: ${url} → ${fixedUrl}`);
-          return originalFetch(fixedUrl, options);
-        }
-      }
-      
-      // For all other requests, use the original fetch
-      return originalFetch(url, options);
-    };
-  </script>
   
   
   
