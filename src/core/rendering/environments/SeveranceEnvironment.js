@@ -3968,13 +3968,19 @@ export class SeveranceEnvironment extends BaseEnvironment {
     if (bulbMeshes.length === 0) {
       // Try fallback: find mesh with high white/emissive material
       lampMesh.traverse((child) => {
-        if (child.isMesh && child.material && child.material.emissive && child.material.emissive.getHex() === 0xffffff) {
-          bulbMeshes.push(child);
+        if (child.isMesh && child.material) {
+          // Look for bulb meshes by name or emissive property
+          const isLightBulb = child.name.toLowerCase().includes('bulb') || 
+                             child.name.toLowerCase().includes('light') ||
+                             (child.material.emissive && child.material.emissive.getHex() === 0xffffff);
+          if (isLightBulb) {
+            bulbMeshes.push(child);
+          }
         }
       });
     }
     if (bulbMeshes.length === 0) {
-      console.warn('[Lamp Shader] No bulb mesh found in lamp.glb. No shader applied.');
+      console.log('[Lamp Shader] No bulb mesh found in lamp.glb. Using standard material.');
     } else {
       const lampShaderMat = createLampLightShaderMaterial();
       bulbMeshes.forEach(bulb => {
@@ -4679,7 +4685,9 @@ export class SeveranceEnvironment extends BaseEnvironment {
             const textureLoader = new THREE.TextureLoader();
             
             // Create the appropriate path based on posterTitle
-            const basePath = getAssetPath(`Images/performance/solo performances/${posterTitle.toLowerCase()}/`);
+            // Normalize title: convert to lowercase and replace spaces with hyphens
+            const normalizedTitle = posterTitle.toLowerCase().replace(/ /g, '-');
+            const basePath = getAssetPath(`Images/performance/solo-performances/${normalizedTitle}/`);
             console.log(`Looking for images at path: ${basePath}`);
             
             for (let i = 0; i < count; i++) {
@@ -4716,25 +4724,28 @@ export class SeveranceEnvironment extends BaseEnvironment {
                 // Get appropriate image filename based on gallery type
                 let imageName = null;
                 
-                if (posterTitle === 'Circle of Confusion') {
-                    // Files are named: photo_2025-05-01_17-25-22.jpg, photo_2025-05-01_17-25-22 (2).jpg, etc.
-                    // Note: No (1) file, starts with no suffix then goes to (2)
-                    if (i === 0) {
-                        imageName = 'photo_2025-05-01_17-25-22.jpg';
-                    } else if (i < 6) {
-                        // Use (2) through (6) for indexes 1-5
-                        imageName = `photo_2025-05-01_17-25-22 (${i+1}).jpg`;
-                    }
-                } else if (posterTitle === 'Dissolve') {
-                    // Files are named: سی پرفورمنس ،سی هنرمند، سی روز 3.jpg, سی پرفورمنس ،سی هنرمند، سی روز 3 (1).jpg, etc.
-                    if (i === 0) {
-                        imageName = 'سی پرفورمنس ،سی هنرمند، سی روز 3.jpg';
-                    } else if (i < 18) { // We have up to (18)
-                        imageName = `سی پرفورمنس ،سی هنرمند، سی روز 3 (${i}).jpg`;
-                    }
-                } else if (posterTitle === 'Friends') {
-                    // Files have various names, map them explicitly
-                    const friendsImages = [
+                // Define simple image arrays for each gallery
+                const imageArrays = {
+                    'Circle of Confusion': [
+                        'photo_2025-05-01_17-25-22.jpg',
+                        'photo_2025-05-01_17-25-22_(2).jpg',
+                        'photo_2025-05-01_17-25-22_(3).jpg',
+                        'photo_2025-05-01_17-25-22_(4).jpg',
+                        'photo_2025-05-01_17-25-22_(5).jpg',
+                        'photo_2025-05-01_17-25-22_(6).jpg'
+                    ],
+                    'Dissolve': [
+                        'dissolve-base.jpg',
+                        'dissolve-1.jpg',
+                        'dissolve-2.jpg',
+                        'dissolve-3.jpg',
+                        'dissolve-4.jpg',
+                        'dissolve-5.jpg',
+                        'dissolve-6.jpg',
+                        'dissolve-7.jpg',
+                        'dissolve-8.jpg'
+                    ],
+                    'Friends': [
                         'photo_2025-05-01_17-29-01.jpg',
                         'M2RjNjJmMjZk.jpg',
                         'NzIwYjJkZmQ1.jpg',
@@ -4743,15 +4754,13 @@ export class SeveranceEnvironment extends BaseEnvironment {
                         'MGE1ZjJiODcw.jpg',
                         'YmQ4YmZlY2U4.jpg',
                         'N2MyYTc3OWFj.jpg',
-                        'NDc1MWY3OGM2.jpg',
-                        'M2MwYmIyMzY4.jpg',
-                        'NDc2M2NhOTc3.jpg',
-                        'MzkyNmRjZDFm.jpg',
-                        'ZDY5ZmU5Njg2.jpg'
-                    ];
-                    if (i < friendsImages.length) {
-                        imageName = friendsImages[i];
-                    }
+                        'NDc1MWY3OGM2.jpg'
+                    ]
+                };
+                
+                const availableImages = imageArrays[posterTitle] || [];
+                if (i < availableImages.length) {
+                    imageName = availableImages[i];
                 }
                 
                 let imageMaterial;
@@ -6334,7 +6343,8 @@ function createKrugerTextTexture(text, { width = 1024, height = 256, bgColor = '
 // Helper function to get image paths for a given poster title
 const getArtPosterImagePaths = (title) => {
   // Path that matches the known directory structure
-  const correctBasePath = getAssetPath(`assets/Images/performance/solo performances/${title.toLowerCase()}/`); 
+      const normalizedTitle = title.toLowerCase().replace(/ /g, '-');
+    const correctBasePath = getAssetPath(`assets/Images/performance/solo-performances/${normalizedTitle}/`); 
   const urls = [];
   let count = 0;
 
@@ -6347,22 +6357,30 @@ const getArtPosterImagePaths = (title) => {
   }
 
   if (title === 'Circle of Confusion') {
-    count = 6; 
-    const baseFileName = 'photo_2025-05-01_17-25-22';
-    for (let i = 0; i < count; i++) {
-      if (i === 0) {
-        pushUrl(`${correctBasePath}${baseFileName}.jpg`);
-      } else {
-        pushUrl(`${correctBasePath}${baseFileName} (${i + 1}).jpg`);
-      }
-    }
+    // Use the actual file names that exist in the directory
+    const circleImages = [
+      'photo_2025-05-01_17-25-22.jpg',
+      'photo_2025-05-01_17-25-22_(2).jpg',
+      'photo_2025-05-01_17-25-22_(3).jpg', 
+      'photo_2025-05-01_17-25-22_(4).jpg',
+      'photo_2025-05-01_17-25-22_(5).jpg',
+      'photo_2025-05-01_17-25-22_(6).jpg'
+    ];
+    circleImages.forEach(imgName => {
+      pushUrl(`${correctBasePath}${imgName}`);
+    });
   } else if (title === 'Dissolve') {
-    count = 14; // Reduce to 14 images based on error messages
-    const baseFileName = 'سی پرفورمنس ،سی هنرمند، سی روز 3'; // Changed to use spaces instead of plus signs
-    pushUrl(`${correctBasePath}${baseFileName}.jpg`); 
-    for (let i = 1; i < count; i++) { 
-      pushUrl(`${correctBasePath}${baseFileName} (${i}).jpg`);
-    }
+    // Use the actual file names that exist in the directory
+    const dissolveImages = [
+      'dissolve-base.jpg', 'dissolve-1.jpg', 'dissolve-2.jpg', 'dissolve-3.jpg',
+      'dissolve-4.jpg', 'dissolve-5.jpg', 'dissolve-6.jpg', 'dissolve-7.jpg',
+      'dissolve-8.jpg', 'dissolve-9.jpg', 'dissolve-10.jpg', 'dissolve-11.jpg',
+      'dissolve-12.jpg', 'dissolve-13.jpg', 'dissolve-14.jpg', 'dissolve-15.jpg',
+      'dissolve-16.jpg', 'dissolve-17.jpg', 'dissolve-18.jpg'
+    ];
+    dissolveImages.forEach(imgName => {
+      pushUrl(`${correctBasePath}${imgName}`);
+    });
   } else if (title === 'Friends') {
     const friendsImages = [
       'photo_2025-05-01_17-29-01.jpg', 'M2RjNjJmMjZk.jpg', 'NzIwYjJkZmQ1.jpg',

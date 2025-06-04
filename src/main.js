@@ -348,21 +348,36 @@ class SeveranceApp {
         }
       }
       
-      // Always try to resume audio context on key press
-      if (this.audioManager) {
-        this.audioManager.resumeAudioContext().catch(err => {
-          // Silent catch - no need to log every time
-        });
-      }
+      // Setup one-time audio context initialization with user gesture
+      this.tryResumeAudio();
     });
     
-    // Also resume audio context on any click
-    document.addEventListener("click", () => {
-      if (this.audioManager) {
-        this.audioManager.resumeAudioContext().catch(err => {
-          // Silent catch - no need to log every time
-        });
+    // Setup comprehensive audio context initialization
+    this.setupAudioContextInitialization();
+  }
+
+  setupAudioContextInitialization() {
+    let audioContextInitialized = false;
+    
+    this.tryResumeAudio = () => {
+      if (!audioContextInitialized && this.audioManager) {
+        this.audioManager.resumeAudioContext()
+          .then(success => {
+            if (success) {
+              audioContextInitialized = true;
+              console.log("AudioContext successfully initialized after user gesture");
+            }
+          })
+          .catch(err => {
+            // Silent catch - AudioContext failures are expected until user gesture
+          });
       }
+    };
+
+    // Try to initialize audio on various user interactions
+    const events = ['click', 'keydown', 'touchstart', 'pointerdown'];
+    events.forEach(eventType => {
+      document.addEventListener(eventType, this.tryResumeAudio, { once: false });
     });
   }
 
@@ -2602,14 +2617,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let isDragging = false;
   let offsetX, offsetY;
   
-  document.getElementById('dev-terminal-header').addEventListener('mousedown', function(e) {
-    // Don't drag if clicking controls
-    if (e.target.classList.contains('terminal-btn')) return;
-    
-    isDragging = true;
-    offsetX = e.clientX - overlay.getBoundingClientRect().left;
-    offsetY = e.clientY - overlay.getBoundingClientRect().top;
-  });
+  const terminalHeader = document.getElementById('dev-terminal-header');
+  if (terminalHeader) {
+    terminalHeader.addEventListener('mousedown', function(e) {
+      // Don't drag if clicking controls
+      if (e.target.classList.contains('terminal-btn')) return;
+      
+      isDragging = true;
+      offsetX = e.clientX - overlay.getBoundingClientRect().left;
+      offsetY = e.clientY - overlay.getBoundingClientRect().top;
+    });
+  }
   
   document.addEventListener('mousemove', function(e) {
     if (!isDragging) return;

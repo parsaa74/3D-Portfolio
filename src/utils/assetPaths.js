@@ -16,7 +16,7 @@ export function getAssetPath(path) {
     return `/3D-Portfolio/${cleanPath}`;
   }
   
-  // In development, use paths relative to the root
+  // In development, serve directly from root (no base path)
   return `/${cleanPath}`;
 }
 
@@ -35,7 +35,8 @@ export function getTexturePath(filename) {
  * @returns {string} - The complete shader path
  */
 export function getShaderPath(filename) {
-  return getAssetPath(`src/shaders/${filename}`);
+  // Shaders are in public/shaders, not src/shaders
+  return getAssetPath(`shaders/${filename}`);
 }
 
 /**

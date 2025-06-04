@@ -195,9 +195,11 @@ export class SeveranceMaterials {
             return (x & (x - 1)) === 0;
           }
           if (!isPowerOfTwo(texture.image.width) || !isPowerOfTwo(texture.image.height)) {
-            console.warn(`Texture ${name} (${path}) is not power-of-two. This may impact performance.`);
+            // Silently handle non-power-of-two textures for better performance
             texture.generateMipmaps = false;
             texture.minFilter = THREE.LinearFilter;
+            texture.wrapS = THREE.ClampToEdgeWrap;
+            texture.wrapT = THREE.ClampToEdgeWrap;
           } else {
             texture.generateMipmaps = true;
             texture.minFilter = THREE.LinearMipmapLinearFilter;

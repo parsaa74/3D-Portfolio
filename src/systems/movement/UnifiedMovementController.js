@@ -601,14 +601,14 @@ export class UnifiedMovementController {
    * @private - Renamed to indicate internal use
    */
   _checkCollision(moveDelta, recursionDepth = 0) {
-    if (recursionDepth >= this.collisionCheckSteps) {
+    if (recursionDepth >= Math.min(this.collisionCheckSteps, 3)) {
       console.warn("[Collision] Max recursion depth reached, stopping movement.");
       return new THREE.Vector3(0, 0, 0); // Stop movement if too many bounces
     }
 
     const moveLength = moveDelta.length();
-    if (moveLength < 0.001) {
-      return moveDelta; // Not moving significantly
+    if (moveLength < 0.005 || recursionDepth > 0 && moveLength < 0.01) {
+      return moveDelta; // Not moving significantly or small slide movement
     }
 
     if (!this.environment || typeof this.environment.getCollidableWalls !== 'function') {

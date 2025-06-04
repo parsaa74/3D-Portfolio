@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 import { resolve } from "path";
 
-export default defineConfig({
-  base: "/3D-Portfolio/", // GitHub Pages repository name
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? "/3D-Portfolio/" : "/", // Only use base path in production
   build: {
     outDir: "dist",
     assetsDir: "assets",
@@ -21,4 +21,4 @@ export default defineConfig({
   },
   assetsInclude: ["**/*.glsl"],
   publicDir: "public",
-});
+}));
