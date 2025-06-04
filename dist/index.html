@@ -6,8 +6,7 @@
   <title>3D Portfolio</title>
   <link rel="icon" type="image/x-icon" href="/3D-Portfolio/favicon.ico">
 
-
-  <!-- Import main CSS -->
+  <!-- Vite will process and bundle CSS automatically when imported in JS -->
   <style>
     body {
       margin: 0;
@@ -198,37 +197,6 @@
       padding: 0 10px;
       font-size: 12px;
       color: #33ff33;
-      font-weight: bold;
-      justify-content: space-between;
-    }
-
-    #dev-terminal-title {
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    #dev-terminal-controls {
-      display: flex;
-    }
-
-    .terminal-btn {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      margin-left: 8px;
-      cursor: pointer;
-    }
-
-    .terminal-close {
-      background-color: #ff3b30;
-    }
-
-    .terminal-minimize {
-      background-color: #ffcc00;
-    }
-
-    .terminal-maximize {
-      background-color: #28cd41;
     }
 
     @keyframes blink-cursor {
@@ -236,33 +204,253 @@
       51%, 100% { opacity: 0; }
     }
 
-    .terminal-scan-line {
-      background: linear-gradient(
-        to bottom,
-        rgba(51, 255, 51, 0.03) 0%,
-        rgba(51, 255, 51, 0.02) 50%,
-        rgba(51, 255, 51, 0.01) 100%
-      );
+    .terminal-controls {
+      margin-left: auto;
+      display: flex;
+      gap: 5px;
+    }
+
+    .terminal-controls button {
+      width: 16px;
+      height: 16px;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .terminal-close {
+      background: #ff5f56;
+      color: #fff;
+    }
+
+    .terminal-minimize {
+      background: #ffbd2e;
+      color: #fff;
+    }
+
+    .terminal-maximize {
+      background: #27ca3f;
+      color: #fff;
+    }
+
+    #dev-terminal-overlay {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 800px;
+      height: 400px;
+      z-index: 10000;
+      display: none;
+    }
+
+    .interaction-button {
       position: absolute;
-      top: 25px;
+      width: 60px;
+      height: 60px;
+      background: rgba(92, 222, 211, 0.3);
+      border: 2px solid #5CDED3;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #5CDED3;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      animation: pulse-button 2s infinite;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s ease;
+      pointer-events: auto;
+    }
+
+    .interaction-button:hover {
+      background: rgba(92, 222, 211, 0.5);
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(92, 222, 211, 0.6);
+    }
+
+    @keyframes pulse-button {
+      0% { box-shadow: 0 0 0 0 rgba(92, 222, 211, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(92, 222, 211, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(92, 222, 211, 0); }
+    }
+
+    .poster-info-overlay {
+      position: fixed;
+      top: 0;
       left: 0;
       width: 100%;
-      height: calc(100% - 25px);
-      pointer-events: none;
-      z-index: 10;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 20000;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(10px);
     }
 
-    .terminal-command {
-      color: #33ff33;
+    .poster-info-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(16, 24, 32, 0.95);
+      border: 2px solid #5CDED3;
+      border-radius: 8px;
+      padding: 40px;
+      max-width: 80%;
+      max-height: 80%;
+      overflow-y: auto;
+      color: #e0e0e0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
-    .terminal-output {
-      color: #cccccc;
-      margin-bottom: 8px;
+    .poster-info-content h2 {
+      color: #5CDED3;
+      margin-top: 0;
+      font-size: 2em;
+      border-bottom: 1px solid #5CDED3;
+      padding-bottom: 10px;
     }
 
-    .terminal-error {
-      color: #ff3333;
+    .poster-info-content .close-button {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: #5CDED3;
+      font-size: 24px;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.3s ease;
+    }
+
+    .poster-info-content .close-button:hover {
+      background: rgba(92, 222, 211, 0.2);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Film overlay styles */
+    .film-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 20000;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .film-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(16, 24, 32, 0.98);
+      border: 2px solid #5CDED3;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 90%;
+      width: 800px;
+      max-height: 90%;
+      overflow-y: auto;
+      color: #e0e0e0;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .film-content h2 {
+      color: #5CDED3;
+      margin-top: 0;
+      font-size: 2.5em;
+      border-bottom: 2px solid #5CDED3;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .film-year {
+      color: #9ca3af;
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+
+    .film-cast {
+      color: #d1d5db;
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .film-role {
+      color: #5CDED3;
+      font-size: 1.1em;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .film-summary {
+      line-height: 1.6;
+      font-size: 1.05em;
+      color: #e0e0e0;
+      margin-bottom: 25px;
+    }
+
+    .film-link {
+      display: inline-block;
+      background: linear-gradient(135deg, #5CDED3, #4ade80);
+      color: #000;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+    }
+
+    .film-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(92, 222, 211, 0.4);
+    }
+
+    .film-content .close-button {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      background: none;
+      border: none;
+      color: #5CDED3;
+      font-size: 28px;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .film-content .close-button:hover {
+      background: rgba(92, 222, 211, 0.2);
+      transform: rotate(90deg);
     }
   </style>
 

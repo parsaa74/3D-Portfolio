@@ -4,6 +4,9 @@
  * @description A Three.js-powered recreation of the Lumon Industries office environment
  */
 
+// Import CSS styles for Vite to bundle
+import "./styles/main.css";
+
 import * as THREE from "three";
 import { SeveranceEnvironment } from "./core/rendering/environments/SeveranceEnvironment.js";
 import { GameLoop } from "@core/GameLoop";
