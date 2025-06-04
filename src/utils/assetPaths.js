@@ -12,7 +12,8 @@ export function getAssetPath(path) {
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   
   // In production (GitHub Pages), we need to include the base path
-  if (import.meta.env.PROD) {
+  // Use both PROD check and base URL detection for GitHub Pages
+  if (import.meta.env.PROD || import.meta.env.BASE_URL === '/3D-Portfolio/') {
     return `/3D-Portfolio/${cleanPath}`;
   }
   
