@@ -419,7 +419,7 @@ export class SeveranceMaterials {
       // Load wall shaders
       let wallVertexShader;
       try {
-        wallVertexShader = await this._loadShaderFile('/src/shaders/common/vertex.glsl');
+        wallVertexShader = await this._loadShaderFile(getShaderPath('common/vertex.glsl'));
         console.log('Successfully loaded wall vertex shader');
       } catch (error) {
         console.error('Failed to load wall vertex shader:', error);
@@ -428,7 +428,7 @@ export class SeveranceMaterials {
 
       let wallFragmentShader;
       try {
-        wallFragmentShader = await this._loadShaderFile('/src/shaders/wall.glsl');
+        wallFragmentShader = await this._loadShaderFile(getShaderPath('wall.glsl'));
         console.log('Successfully loaded wall fragment shader');
       } catch (error) {
         console.error('Failed to load wall fragment shader:', error);
@@ -467,7 +467,7 @@ export class SeveranceMaterials {
       // Load corridor shaders
       let corridorVertexShader;
       try {
-        corridorVertexShader = await this._loadShaderFile('/src/shaders/common/vertex.glsl');
+        corridorVertexShader = await this._loadShaderFile(getShaderPath('common/vertex.glsl'));
         console.log('Successfully loaded corridor vertex shader');
       } catch (error) {
         console.error('Failed to load corridor vertex shader:', error);
@@ -476,7 +476,7 @@ export class SeveranceMaterials {
 
       let corridorFragmentShader;
       try {
-        corridorFragmentShader = await this._loadShaderFile('/src/shaders/corridor.glsl');
+        corridorFragmentShader = await this._loadShaderFile(getShaderPath('corridor.glsl'));
         console.log('Successfully loaded corridor fragment shader');
       } catch (error) {
         console.error('Failed to load corridor fragment shader:', error);
@@ -516,7 +516,7 @@ export class SeveranceMaterials {
       // --- Add Tim Rodenbröker-inspired corridor wall shader ---
       let corridorWallVertexShader;
       try {
-        corridorWallVertexShader = await this._loadShaderFile('/src/shaders/common/vertex.glsl');
+        corridorWallVertexShader = await this._loadShaderFile(getShaderPath('common/vertex.glsl'));
         console.log('Successfully loaded corridor wall vertex shader');
       } catch (error) {
         console.error('Failed to load corridor wall vertex shader:', error);
@@ -524,7 +524,7 @@ export class SeveranceMaterials {
       }
       let corridorWallFragmentShader;
       try {
-        corridorWallFragmentShader = await this._loadShaderFile('/src/shaders/corridor_wall.glsl');
+        corridorWallFragmentShader = await this._loadShaderFile(getShaderPath('corridor_wall.glsl'));
         console.log('Successfully loaded corridor wall fragment shader');
       } catch (error) {
         console.error('Failed to load corridor wall fragment shader:', error);
@@ -561,7 +561,7 @@ export class SeveranceMaterials {
       // --- Add Twin Peaks-inspired zigzag corridor floor shader ---
       let corridorFloorVertexShader;
       try {
-        corridorFloorVertexShader = await this._loadShaderFile('/src/shaders/common/vertex.glsl');
+        corridorFloorVertexShader = await this._loadShaderFile(getShaderPath('common/vertex.glsl'));
         console.log('Successfully loaded corridor floor vertex shader');
       } catch (error) {
         console.error('Failed to load corridor floor vertex shader:', error);
@@ -569,7 +569,7 @@ export class SeveranceMaterials {
       }
       let corridorFloorFragmentShader;
       try {
-        corridorFloorFragmentShader = await this._loadShaderFile('/src/shaders/corridor_floor.glsl');
+        corridorFloorFragmentShader = await this._loadShaderFile(getShaderPath('corridor_floor.glsl'));
         console.log('Successfully loaded corridor floor fragment shader');
       } catch (error) {
         console.error('Failed to load corridor floor fragment shader:', error);
@@ -601,7 +601,7 @@ export class SeveranceMaterials {
       // --- Dreamy Night Sky Shader ---
       let skyVertexShader;
       try {
-        skyVertexShader = await this._loadShaderFile('/src/shaders/common/vertex.glsl');
+        skyVertexShader = await this._loadShaderFile(getShaderPath('common/vertex.glsl'));
         console.log('Successfully loaded sky vertex shader');
       } catch (error) {
         console.error('Failed to load sky vertex shader:', error);
@@ -609,7 +609,7 @@ export class SeveranceMaterials {
       }
       let skyFragmentShader;
       try {
-        skyFragmentShader = await this._loadShaderFile('/src/shaders/sky_night_dreamy.glsl');
+        skyFragmentShader = await this._loadShaderFile(getShaderPath('sky_night_dreamy.glsl'));
         console.log('Successfully loaded dreamy night sky fragment shader');
       } catch (error) {
         console.error('Failed to load dreamy night sky fragment shader:', error);

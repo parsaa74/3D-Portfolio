@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // Fixed import path
 import { TextureLoader } from "three"; // Add TextureLoader import
 import { BaseEnvironment } from "./BaseEnvironment.js";
-import { getAssetPath, getTexturePath } from "@utils/assetPaths.js";
+import { getAssetPath, getTexturePath, getShaderPath } from "@utils/assetPaths.js";
 import { MapSystem } from "../../../systems/map/MapSystem.js";
 import { SeveranceMaterials } from "../materials/SeveranceMaterials.js";
 import { UnifiedMovementController } from "../../../systems/movement/UnifiedMovementController.js";
@@ -433,10 +433,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           // Use material system to load vertex shader instead of inline definition
           // This ensures we're following the project organization guidelines
           vertexShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/common/vertex.glsl"
+            getShaderPath("common/vertex.glsl")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/wall.glsl"
+            getShaderPath("wall.glsl")
           ),
           side: THREE.DoubleSide,
         });
@@ -484,10 +484,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
           },
           // Use material system to load vertex shader instead of inline definition
           vertexShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/common/vertex.glsl"
+            getShaderPath("common/vertex.glsl")
           ),
           fragmentShader: await this.materialSystem._loadShaderFile(
-            "/src/shaders/corridor.glsl"
+            getShaderPath("corridor.glsl")
           ),
           transparent: true,
           blending: THREE.AdditiveBlending,
