@@ -182,7 +182,7 @@ float curtainFolds(vec2 uv, float time) {
 }
 
 // Increase saturation of a color
-vec3 saturate(vec3 color, float amount) {
+vec3 adjustSaturation(vec3 color, float amount) {
     float luma = dot(color, vec3(0.299, 0.587, 0.114));
     return mix(vec3(luma), color, amount);
 }
@@ -217,7 +217,7 @@ void main() {
     // Minimal tone mapping to keep red strong
     color = color / (0.7 + color * 0.5);
     // Boost saturation
-    color = saturate(color, 1.05);
+    color = adjustSaturation(color, 1.05);
     // Darken the final color by 10%
     color *= 0.5;
     // No color boosting, preserve Twin Peaks Red hue

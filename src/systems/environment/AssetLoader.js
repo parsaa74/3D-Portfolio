@@ -1,8 +1,5 @@
-import * as THREE from "three";
-import { EventEmitter } from "events";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { getAssetPath } from '../../utils/assetPath.js';
+import { THREE, GLTFLoader, DRACOLoader } from "@utils/ThreeJSLoader.js";
+import { EventEmitter } from "@utils/EventEmitter";
 
 /**
  * Asset loading system for managing game assets
@@ -89,11 +86,11 @@ export class AssetLoader extends EventEmitter {
    */
   _loadTextures() {
     const texturesToLoad = {
-      wall: getAssetPath("/assets/textures/wall.jpg"),
-      floor: getAssetPath("/assets/textures/floor.jpg"),
-      ceiling: getAssetPath("/assets/textures/ceiling.jpg"),
-      door: getAssetPath("/assets/textures/door.jpg"),
-      trim: getAssetPath("/assets/textures/trim.jpg"),
+      wall: "/public/assets/textures/wall.jpg",
+      floor: "/public/assets/textures/floor.jpg",
+      ceiling: "/public/assets/textures/ceiling.jpg",
+      door: "/public/assets/textures/door.jpg",
+      trim: "/public/assets/textures/trim.jpg",
     };
 
     return Object.entries(texturesToLoad).map(([name, path]) => {
@@ -162,9 +159,9 @@ export class AssetLoader extends EventEmitter {
    */
   _loadModels() {
     const modelsToLoad = {
-      door: getAssetPath("/assets/models/door.json"),
-      chair: getAssetPath("/assets/models/chair.json"),
-      desk: getAssetPath("/assets/models/desk.json"),
+      door: "/assets/models/door.json",
+      chair: "/assets/models/chair.json",
+      desk: "/assets/models/desk.json",
     };
 
     return Object.entries(modelsToLoad).map(([name, path]) => {

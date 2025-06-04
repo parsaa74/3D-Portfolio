@@ -1,42 +1,33 @@
-// Corridor shader for Severance environment
-// Provides subtle lighting effects and enhances the clinical atmosphere
+// Corridor lighting shader for Severance environment
+// Creates the characteristic fluorescent lighting effect
 
 uniform vec3 lightColor;
-uniform float lightIntensity;
-uniform vec3 ambientLight;
+uniform float intensity = 0.7;
 uniform float time;
 
-varying vec3 vNormal;
-varying vec3 vPosition;
 varying vec2 vUv;
+varying vec3 vPosition;
 
 void main() {
-  // Calculate normal lighting
-  vec3 normal = normalize(vNormal);
-  vec3 viewDir = normalize(-vPosition);
+  // Distance from center of corridor (v coordinate)
+  float centerDistance = abs(vUv.y - 0.5) * 2.0;
   
-  // Calculate basic lighting
-  float diffuse = max(dot(normal, vec3(0.0, -1.0, 0.0)), 0.0);
+  // Create soft gradient for light falloff (scaled for narrower light)
+  float effectiveDistance = centerDistance * 1.25; // Scale distance
+  float gradient = 1.0 - pow(clamp(effectiveDistance, 0.0, 1.0), 2.0); // Clamp before pow
   
-  // Add flickering effect to simulate fluorescent lighting
-  float flicker = 1.0 + 0.02 * sin(time * 10.0) * sin(time * 5.0);
+  // Subtle flicker effect for fluorescent lighting
+  float flicker = 1.0 + sin(time * 3.0 + vUv.x * 5.0) * 0.03;
   
-  // Subtle edge glow effect for that clinical Severance look
-  float edgeGlow = pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0) * 0.5;
+  // Lighting panels at regular intervals
+  float panel = smoothstep(0.95, 1.0, sin(vUv.x * 30.0) * 0.5 + 0.5);
   
-  // Calculate final color
-  vec3 color = ambientLight + (lightColor * lightIntensity * diffuse * flicker);
+  // Combine effects
+  float brightness = gradient * intensity * flicker * (0.8 + panel * 0.2);
   
-  // Add subtle white-blue tint that's characteristic of the Severance offices
-  color = mix(color, vec3(0.9, 0.95, 1.0), 0.15);
+  // Apply light color
+  vec3 finalColor = lightColor * brightness;
   
-  // Add edge glow effect
-  color += vec3(0.9, 0.95, 1.0) * edgeGlow;
-  
-  // Add subtle vignette effect
-  float vignetteAmount = 0.8;
-  float vignette = smoothstep(0.0, vignetteAmount, length(vUv - 0.5) * 1.5);
-  color = mix(color, color * 0.6, vignette);
-  
-  gl_FragColor = vec4(color, 1.0);
+  // Output with opacity for light bleeding
+  gl_FragColor = vec4(finalColor, brightness * 0.7);
 } 

@@ -4,7 +4,6 @@
  * @description A Three.js-powered recreation of the Lumon Industries office environment
  */
 
-import "./styles/main.css";
 import * as THREE from "three";
 import { SeveranceEnvironment } from "./core/rendering/environments/SeveranceEnvironment.js";
 import { GameLoop } from "@core/GameLoop";
@@ -303,6 +302,35 @@ class SeveranceApp {
     
     // Add global interaction detector that doesn't depend on focus
     window.addEventListener("keydown", (e) => {
+      // Ceiling switching controls (global fallback)
+      if (e.key === "c" || e.key === "C") {
+        console.log("[Global] C key pressed - ceiling switch");
+        if (this.environment?.materialSystem) {
+          const success = this.environment.materialSystem.useProceduralCeiling();
+          if (success) {
+            console.log("✅ [Global] Switched to procedural ceiling");
+          }
+        }
+        e.preventDefault();
+        return;
+      }
+      
+      if (e.key === "v" || e.key === "V") {
+        console.log("[Global] V key pressed - ceiling switch");
+        if (this.environment?.materialSystem) {
+          const success = this.environment.materialSystem.useTexturedCeiling();
+          if (success) {
+            console.log("✅ [Global] Switched to textured ceiling");
+          }
+        }
+        e.preventDefault();
+        return;
+      }
+
+
+
+
+      
       if ((e.key === "e" || e.key === "E" || e.code === "KeyE") && 
           this.isGameStarted && 
           !this.gameState?.isPaused) {
@@ -515,12 +543,30 @@ class SeveranceApp {
       return;
     }
     // If poster modal is open, hide all poster E buttons and skip further interaction prompts
-    const modal = document.getElementById('poster-modal');
-    if (modal && modal.style.display !== 'none') {
+    const posterModal = document.getElementById('poster-modal');
+    if (posterModal && posterModal.style.display !== 'none') {
       if (this.environment && Array.isArray(this.environment._customWatchInteractables)) {
         for (const posterMesh of this.environment._customWatchInteractables) {
           if (posterMesh && posterMesh.userData && posterMesh.userData.eButtonMesh) {
             posterMesh.userData.eButtonMesh.visible = false;
+          }
+        }
+      }
+      // Also hide the 2D prompt if modal is open
+      const promptElement = document.getElementById("interaction-prompt");
+      if (promptElement) {
+        promptElement.style.display = "none";
+      }
+      return;
+    }
+
+    // If node info modal is open, hide all node E buttons and skip further interaction prompts
+    const nodeModal = document.getElementById('node-info-modal');
+    if (nodeModal && nodeModal.style.display !== 'none') {
+      if (this.environment && Array.isArray(this.environment._nodeInfoInteractables)) {
+        for (const nodeMesh of this.environment._nodeInfoInteractables) {
+          if (nodeMesh && nodeMesh.userData && nodeMesh.userData.eButtonMesh) {
+            nodeMesh.userData.eButtonMesh.visible = false;
           }
         }
       }
@@ -651,7 +697,7 @@ class SeveranceApp {
         this.showInteractionPrompt({ 
           name: "View Node Info", 
           position: worldPos,
-          promptText: "Press E for node info"
+          promptText: "Press E for info"
         });
         
         nearbyInteraction = true;
@@ -759,20 +805,22 @@ class SeveranceApp {
     promptElement.style.opacity = "1";
   }
 
-  _onKeyDown(e) {
+  async _onKeyDown(e) {
     // Only trigger if E is pressed, game is started, and not paused
     if (!this.isGameStarted || this.gameState?.isPaused) {
       console.log("[DEBUG] Ignoring keydown, game not started or paused");
       return;
     }
     
+
+
     if (e.key === "e" || e.key === "E" || e.code === "KeyE") {
       console.log("[Main] E key pressed, checking for interactions");
       
       // Check for node interaction first
       if (this.currentNodeInteractable) {
         console.log("[DEBUG] Attempting node interaction with:", this.currentNodeInteractable.userData.nodeType);
-        this.handleNodeInfoInteraction(this.currentNodeInteractable);
+        await this.handleNodeInfoInteraction(this.currentNodeInteractable);
         e.preventDefault();
         return;
       }
@@ -1454,12 +1502,24 @@ class SeveranceApp {
     }
   }
 
-  handleNodeInfoInteraction(nodeMesh) {
+  async handleNodeInfoInteraction(nodeMesh) {
     // Debug: log to console
     console.log("[DEBUG] Node info interaction triggered", nodeMesh.userData.nodeType);
     if (!nodeMesh || !nodeMesh.userData) {
       console.error("[ERROR] Invalid node mesh for interaction");
       return;
+    }
+
+    // Hide the interaction prompt
+    const promptElement = document.getElementById("interaction-prompt");
+    if (promptElement) {
+      promptElement.style.display = "none";
+    }
+
+    // Hide the E button mesh
+    const eButtonMesh = nodeMesh.userData.eButtonMesh;
+    if (eButtonMesh) {
+      eButtonMesh.visible = false;
     }
 
     // Show a modal overlay with node info
@@ -1473,24 +1533,22 @@ class SeveranceApp {
             <h2 id="node-modal-title"></h2>
           </div>
           <div class="modal-body">
-            <div class="node-visual">
-              <div class="node-sphere"></div>
-              <div class="node-glow"></div>
-            </div>
             <div class="info-container">
               <div id="node-modal-info-wrapper" class="info-wrapper">
                 <p id="node-modal-info"></p>
-                <div id="node-modal-link-wrapper" class="link-wrapper">
-                  <a id="node-modal-link" href="#" target="_blank" rel="noopener noreferrer">
-                    <span class="link-text">Explore Further</span>
-                    <span class="link-arrow">→</span>
-                  </a>
-                </div>
+              </div>
+              <div id="node-modal-link-wrapper" class="link-wrapper">
+                <a id="node-modal-link" href="#" target="_blank" rel="noopener noreferrer">
+                  <span class="link-text">Explore Further</span>
+                  <span class="link-arrow">→</span>
+                </a>
               </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button id="node-modal-close">Close</button>
+            <div class="footer-instructions">
+              <span class="key-instruction">Press <kbd>E</kbd> or <kbd>ESC</kbd> to close</span>
+            </div>
           </div>
         </div>
       `;
@@ -1537,44 +1595,12 @@ class SeveranceApp {
             overflow: hidden;
             gap: 1.5rem;
           }
-          .node-visual {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            height: 120px;
-            margin: 1rem 0;
-          }
-          .node-sphere {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #5CDED3, #4FC3F7);
-            box-shadow: 0 0 30px rgba(92, 222, 211, 0.6);
-            animation: nodeGlow 2s ease-in-out infinite alternate;
-            position: relative;
-            z-index: 2;
-          }
-          .node-glow {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(92, 222, 211, 0.3) 0%, transparent 70%);
-            animation: nodePulse 3s ease-in-out infinite;
-          }
-          @keyframes nodeGlow {
-            from { box-shadow: 0 0 30px rgba(92, 222, 211, 0.6); }
-            to { box-shadow: 0 0 50px rgba(92, 222, 211, 0.9); }
-          }
-          @keyframes nodePulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-          }
+
           .info-container {
             flex: 1;
             display: flex;
             flex-direction: column;
+            min-height: 0; /* Allow flex child to shrink below content size */
           }
           .info-wrapper {
             flex: 1;
@@ -1582,6 +1608,7 @@ class SeveranceApp {
             padding-right: 10px;
             scrollbar-width: thin;
             scrollbar-color: #5CDED3 #181818;
+            min-height: 0; /* Allow flex child to shrink below content size */
           }
           .info-wrapper::-webkit-scrollbar {
             width: 6px;
@@ -1594,19 +1621,21 @@ class SeveranceApp {
             margin-top: 1.5rem;
             padding-top: 1rem;
             border-top: 1px solid rgba(92, 222, 211, 0.3);
+            flex-shrink: 0; /* Prevent link wrapper from shrinking */
           }
           .link-wrapper a {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem;
             color: #5CDED3;
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem;
             border: 1px solid rgba(92, 222, 211, 0.5);
-            border-radius: 6px;
+            border-radius: 4px;
             background: rgba(92, 222, 211, 0.1);
+            font-size: 0.9rem;
           }
           .link-wrapper a:hover {
             background: rgba(92, 222, 211, 0.2);
@@ -1629,23 +1658,32 @@ class SeveranceApp {
             line-height: 1.6;
             font-size: 1rem;
           }
-          .modal-footer button {
-            margin-top: 1.5rem;
-            background: #5CDED3;
-            color: #000;
-            border: none;
-            border-radius: 6px;
-            padding: 0.75rem 2rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
+          .footer-instructions {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(92, 222, 211, 0.1);
+            border: 1px solid rgba(92, 222, 211, 0.3);
+            border-radius: 4px;
           }
-          .modal-footer button:hover {
-            background: #fff;
-            transform: scale(1.02);
+          .key-instruction {
+            color: #5CDED3;
+            font-size: 0.8rem;
+            font-weight: 400;
           }
+          .key-instruction kbd {
+            background: rgba(92, 222, 211, 0.2);
+            color: #fff;
+            border: 1px solid rgba(92, 222, 211, 0.5);
+            border-radius: 2px;
+            padding: 0.2rem 0.4rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin: 0 0.2rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+          }
+
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -1663,36 +1701,94 @@ class SeveranceApp {
 
     // Populate modal content
     try {
-      const title = `${nodeMesh.userData.nodeType.charAt(0).toUpperCase()}${nodeMesh.userData.nodeType.slice(1)} Node`;
+      // Small delay to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 10));
+      // Create custom titles for specific node types
+      let title;
+      switch (nodeMesh.userData.nodeType) {
+        case 'toys':
+          title = 'Philosophical Toys';
+          break;
+        case 'biome':
+          title = 'Semantic Biome';
+          break;
+        case 'personal':
+          title = 'Personal Portfolio';
+          break;
+        case 'german_art':
+          title = 'German Art Schools';
+          break;
+        default:
+          title = `${nodeMesh.userData.nodeType.charAt(0).toUpperCase()}${nodeMesh.userData.nodeType.slice(1)} Node`;
+      }
       document.getElementById('node-modal-title').textContent = title;
       document.getElementById('node-modal-info').textContent = nodeMesh.userData.infoContent || 'No information available for this node.';
       
       // Handle link if provided
       const linkElement = document.getElementById('node-modal-link');
       const linkWrapper = document.getElementById('node-modal-link-wrapper');
-      if (nodeMesh.userData.link) {
+      const linkText = modal.querySelector('.link-text');
+      
+      console.log('[DEBUG] Link processing:', {
+        link: nodeMesh.userData.link,
+        linkElement: !!linkElement,
+        linkWrapper: !!linkWrapper,
+        linkText: !!linkText,
+        nodeType: nodeMesh.userData.nodeType
+      });
+      
+      if (nodeMesh.userData.link && linkElement && linkWrapper && linkText) {
         linkElement.href = nodeMesh.userData.link;
+        
+        // Customize link text based on node type
+        switch (nodeMesh.userData.nodeType) {
+          case 'toys':
+            linkText.textContent = 'Explore Philosophical Toys';
+            break;
+          case 'biome':
+            linkText.textContent = 'Enter the Semantic Biome';
+            break;
+          case 'personal':
+            linkText.textContent = 'Visit Personal Portfolio';
+            break;
+          case 'german_art':
+            linkText.textContent = 'Discover German Art Schools';
+            break;
+          default:
+            linkText.textContent = 'Explore Further';
+        }
+        
         linkWrapper.style.display = 'block';
+        console.log('[DEBUG] Link configured and shown');
       } else {
-        linkWrapper.style.display = 'none';
+        if (linkWrapper) {
+          linkWrapper.style.display = 'none';
+        }
+        console.log('[DEBUG] Link hidden or elements missing');
       }
 
-      // Close button handler
-      const closeBtn = document.getElementById('node-modal-close');
+      // Close handler for keyboard shortcuts
       const closeHandler = () => {
         modal.style.display = 'none';
-        closeBtn.removeEventListener('click', closeHandler);
         document.removeEventListener('keydown', escHandler);
+        
+        // Clear current node interactable to force a fresh check
+        this.currentNodeInteractable = null;
+        
         // Re-enable movement
         if (this.movementController && typeof this.movementController.enableMovement === 'function') {
           this.movementController.enableMovement();
         }
+        
+        // Check for interactions again to restore prompt if still in range
+        setTimeout(() => {
+          this.checkForInteractions();
+        }, 100);
       };
-      closeBtn.addEventListener('click', closeHandler);
 
-      // ESC key handler
+      // ESC and E key handler
       const escHandler = (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' || event.key === 'e' || event.key === 'E') {
           closeHandler();
         }
       };
@@ -1795,7 +1891,11 @@ class SeveranceApp {
     if (threeContainer) {
       threeContainer.style.display = "block";
     }
+    
+
   }
+  
+
 
   // Add new method to show start screen
   showStartScreen() {
@@ -1909,7 +2009,10 @@ class SeveranceApp {
     if (this.environment?.gameState) {
       this.environment.gameState.isPlaying = false;
     }
-    // Force resize for cinema scope
+    
+    // Force resize for cinema scope - ensure isGameStarted is false
+    this.isGameStarted = false;
+    console.log("[DEBUG] Forcing cinema scope view...");
     if (typeof this.onWindowResize === 'function') {
       this.onWindowResize();
     }
@@ -1931,12 +2034,24 @@ class SeveranceApp {
         .catch(err => console.error("Error resuming AudioContext:", err));
     }
     
-    // Set game state
+    // Set game state FIRST - this is critical for onWindowResize to work correctly
     this.isGameStarted = true; // App-level flag
     if (this.environment?.gameState) {
       this.environment.gameState.isPlaying = true; // Environment-level flag
     }
 
+    // Force resize to fullscreen immediately after setting game state
+    console.log("[DEBUG] Forcing fullscreen transition...");
+    if (typeof this.onWindowResize === 'function') {
+      this.onWindowResize();
+    }
+
+    // Hide the start screen
+    const startScreen = document.getElementById("start-screen");
+    if (startScreen) {
+      startScreen.remove();
+    }
+    
     // Explicitly enable player movement
     if (this.movementController && typeof this.movementController.enableMovement === 'function') {
       this.movementController.enableMovement(); // This sets window.playerCanMove = true
@@ -1950,14 +2065,6 @@ class SeveranceApp {
     if (this.movementController) {
       this.movementController._firstMouseMove = true;
     }
-
-    // Hide the start screen
-    const startScreen = document.getElementById("start-screen");
-    if (startScreen) {
-      startScreen.remove();
-    }
-    // Remove any lingering keydown event for starting
-    // document.removeEventListener("keydown", this.startGame); // Already handled by { once: true } or manual removal in showStartScreen
 
     // Request pointer lock
     const threeContainer = document.getElementById('three-container');
@@ -1979,10 +2086,13 @@ class SeveranceApp {
     // Debug log
     console.log(`Game started: isPlaying=${this.environment?.gameState?.isPlaying}, playerCanMove=${window.playerCanMove}`);
     
-    // Force resize for fullscreen
-    if (typeof this.onWindowResize === 'function') {
-      this.onWindowResize();
-    }
+    // Force resize once more to ensure fullscreen transition is complete
+    setTimeout(() => {
+      if (typeof this.onWindowResize === 'function') {
+        this.onWindowResize();
+        console.log("[DEBUG] Final fullscreen resize completed");
+      }
+    }, 100);
   }
 
   // Add a debug method to verify E button positions
@@ -2057,6 +2167,8 @@ class SeveranceApp {
     }
   }
 
+
+
   // Debug: Teleport to film room poster for testing
   teleportToFilmRoom(retryCount = 0) {
     if (
@@ -2109,6 +2221,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Always export app for interaction handlers
   window.app = app;
+  window.severanceApp = app; // Also export as severanceApp for ceiling tests
+  
+
 
   // --- Animation loop for interaction checks ---
   function interactionLoop() {

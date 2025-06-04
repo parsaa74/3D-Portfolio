@@ -1,33 +1,71 @@
-# dependencies
-node_modules
-.pnp
+# Dependencies
+node_modules/
+.pnp/
 .pnp.js
 
-# testing
-/coverage
+# Build output
+dist/
+build/
 
-# production
-/dist
-/build
-
-# misc
-.DS_Store
+# Development
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# logs
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+logs/
+*.log
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw? 
+# System files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+# AI/MCP Related Content - Hidden for Portfolio
+blender-mcp/
+backup-files/
+docs/
+scripts/
+path=src/
+
+# Development Documentation
+CORRIDOR_VISION.md
+CODEBASE_CLEANUP.md
+PROJECT_OVERVIEW.md
+update-imports.sh
+
+# Blender Files (Development Assets)
+*.blend
+*.blend1
+
+# Large Development Assets
+severance_completed.blend
+untitled.blend
+untitled.blend1
+door.blend
+door.blend1
+
+# Test Configuration
+vitest.config.js
+
+# Development Images
+52bbahgze5w81.jpg
+Severance_Photo_0201.jpg 

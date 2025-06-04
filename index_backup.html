@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Severance: The Game</title>
+  <link rel="icon" href="assets/lumon-logo.png" type="image/png">
+  <!-- Import Map for Three.js and local modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/",
+        "@core/GameLoop": "/src/core/GameLoop.js"
+      }
+    }
+  </script>
+  <!-- Import main CSS -->
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <!-- Three.js from CDN -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/",
+        "@core/GameLoop": "/src/core/GameLoop.js"
+      }
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      color: #e0e0e0;
+    }
+    #app-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    #three-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+    }
+    .hud {
+      position: fixed;
+      z-index: 10;
+    }
+
+    /* Remove old start button styles */
+    #three-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Game HUD Styles */
+    #game-hud {
+      display: none; /* Hide initially */
+      padding: 20px;
+    }
+
+    #location-indicator {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      color: #5CDED3;
+    }
+
+    #controls-info {
+      position: fixed;
+      bottom: 25px;
+      left: 25px;
+      width: 180px;
+      font-family: 'Neue Montreal', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      color: #5CDED3;
+      background-color: rgba(16, 24, 32, 0.85);
+      border-left: 2px solid #5CDED3;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 100;
+      letter-spacing: 1.2px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform-origin: bottom left;
+    }
+    
+    #controls-info:hover {
+      transform: scale(1.03);
+    }
+    
+    #controls-header {
+      background-color: rgba(92, 222, 211, 0.15);
+      padding: 8px 12px;
+      font-weight: 500;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border-bottom: 1px solid rgba(92, 222, 211, 0.3);
+    }
+    
+    .control-items {
+      padding: 10px 12px;
+    }
+    
+    .control-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    
+    .control-item:last-child {
+      margin-bottom: 0;
+    }
+    
+    .key {
+      color: white;
+      font-weight: 500;
+    }
+
+    #interaction-prompt {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px;
+      border-radius: 5px;
+      display: none;
+      z-index: 9999;
+      border: 2px solid #5CDED3;
+      box-shadow: 0 0 15px rgba(92, 222, 211, 0.5);
+      font-size: 18px;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+      50% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+    }
+
+    #subtitle-container {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 1.2em;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    #dev-terminal-overlay {
+      background: #000 !important;
+      color: #33ff33 !important;
+      border: 2px solid #33ff33 !important;
+      border-radius: 4px !important;
+      box-shadow: 0 0 10px rgba(51, 255, 51, 0.5) !important;
+      font-family: 'Fira Mono', 'Courier New', monospace !important;
+      padding: 0 !important;
+    }
+
+    #dev-terminal-body {
+      font-family: 'Fira Mono', 'Courier New', monospace;
+      color: #33ff33;
+      background-color: #000;
+      margin: 25px 15px 0 15px;
+      padding: 5px;
+      font-size: 14px;
+      line-height: 1.4;
+      overflow-y: auto;
+      height: 320px;
+      max-height: 320px;
+      border: none;
+    }
+
+    #dev-terminal-prompt {
+      font-family: 'Fira Mono', 'Courier New', monospace;
+      color: #33ff33;
+      margin: 5px 15px 15px 15px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      height: 25px;
+    }
+
+    .dev-terminal-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: #33ff33;
+      margin-left: 2px;
+      animation: blink-cursor 1s steps(1) infinite;
+      vertical-align: middle;
+    }
+
+    #dev-terminal-header {
+      height: 25px;
+      background: #202020;
+      border-bottom: 1px solid #33ff33;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 12px;
+      color: #33ff33;
+      font-weight: bold;
+      justify-content: space-between;
+    }
+
+    #dev-terminal-title {
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #dev-terminal-controls {
+      display: flex;
+    }
+
+    .terminal-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-left: 8px;
+      cursor: pointer;
+    }
+
+    .terminal-close {
+      background-color: #ff3b30;
+    }
+
+    .terminal-minimize {
+      background-color: #ffcc00;
+    }
+
+    .terminal-maximize {
+      background-color: #28cd41;
+    }
+
+    @keyframes blink-cursor {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .terminal-scan-line {
+      background: linear-gradient(
+        to bottom,
+        rgba(51, 255, 51, 0.03) 0%,
+        rgba(51, 255, 51, 0.02) 50%,
+        rgba(51, 255, 51, 0.01) 100%
+      );
+      position: absolute;
+      top: 25px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 25px);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .terminal-command {
+      color: #33ff33;
+    }
+
+    .terminal-output {
+      color: #cccccc;
+      margin-bottom: 8px;
+    }
+
+    .terminal-error {
+      color: #ff3333;
+    }
+  </style>
+
+  <!-- Performance monitoring and error handling -->
+  <script>
+    // Performance monitoring
+    window.performance.mark('page-start');
+    
+    // Global error handler to prevent unhandled exceptions from crashing the application
+    window.addEventListener('error', function(event) {
+      console.error('Global error caught:', {
+        error: event.error,
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        stack: event.error?.stack
+      });
+      
+      // Show error to user for critical errors
+      const errorMessage = event.error ? (event.error.stack || event.error.message) : event.message;
+      if (errorMessage.includes('WebGL') || errorMessage.includes('THREE') || errorMessage.includes('memory')) {
+        showErrorOverlay(errorMessage);
+      }
+      
+      event.preventDefault();
+      return true;
+    });
+    
+    // Also catch unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('Unhandled promise rejection:', {
+        reason: event.reason,
+        stack: event.reason?.stack
+      });
+      event.preventDefault();
+    });
+    
+    // Show error overlay
+    function showErrorOverlay(message) {
+      const errorOverlay = document.createElement('div');
+      errorOverlay.style.cssText = `
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        background: rgba(255, 0, 0, 0.8);
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 100000;
+        font-family: sans-serif;
+        max-height: 200px;
+        overflow-y: auto;
+      `;
+      errorOverlay.innerHTML = `
+        <h3>An error occurred</h3>
+        <p>${message}</p>
+        <button onclick="window.location.reload()" style="background: white; border: none; padding: 5px 10px; margin-top: 10px; cursor: pointer;">
+          Reload
+        </button>
+        <button onclick="this.parentNode.remove()" style="background: #333; color: white; border: none; padding: 5px 10px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
+          Dismiss
+        </button>
+      `;
+      document.body.appendChild(errorOverlay);
+    }
+    
+    // Simplified debug logger
+    window.debugLumon = {
+      log: function(message) {
+        console.log("%c[Lumon Debug] " + message, "color: #5CDED3");
+      },
+      error: function(message) {
+        console.error("%c[Lumon Debug] " + message, "color: #FF5555");
+      }
+    };
+  </script>
+</head>
+<body>
+  <div id="app-container">
+    <div id="three-container"></div>
+
+    <div id="subtitle-container"></div>
+    <div id="ui-overlay">
+      <div id="location-indicator"></div>
+      <div id="interaction-prompt" style="display: none;"></div>
+      <!-- Dev Terminal Overlay (hidden by default) -->
+      <div id="dev-terminal-overlay" style="display:none; position:fixed; left:5vw; top:15vh; width:700px; height:400px; background:#000; color:#33ff33; border:2px solid #33ff33; border-radius:4px; z-index:10000; font-family:'Fira Mono', 'Courier New', monospace; box-shadow:0 0 10px rgba(51, 255, 51, 0.5); padding:0; overflow:hidden;">
+        <div id="dev-terminal-header">
+          <div id="dev-terminal-title">TERMINAL</div>
+          <div id="dev-terminal-controls">
+            <div class="terminal-btn terminal-minimize"></div>
+            <div class="terminal-btn terminal-maximize"></div>
+            <div class="terminal-btn terminal-close" id="dev-terminal-close"></div>
+          </div>
+        </div>
+        <div class="terminal-scan-line"></div>
+        <div id="dev-terminal-body"></div>
+        <div id="dev-terminal-prompt"></div>
+      </div>
+    </div>
+
+    <!-- Game HUD -->
+    <div id="game-hud" class="hud">
+      <!-- Improved controls info box -->
+      <div id="controls-info">
+        <div id="controls-header">CONTROLS</div>
+        <div class="control-items">
+          <div class="control-item">
+            <span class="key">WASD</span>
+            <span>MOVE</span>
+          </div>
+          <div class="control-item">
+            <span class="key">ARROWS</span>
+            <span>LOOK</span>
+          </div>
+          <div class="control-item">
+            <span class="key">MOUSE</span>
+            <span>LOOK</span>
+          </div>
+          <div class="control-item">
+            <span class="key">SHIFT</span>
+            <span>RUN</span>
+          </div>
+          <div class="control-item">
+            <span class="key">E</span>
+            <span>INTERACT</span>
+          </div>
+          <div class="control-item">
+            <span class="key">SCROLL</span>
+            <span>ZOOM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Use the original main.js file directly -->
+  <script type="module" src="/src/main.js"></script>
+
+
+
+
+      constructor() {
+        // Core Three.js components
+        this.scene = null;
+        this.camera = null;
+        this.renderer = null;
+
+        // State management
+        this.isGameStarted = false;
+        this.isInitialized = false;
+        this.clock = new THREE.Clock();
+
+        // Debug tools
+        this.isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        this.raycaster = new THREE.Raycaster();
+        this.interactionDistance = 2.5;
+
+        // Bind methods to this context
+        this._onKeyDown = this._onKeyDown.bind(this);
+        this.startGame = this.startGame.bind(this);
+        this.onWindowResize = this.onWindowResize.bind(this);
+        
+        console.log("SeveranceApp constructor complete");
+      }
+
+      /**
+       * @method initialize
+       * @description Initialize the basic Three.js scene
+       */
+      async initialize() {
+        try {
+          console.log("Initializing Severance experience...");
+
+          // Check WebGL compatibility first
+          if (!checkWebGL()) {
+            console.error("WebGL not supported or enabled");
+            return false;
+          }
+
+          // Initialize basic Three.js scene
+          await this.initializeBasicScene();
+
+          // Setup event listeners
+          this.setupEventListeners();
+
+          // Start memory monitoring in development mode
+          if (this.isDevelopment && performance.memory) {
+            memoryMonitor.start();
+          }
+
+          // Hide loading screen and show start screen
+          this.hideLoadingScreen();
+          this.showStartScreen();
+
+          this.isInitialized = true;
+          console.log("Basic Severance experience initialized");
+
+        } catch (error) {
+          console.error("Failed to initialize Severance experience:", error);
+          this.showErrorMessage(error);
+        }
+      }
+
+      /**
+       * @method initializeBasicScene
+       * @description Initialize a basic Three.js scene
+       */
+      async initializeBasicScene() {
+        // Create scene
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0x000000);
+
+        // Create camera
+        this.camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          1000
+        );
+        this.camera.position.set(0, 1.7, 5);
+
+        // Create renderer
+        const container = document.getElementById("three-container");
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(this.renderer.domElement);
+
+        // Add basic lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        this.scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(10, 10, 5);
+        directionalLight.castShadow = true;
+        this.scene.add(directionalLight);
+
+        // Add a simple cube for testing
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshLambertMaterial({ color: 0x5CDED3 });
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(0, 0.5, 0);
+        cube.castShadow = true;
+        this.scene.add(cube);
+
+        // Add a floor
+        const floorGeometry = new THREE.PlaneGeometry(20, 20);
+        const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x404040 });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        this.scene.add(floor);
+
+        // Start render loop
+        this.animate();
+
+        console.log("Basic Three.js scene initialized");
+      }
+
+      /**
+       * @method animate
+       * @description Main animation loop
+       */
+      animate() {
+        requestAnimationFrame(() => this.animate());
+        
+        if (this.renderer && this.scene && this.camera) {
+          this.renderer.render(this.scene, this.camera);
+        }
+      }
+
+      /**
+       * @method setupEventListeners
+       * @description Setup all necessary event listeners
+       */
+      setupEventListeners() {
+        console.log("Setting up event listeners...");
+        
+        window.addEventListener("resize", this.onWindowResize, false);
+        document.addEventListener("gameStart", this.startGame);
+        window.addEventListener("keydown", this._onKeyDown);
+      }
+
+      // UI Methods
+      showLoadingScreen() {
+        const loadingScreen = document.createElement("div");
+        loadingScreen.id = "loading-screen";
+        loadingScreen.innerHTML = `
+          <div class="loading-content">
+            <h1>LOADING</h1>
+          </div>
+        `;
+        loadingScreen.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: black;
+          color: #5CDED3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        `;
+        document.body.appendChild(loadingScreen);
+      }
+
+      hideLoadingScreen() {
+        const loadingScreen = document.getElementById("loading-screen");
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          setTimeout(() => loadingScreen.remove(), 1000);
+        }
+      }
+
+      showErrorMessage(error) {
+        const errorMessage = document.createElement("div");
+        errorMessage.id = "error-message";
+        errorMessage.innerHTML = `
+          <div class="error-content">
+            <h2>Initialization Error</h2>
+            <p>${error.message}</p>
+            <button onclick="location.reload()">Retry</button>
+          </div>
+        `;
+        errorMessage.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.9);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+        `;
+        document.body.appendChild(errorMessage);
+      }
+
+      // Event Handlers
+      onWindowResize() {
+        if (!this.camera || !this.renderer) return;
+
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+
+      _onKeyDown(e) {
+        // Basic key handling
+        if (e.key === "Escape") {
+          if (this.isGameStarted) {
+            this.showStartScreen();
+            this.isGameStarted = false;
+          }
+        }
+      }
+
+      // Add new method to show start screen
+      showStartScreen() {
+        // Remove any existing start screen first
+        const existingStartScreen = document.getElementById("start-screen");
+        if (existingStartScreen) {
+          existingStartScreen.remove();
+        }
+
+        // Reset game state
+        this.isGameStarted = false;
+
+        const startScreen = document.createElement("div");
+        startScreen.id = "start-screen";
+        startScreen.innerHTML = `
+          <div class="start-container">
+            <button id="start-button" class="start-button">BEGIN ORIENTATION</button>
+            <p class="key-prompt">Press any key to begin</p>
+          </div>
+        `;
+        startScreen.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.85);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+          color: white;
+        `;
+        document.body.appendChild(startScreen);
+
+        // Add event listener to the button
+        const startButton = document.getElementById("start-button");
+        if (startButton) {
+          startButton.addEventListener("click", this.startGame, { once: true });
+          startButton.style.cssText = `
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 1px solid #5CDED3;
+            color: #FFFFFF;
+            padding: 15px 35px;
+            font-size: 1.1em;
+            font-weight: 300;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            margin-bottom: 20px;
+          `;
+        }
+
+        // Add event listener for key press
+        const keyPressHandler = (e) => {
+          this.startGame();
+          document.removeEventListener("keydown", keyPressHandler);
+        };
+        document.addEventListener("keydown", keyPressHandler);
+      }
+
+      /**
+       * @method startGame
+       * @description Start the basic game
+       */
+      startGame() {
+        console.log("Starting basic game...");
+        
+        // Set game state
+        this.isGameStarted = true;
+
+        // Hide the start screen
+        const startScreen = document.getElementById("start-screen");
+        if (startScreen) {
+          startScreen.remove();
+        }
+
+        // Show game UI
+        this.showGameUI();
+        
+        console.log("Basic game started");
+      }
+
+      showGameUI() {
+        console.log("Showing game UI elements...");
+        
+        // Show the game HUD
+        const gameHud = document.getElementById("game-hud");
+        if (gameHud) {
+          gameHud.style.display = "block";
+        }
+
+        // Show controls info
+        const controlsInfo = document.getElementById("controls-info");
+        if (controlsInfo) {
+          controlsInfo.style.display = "block";
+        }
+      }
+
+      // Cleanup
+      dispose() {
+        // Dispose Three.js resources
+        if (this.scene) {
+          this.scene.clear();
+        }
+        if (this.renderer) {
+          this.renderer.dispose();
+        }
+
+        // Remove event listeners
+        window.removeEventListener("resize", this.onWindowResize);
+        window.removeEventListener("keydown", this._onKeyDown);
+      }
+
+
+  <script>
+    // Initialize UI components after DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Make sure controls are visible by default
+      const controlsInfo = document.getElementById('controls-info');
+      if (controlsInfo && controlsInfo.classList.contains('hidden')) {
+        controlsInfo.classList.remove('hidden');
+      }
+      
+      // Test terminal function (for development)
+      window.openTerminal = function() {
+        if (typeof window.showDevTerminalOverlay === 'function') {
+          window.showDevTerminalOverlay();
+        }
+      };
+      
+      // Keyboard shortcut for testing terminal (Alt + T)
+      document.addEventListener('keydown', function(e) {
+        if (e.altKey && e.key === 't') {
+          window.openTerminal();
+        }
+      });
+    });
+
+    // Add global mouse tracking for shaders
+    window.mouseX = window.innerWidth / 2;
+    window.mouseY = window.innerHeight / 2;
+    
+    document.addEventListener('mousemove', (event) => {
+      window.mouseX = event.clientX;
+      window.mouseY = event.clientY;
+    });
+  </script>
+
+  <!-- DEV TERMINAL OVERLAY LOGIC -->
+  <script>
+    (function() {
+      const overlay = document.getElementById('dev-terminal-overlay');
+      const body = document.getElementById('dev-terminal-body');
+      const promptDiv = document.getElementById('dev-terminal-prompt');
+      const closeBtn = document.getElementById('dev-terminal-close');
+      const minimizeBtn = document.querySelector('.terminal-minimize');
+      const maximizeBtn = document.querySelector('.terminal-maximize');
+      
+      const PROMPT = 'parsa@portfolio:~$ ';
+      const WELCOME_MESSAGE = [
+        '█       AUTHORIZED ACCESS ONLY              █',
+        '',
+        'Type "help" for available commands.',
+        ''
+      ].join('\n');
+      
+      let input = '';
+      let isOpen = false;
+      let cursorVisible = true;
+      let cursorInterval = null;
+      let commandHistory = [];
+      let historyIndex = -1;
+
+      function renderPrompt() {
+        promptDiv.innerHTML =
+          `<span style="color:#33ff33;">${PROMPT}</span>` +
+          `<span id="dev-terminal-input">${input.replace(/ /g, '&nbsp;')}</span>` +
+          `<span class="dev-terminal-cursor">&nbsp;</span>`;
+      }
+
+      function appendOutput(text, className = '') {
+        if (className) {
+          body.innerHTML += `<div class="${className}">${text}</div>`;
+        } else {
+          body.innerHTML += `${text}\n`;
+        }
+        body.scrollTop = body.scrollHeight;
+      }
+
+      function processCommand(cmd) {
+        if (cmd.trim() !== '') {
+          commandHistory.push(cmd);
+          historyIndex = commandHistory.length;
+        }
+        
+        appendOutput(`${PROMPT}${cmd}`, 'terminal-command');
+        
+        const trimmedCmd = cmd.trim().toLowerCase();
+        
+        switch(trimmedCmd) {
+          case 'help':
+            appendOutput('Available commands: help, clear, version, exit', 'terminal-output');
+            break;
+          case 'clear':
+            body.innerHTML = '';
+            break;
+          case 'version':
+            appendOutput('Severance Terminal v1.0', 'terminal-output');
+            break;
+          case 'exit':
+            window.hideDevTerminalOverlay();
+            return;
+          default:
+            if (trimmedCmd !== '') {
+              appendOutput(`bash: ${cmd}: command not found`, 'terminal-error');
+            }
+        }
+      }
+
+      function onKeyDown(e) {
+        if (!isOpen) return;
+        
+        switch(e.key) {
+          case 'Escape':
+            window.hideDevTerminalOverlay();
+            e.preventDefault();
+            return;
+          case 'Backspace':
+            input = input.slice(0, -1);
+            renderPrompt();
+            e.preventDefault();
+            return;
+          case 'Enter':
+            processCommand(input);
+            input = '';
+            renderPrompt();
+            e.preventDefault();
+            return;
+        }
+        
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          input += e.key;
+          renderPrompt();
+          e.preventDefault();
+        }
+      }
+
+      window.showDevTerminalOverlay = function() {
+        if (isOpen) return;
+        
+        overlay.style.display = 'block';
+        isOpen = true;
+        input = '';
+        
+        body.innerHTML = '';
+        appendOutput(WELCOME_MESSAGE);
+        renderPrompt();
+        
+        document.addEventListener('keydown', onKeyDown, true);
+        
+        if (cursorInterval) clearInterval(cursorInterval);
+        cursorInterval = setInterval(() => {
+          const cursor = promptDiv.querySelector('.dev-terminal-cursor');
+          if (cursor) cursor.style.opacity = cursorVisible ? '1' : '0';
+          cursorVisible = !cursorVisible;
+        }, 500);
+      };
+
+      window.hideDevTerminalOverlay = function() {
+        if (!isOpen) return;
+        
+        overlay.style.display = 'none';
+        isOpen = false;
+        
+        document.removeEventListener('keydown', onKeyDown, true);
+        
+        if (cursorInterval) clearInterval(cursorInterval);
+      };
+
+      if (closeBtn) closeBtn.onclick = window.hideDevTerminalOverlay;
+    })();
+  </script>
+</body>
+</html>

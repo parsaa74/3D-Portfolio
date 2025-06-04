@@ -61,4 +61,4 @@ export class PerformanceMonitor {
   dispose() {
     // No stats panel to dispose
   }
-} 
+}

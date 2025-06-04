@@ -1,23 +1,39 @@
 {
-  "name": "3d-portfolio",
-  "version": "1.0.0",
-  "type": "module",
+  "name": "severance-game",
   "private": true,
+  "version": "1.0.0",
+  "description": "A 3D game based on the Apple TV+ show Severance",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "vite build && gh-pages -d dist --dotfiles"
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "generate-models": "node scripts/generate-models.js",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "cannon-es": "^0.20.0",
+    "events": "^3.3.0",
+    "gltf-pipeline": "^4.1.0",
     "stats.js": "^0.17.0",
-    "three": "^0.150.0",
-    "vite": "^4.0.0"
+    "three": "^0.160.0",
+    "tone": "^15.1.22"
   },
   "devDependencies": {
-    "gh-pages": "^6.0.0",
-    "vite-plugin-glsl": "^1.1.2",
-    "vite-plugin-static-copy": "^0.16.0"
-  }
+    "@types/three": "^0.160.0",
+    "@vitest/coverage-v8": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    "gh-pages": "^6.3.0",
+    "jsdom": "^22.1.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "Mr. Doob",
+  "license": "MIT"
 }

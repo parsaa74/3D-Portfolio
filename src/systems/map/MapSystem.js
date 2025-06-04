@@ -205,4 +205,4 @@ export class MapSystem {
     this.exploredAreas.clear();
     this.departmentZones.clear();
   }
-} 
+}
