@@ -3908,6 +3908,8 @@ export class SeveranceEnvironment extends BaseEnvironment {
     console.log("[DEBUG FILM INTERIOR] interiorGroup name:", interiorGroup.name); // <<< ADDED
     console.log(`Creating FILM interior at ${center.x}, ${center.z}`);
     
+    try {
+    
     // --- Special lighting at door entrance, similar to Design interior ---
     if (doorPosition) {
       // Create vector from door to center
@@ -4480,6 +4482,15 @@ export class SeveranceEnvironment extends BaseEnvironment {
       // Add to interactables
       if (!this._customWatchInteractables) this._customWatchInteractables = [];
       this._customWatchInteractables.push(interact);
+    }
+    
+    } catch (error) {
+      console.error("[DEBUG FILM INTERIOR] Error creating film interior:", error);
+      console.error("[DEBUG FILM INTERIOR] Stack trace:", error.stack);
+      // Add basic fallback interior
+      const fallbackLight = new THREE.PointLight(0xffffff, 1.0, 10, 2);
+      fallbackLight.position.set(center.x, center.y + 2, center.z);
+      interiorGroup.add(fallbackLight);
     }
   }
 
@@ -5093,7 +5104,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
               // <<< ADD LOG INSIDE CASE 'FILM' >>>
               console.log("[CPSI DEBUG] Inside case 'FILM'. About to call _createFilmInterior.");
               console.log('[DEBUG] Calling _createFilmInterior', {interiorGroup, center, size, doorPosition});
-              this._createFilmInterior(interiorGroup, center, size, doorPosition);
+              await this._createFilmInterior(interiorGroup, center, size, doorPosition);
               break;
           case 'ART':
               await this._createArtInterior(interiorGroup, center, size, doorPosition);
