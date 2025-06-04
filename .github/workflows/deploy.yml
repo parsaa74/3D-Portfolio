@@ -32,12 +32,17 @@ jobs:
       
       - name: Build
         run: npm run build
+        env:
+          NODE_ENV: production
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
       - name: Create .nojekyll file
         run: touch dist/.nojekyll
+      
+      - name: Create SPA fallback
+        run: cp dist/index.html dist/404.html
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

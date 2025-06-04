@@ -20,10 +20,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       input: {
-        main: "index.html",
+        main: resolve(__dirname, "index.html"),
       },
     },
     sourcemap: true,
+    emptyOutDir: true,
   },
   resolve: {
     alias: {
