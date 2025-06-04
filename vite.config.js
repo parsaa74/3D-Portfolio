@@ -22,17 +22,14 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, "index.html"),
       },
+      external: [],
     },
     sourcemap: true,
     emptyOutDir: true,
   },
   resolve: {
     alias: {
-      three: resolve(__dirname, "node_modules/three"),
-      "three/addons/": resolve(__dirname, "node_modules/three/examples/jsm/"),
       "@": resolve(__dirname, "src"),
-      "cannon-es": "cannon-es",
-      "stats.js": "stats.js",
       "@utils": resolve(__dirname, "src/utils"),
       "@core": resolve(__dirname, "src/core"),
       "@systems": resolve(__dirname, "src/systems"),
@@ -54,6 +51,9 @@ export default defineConfig({
       "three/examples/jsm/postprocessing/UnrealBloomPass",
       "three/examples/jsm/shaders/CopyShader",
       "three/examples/jsm/shaders/ColorCorrectionShader",
+      "cannon-es",
+      "stats.js",
+      "tone"
     ],
   },
   assetsInclude: ["**/*.glsl"],

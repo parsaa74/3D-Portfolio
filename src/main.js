@@ -14,174 +14,6 @@ import { PerformanceMonitor } from "./core/rendering/performance/PerformanceMoni
 import { UnifiedMovementController } from "./systems/movement/UnifiedMovementController.js";
 import { AudioManager } from "./core/audio/AudioManager.js";
 
-// Initialize UI components after DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  // Make sure controls are visible by default
-  const controlsInfo = document.getElementById('controls-info');
-  if (controlsInfo && controlsInfo.classList.contains('hidden')) {
-    controlsInfo.classList.remove('hidden');
-  }
-  
-  // Global mouse tracking for shaders
-  window.mouseX = window.innerWidth / 2;
-  window.mouseY = window.innerHeight / 2;
-  
-  document.addEventListener('mousemove', (event) => {
-    window.mouseX = event.clientX;
-    window.mouseY = event.clientY;
-  });
-  
-  // Terminal functionality
-  initializeDevTerminal();
-});
-
-// Dev Terminal Functionality
-function initializeDevTerminal() {
-  const overlay = document.getElementById('dev-terminal-overlay');
-  const body = document.getElementById('dev-terminal-body');
-  const promptDiv = document.getElementById('dev-terminal-prompt');
-  const closeBtn = document.getElementById('dev-terminal-close');
-  const minimizeBtn = document.querySelector('.terminal-minimize');
-  const maximizeBtn = document.querySelector('.terminal-maximize');
-  
-  const PROMPT = 'parsa@portfolio:~$ ';
-  const WELCOME_MESSAGE = [
-    '█       AUTHORIZED ACCESS ONLY              █',
-    '',
-    'Type "help" for available commands.',
-    ''
-  ].join('\n');
-  
-  let input = '';
-  let isOpen = false;
-  let cursorVisible = true;
-  let cursorInterval = null;
-  let commandHistory = [];
-  let historyIndex = -1;
-
-  function renderPrompt() {
-    promptDiv.innerHTML =
-      `<span style="color:#33ff33;">${PROMPT}</span>` +
-      `<span id="dev-terminal-input">${input.replace(/ /g, '&nbsp;')}</span>` +
-      `<span class="dev-terminal-cursor">&nbsp;</span>`;
-  }
-
-  function appendOutput(text, className = '') {
-    if (className) {
-      body.innerHTML += `<div class="${className}">${text}</div>`;
-    } else {
-      body.innerHTML += `${text}\n`;
-    }
-    body.scrollTop = body.scrollHeight;
-  }
-
-  function processCommand(cmd) {
-    if (cmd.trim() !== '') {
-      commandHistory.push(cmd);
-      historyIndex = commandHistory.length;
-    }
-    
-    appendOutput(`${PROMPT}${cmd}`, 'terminal-command');
-    
-    const trimmedCmd = cmd.trim().toLowerCase();
-    
-    switch(trimmedCmd) {
-      case 'help':
-        appendOutput('Available commands: help, clear, version, exit', 'terminal-output');
-        break;
-      case 'clear':
-        body.innerHTML = '';
-        break;
-      case 'version':
-        appendOutput('Severance Terminal v1.0', 'terminal-output');
-        break;
-      case 'exit':
-        window.hideDevTerminalOverlay();
-        return;
-      default:
-        if (trimmedCmd !== '') {
-          appendOutput(`bash: ${cmd}: command not found`, 'terminal-error');
-        }
-    }
-  }
-
-  function onKeyDown(e) {
-    if (!isOpen) return;
-    
-    switch(e.key) {
-      case 'Escape':
-        window.hideDevTerminalOverlay();
-        e.preventDefault();
-        return;
-      case 'Backspace':
-        input = input.slice(0, -1);
-        renderPrompt();
-        e.preventDefault();
-        return;
-      case 'Enter':
-        processCommand(input);
-        input = '';
-        renderPrompt();
-        e.preventDefault();
-        return;
-    }
-    
-    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      input += e.key;
-      renderPrompt();
-      e.preventDefault();
-    }
-  }
-
-  window.showDevTerminalOverlay = function() {
-    if (isOpen) return;
-    
-    overlay.style.display = 'block';
-    isOpen = true;
-    input = '';
-    
-    body.innerHTML = '';
-    appendOutput(WELCOME_MESSAGE);
-    renderPrompt();
-    
-    document.addEventListener('keydown', onKeyDown, true);
-    
-    if (cursorInterval) clearInterval(cursorInterval);
-    cursorInterval = setInterval(() => {
-      const cursor = promptDiv.querySelector('.dev-terminal-cursor');
-      if (cursor) cursor.style.opacity = cursorVisible ? '1' : '0';
-      cursorVisible = !cursorVisible;
-    }, 500);
-  };
-
-  window.hideDevTerminalOverlay = function() {
-    if (!isOpen) return;
-    
-    overlay.style.display = 'none';
-    isOpen = false;
-    
-    document.removeEventListener('keydown', onKeyDown, true);
-    
-    if (cursorInterval) clearInterval(cursorInterval);
-  };
-
-  // Test terminal function for development
-  window.openTerminal = function() {
-    if (typeof window.showDevTerminalOverlay === 'function') {
-      window.showDevTerminalOverlay();
-    }
-  };
-  
-  // Keyboard shortcut for testing terminal (Alt + T)
-  document.addEventListener('keydown', function(e) {
-    if (e.altKey && e.key === 't') {
-      window.openTerminal();
-    }
-  });
-
-  if (closeBtn) closeBtn.onclick = window.hideDevTerminalOverlay;
-}
-
 // Game constants from init.js
 export const GAME_CONSTANTS = {
   CORRIDOR_WIDTH: 2.5,
@@ -2405,3 +2237,440 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   requestAnimationFrame(interactionLoop);
 });
+
+// === DEV TERMINAL OVERLAY LOGIC ===
+(function() {
+  const overlay = document.getElementById('dev-terminal-overlay');
+  const body = document.getElementById('dev-terminal-body');
+  const promptDiv = document.getElementById('dev-terminal-prompt');
+  const closeBtn = document.getElementById('dev-terminal-close');
+  const minimizeBtn = document.querySelector('.terminal-minimize');
+  const maximizeBtn = document.querySelector('.terminal-maximize');
+  
+  // Apply custom font to the terminal
+  const terminalFontStyleId = 'dev-terminal-font-styles';
+  if (!document.getElementById(terminalFontStyleId)) {
+    const style = document.createElement('style');
+    style.id = terminalFontStyleId;
+    style.textContent = `
+      #dev-terminal-overlay,
+      #dev-terminal-overlay input,
+      #dev-terminal-overlay button,
+      #dev-terminal-body,
+      #dev-terminal-prompt span,
+      #dev-terminal-input {
+        font-family: 'JetBrains Mono Nerd Font', 'JetBrains Mono', Consolas, Menlo, Monaco, monospace !important;
+      }
+      /* Ensure preformatted text within terminal output also inherits */
+      #dev-terminal-body pre {
+        font-family: inherit !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  const PROMPT = 'parsa@portfolio:~$ ';
+  const WELCOME_MESSAGE = [
+    '█       AUTHORIZED ACCESS ONLY              █',
+    '',
+    'Type "help" for available commands.',
+    ''
+  ].join('\n');
+  
+  const CV_ASCII_ART = [
+    '==================== CV ====================',
+    '',
+    'Exhibitions / Performances',
+    '  solo performances:',
+    '    - friends',
+    '    - dissolve',
+    '    - circle of confusion (with parsa samadpour)',
+    '  group performances:',
+    '    - Tree of Wishes',
+    '    - Nafashay e Shahrvand',
+    '    - Frame',
+    '    - Beta\'s Trajectory',
+    '',
+    'Residencies, Research',
+    '  - Callotype',
+    '  - New Media Circle',
+    '',
+    'Writing and Publications',
+    '  - study on the notion of stillness and motion in film and photography of late 19th century and early 20th century (masters thesis)',
+    '',
+    'Education',
+    '  - MA Art Research',
+    '    Iran University of Art, Tehran',
+    '    2020-2024',
+    '  - BA Cinema',
+    '    Soore University, Tehran',
+    '    2014-2020',
+    '',
+    'Film Practices',
+    '  - 38:01',
+    '    Lead Actor, 2017',
+    '  - The One of Who Dances on Your Grave',
+    '    Cinematographer, 2019',
+    '',
+    'Skills',
+    '  - Development: JavaScript, React, WebGL, Three.js, GLSL, p5.js, HTML5/CSS3',
+    '  - Design: After Creative Cloud, Figma',
+    '',
+    '============================================',
+  ].join('\n');
+  
+  let input = '';
+  let isOpen = false;
+  let cursorVisible = true;
+  let cursorInterval = null;
+  let commandHistory = [];
+  let historyIndex = -1;
+  let isMinimized = false;
+  let originalHeight = '400px';
+
+  function renderPrompt() {
+    promptDiv.innerHTML =
+      `<span style="color:#33ff33;">${PROMPT}</span>` +
+      `<span id="dev-terminal-input">${input.replace(/ /g, '&nbsp;')}</span>` +
+      `<span class="dev-terminal-cursor">&nbsp;</span>`;
+  }
+
+  function appendOutput(text, className = '') {
+    // Apply syntax highlighting if appropriate
+    if (className === 'terminal-output') {
+      // For multi-line output, preserve whitespace and line breaks
+      body.innerHTML += `<div class="${className}"><pre style="margin:0; font-family:inherit;">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre></div>`;
+    } else if (className) {
+      body.innerHTML += `<div class="${className}">${text}</div>`;
+    } else {
+      body.innerHTML += `${text}\n`;
+    }
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function processCommand(cmd) {
+    // Add to command history if not empty
+    if (cmd.trim() !== '' && (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== cmd)) {
+      commandHistory.push(cmd);
+      historyIndex = commandHistory.length;
+    }
+    
+    // Always show what was typed with proper styling
+    appendOutput(`${PROMPT}${cmd}`, 'terminal-command');
+    
+    const trimmedCmd = cmd.trim().toLowerCase();
+    let output = '';
+    
+    // Handle commands
+    switch(trimmedCmd) {
+      case 'help':
+        output = [
+          'Available commands:',
+          '  help          - Display this help message',
+          '  clear         - Clear the terminal',
+          '  version       - Display terminal version',
+          '  cv            - Display CV information',
+          '  biography     - Display biography information',
+          '  contact       - Display contact information',
+          '  ls            - List files in current directory',
+          '  whoami        - Display current user',
+          '  exit          - Close the terminal'
+        ].join('\n');
+        appendOutput(output, 'terminal-output');
+        break;
+        
+      case 'clear':
+        body.innerHTML = '';
+        break;
+        
+      case 'version':
+        appendOutput(VERSION, 'terminal-output');
+        break;
+        
+      case 'cv':
+        output = CV_ASCII_ART;
+        appendOutput(output, 'terminal-output');
+        break;
+        
+      case 'biography':
+        output = [
+          'Parsa Azari is a designer turned developer based in Tehran.',
+          '',
+          'His practice spans film, motion graphics, and interaction design,',
+          'evolving from traditional visual media to digital interfaces and creative',
+          'coding that explore both aesthetic and functional dimensions of',
+          'human-computer interaction.',
+          '',
+          'His work is informed by film theory, media studies, and art research,',
+          'drawing connections between early cinema history and contemporary',
+          'digital experiences to examine how technologies shape human',
+          'perception and engagement.',
+          '',
+          'Azari was part of New Media Group, a research collective at Tehran',
+          'Museum of Contemporary Art (TMoCA), and Beta performance art',
+          'group. He holds a BA in Cinema from Soore University and an MA in Art',
+          'Research from Iran University of Art.'
+        ].join('\n');
+        appendOutput(output, 'terminal-output');
+        break;
+        
+      case 'contact':
+        output = [
+          'email:    parsaazari28@proton.me',
+          'github:   @parsaa74',
+          'mastodon: @parsaaz',
+          'x:        @sighpaaa',
+          'are.na:   @parsa-azari',
+          'bsky:     @sighpaa.bsky.social'
+        ].join('\n');
+        appendOutput(output, 'terminal-output');
+        break;
+        
+      case 'ls':
+        output = [
+          'Documents/',
+          'macrodata.dat',
+          'refinement.exe',
+          'secrets.txt',
+          'README.md'
+        ].join('\n');
+        appendOutput(output, 'terminal-output');
+        break;
+        
+      case 'whoami':
+        appendOutput('macrodata-refiner-429', 'terminal-output');
+        break;
+        
+      case 'exit':
+        window.hideDevTerminalOverlay();
+        return;
+        
+      default:
+        if (trimmedCmd === '') {
+          // Just show a blank line for empty command
+          appendOutput('');
+        } else {
+          // Command not recognized
+          appendOutput(`bash: ${cmd}: command not found`, 'terminal-error');
+        }
+    }
+  }
+
+  function navigateHistory(direction) {
+    if (commandHistory.length === 0) return;
+    
+    if (direction === 'up') {
+      historyIndex = Math.max(0, historyIndex - 1);
+      input = commandHistory[historyIndex] || '';
+    } else if (direction === 'down') {
+      historyIndex = Math.min(commandHistory.length, historyIndex + 1);
+      input = historyIndex === commandHistory.length ? '' : commandHistory[historyIndex];
+    }
+    
+    renderPrompt();
+  }
+
+  function onKeyDown(e) {
+    if (!isOpen || isMinimized) return;
+    
+    // Keyboard scrolling for terminal
+    const scrollAmountLine = 30; // px per line
+    const scrollAmountPage = body.clientHeight - 40; // px per page (minus prompt)
+    if (e.shiftKey && e.key === 'PageUp') {
+      body.scrollTop = Math.max(0, body.scrollTop - scrollAmountPage);
+      e.preventDefault();
+      return;
+    }
+    if (e.shiftKey && e.key === 'PageDown') {
+      body.scrollTop = Math.min(body.scrollHeight, body.scrollTop + scrollAmountPage);
+      e.preventDefault();
+      return;
+    }
+    if (e.ctrlKey && (e.key === 'ArrowUp' || e.key === 'Up')) {
+      body.scrollTop = Math.max(0, body.scrollTop - scrollAmountLine);
+      e.preventDefault();
+      return;
+    }
+    if (e.ctrlKey && (e.key === 'ArrowDown' || e.key === 'Down')) {
+      body.scrollTop = Math.min(body.scrollHeight, body.scrollTop + scrollAmountLine);
+      e.preventDefault();
+      return;
+    }
+    // Handle special keys
+    switch(e.key) {
+      case 'Escape':
+        window.hideDevTerminalOverlay();
+        e.preventDefault();
+        return;
+        
+      case 'Backspace':
+        input = input.slice(0, -1);
+        renderPrompt();
+        e.preventDefault();
+        return;
+        
+      case 'Enter':
+        processCommand(input);
+        input = '';
+        renderPrompt();
+        e.preventDefault();
+        return;
+        
+      case 'ArrowUp':
+        navigateHistory('up');
+        e.preventDefault();
+        return;
+        
+      case 'ArrowDown':
+        navigateHistory('down');
+        e.preventDefault();
+        return;
+        
+      case 'Tab':
+        // Simple tab completion (to be expanded)
+        const commands = ['help', 'clear', 'version', 'cv', 'biography', 'contact', 'ls', 'whoami', 'exit'];
+        const matchingCmds = commands.filter(cmd => cmd.startsWith(input));
+        
+        if (matchingCmds.length === 1) {
+          input = matchingCmds[0];
+          renderPrompt();
+        } else if (matchingCmds.length > 1) {
+          appendOutput(`${PROMPT}${input}`, 'terminal-command');
+          appendOutput(matchingCmds.join('  '), 'terminal-output');
+          renderPrompt();
+        }
+        e.preventDefault();
+        return;
+    }
+    
+    // Handle regular character input
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      input += e.key;
+      renderPrompt();
+      e.preventDefault();
+      return;
+    }
+    
+    // Prevent browser shortcuts when terminal is focused
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+    }
+  }
+
+  // Toggle terminal size (minimize/maximize)
+  function toggleMinimize() {
+    if (isMinimized) {
+      // Restore
+      overlay.style.height = originalHeight;
+      body.style.display = 'block';
+      promptDiv.style.display = 'flex';
+      isMinimized = false;
+    } else {
+      // Minimize
+      originalHeight = overlay.style.height;
+      overlay.style.height = '25px';
+      body.style.display = 'none';
+      promptDiv.style.display = 'none';
+      isMinimized = true;
+    }
+  }
+
+  // Handle click events for terminal controls
+  if (minimizeBtn) {
+    minimizeBtn.onclick = toggleMinimize;
+  }
+  
+  if (maximizeBtn) {
+    maximizeBtn.onclick = function() {
+      if (overlay.style.width === '100vw') {
+        // Restore normal size
+        overlay.style.width = '700px';
+        overlay.style.height = '400px';
+        overlay.style.left = '5vw';
+        overlay.style.top = '15vh';
+      } else {
+        // Maximize
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.left = '0';
+        overlay.style.top = '0';
+      }
+    };
+  }
+
+  // Make terminal draggable (basic implementation)
+  let isDragging = false;
+  let offsetX, offsetY;
+  
+  document.getElementById('dev-terminal-header').addEventListener('mousedown', function(e) {
+    // Don't drag if clicking controls
+    if (e.target.classList.contains('terminal-btn')) return;
+    
+    isDragging = true;
+    offsetX = e.clientX - overlay.getBoundingClientRect().left;
+    offsetY = e.clientY - overlay.getBoundingClientRect().top;
+  });
+  
+  document.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    
+    const x = e.clientX - offsetX;
+    const y = e.clientY - offsetY;
+    
+    overlay.style.left = `${x}px`;
+    overlay.style.top = `${y}px`;
+  });
+  
+  document.addEventListener('mouseup', function() {
+    isDragging = false;
+  });
+
+  window.showDevTerminalOverlay = function() {
+    if (isOpen) return;
+    
+    overlay.style.display = 'block';
+    isOpen = true;
+    input = '';
+    
+    // Clear and show welcome message
+    body.innerHTML = '';
+    appendOutput(WELCOME_MESSAGE);
+    
+    renderPrompt();
+    overlay.focus();
+    
+    // Prevent player movement while terminal is open
+    window.playerCanMove = false;
+    
+    // Add event listener for keyboard input
+    document.addEventListener('keydown', onKeyDown, true);
+    
+    // Blinking cursor effect
+    if (cursorInterval) clearInterval(cursorInterval);
+    cursorInterval = setInterval(() => {
+      const cursor = promptDiv.querySelector('.dev-terminal-cursor');
+      if (cursor) cursor.style.opacity = cursorVisible ? '1' : '0';
+      cursorVisible = !cursorVisible;
+    }, 500);
+  };
+
+  window.hideDevTerminalOverlay = function() {
+    if (!isOpen) return;
+    
+    overlay.style.display = 'none';
+    isOpen = false;
+    input = '';
+    renderPrompt();
+    
+    // Re-enable player movement
+    window.playerCanMove = true;
+    
+    // Remove keyboard event listener
+    document.removeEventListener('keydown', onKeyDown, true);
+    
+    // Clear cursor interval
+    if (cursorInterval) clearInterval(cursorInterval);
+  };
+
+  if (closeBtn) closeBtn.onclick = window.hideDevTerminalOverlay;
+})();
