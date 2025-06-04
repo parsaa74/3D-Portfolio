@@ -45,4 +45,22 @@ export function getShaderPath(filename) {
  */
 export function getModelPath(filename) {
   return getAssetPath(`models/${filename}`);
+}
+
+/**
+ * Get font path
+ * @param {string} filename - The font filename
+ * @returns {string} - The complete font path
+ */
+export function getFontPath(filename) {
+  return getAssetPath(`assets/fonts/${filename}`);
+}
+
+/**
+ * Get root model path (for models in the root directory)
+ * @param {string} filename - The model filename
+ * @returns {string} - The complete model path
+ */
+export function getRootModelPath(filename) {
+  return getAssetPath(filename);
 } 

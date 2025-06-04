@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // Fixed import path
 import { TextureLoader } from "three"; // Add TextureLoader import
 import { BaseEnvironment } from "./BaseEnvironment.js";
-import { getAssetPath, getTexturePath, getShaderPath } from "@utils/assetPaths.js";
+import { getAssetPath, getTexturePath, getShaderPath, getModelPath, getRootModelPath } from "@utils/assetPaths.js";
 import { MapSystem } from "../../../systems/map/MapSystem.js";
 import { SeveranceMaterials } from "../materials/SeveranceMaterials.js";
 import { UnifiedMovementController } from "../../../systems/movement/UnifiedMovementController.js";
@@ -243,7 +243,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door frame model...");
         const doorFrameResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/door_frame.glb',
+                getAssetPath('assets/models/door_frame.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Frame loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -261,7 +261,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading door pivot model...");
         const doorPivotResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/door_pivot.glb',
+                getAssetPath('assets/models/door_pivot.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Pivot loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -279,7 +279,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
         console.log("[Door Models] Loading card reader model...");
         const cardReaderResult = await new Promise((resolve, reject) => {
             this.gltfLoader.load(
-                'assets/models/card_reader.glb',
+                getAssetPath('assets/models/card_reader.glb'),
                 resolve,
                 (progress) => {
                     console.log(`[Door Models] Card reader loading progress: ${Math.round(progress.loaded / progress.total * 100)}%`);
@@ -3245,7 +3245,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
       const loader = new GLTFLoader();
       try {
         const filmstripGltf = await new Promise((resolve, reject) => {
-          loader.load('/models/filmstrip.glb', resolve, undefined, reject);
+          loader.load(getModelPath('filmstrip.glb'), resolve, undefined, reject);
         });
         
         const filmstrip = filmstripGltf.scene;
@@ -3932,18 +3932,18 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load chair.gltf
     const chairGltf = await new Promise((resolve, reject) => {
-      loader.load('/chair.glb', resolve, undefined, reject);
+              loader.load(getRootModelPath('chair.glb'), resolve, undefined, reject);
     });
     // Load lamp.gltf
     const lampGltf = await new Promise((resolve, reject) => {
-      loader.load('/lamp.glb', resolve, undefined, reject);
+              loader.load(getRootModelPath('lamp.glb'), resolve, undefined, reject);
     });
     // Load projector.glb
     const projectorGltf = await new Promise((resolve, reject) => {
-      loader.load('/projector.glb', resolve, undefined, reject);
+              loader.load(getRootModelPath('projector.glb'), resolve, undefined, reject);
     });
     const projectorScreenGltf = await new Promise((resolve, reject) => {
-      loader.load('/projector_screen.glb', resolve, undefined, reject);
+              loader.load(getRootModelPath('projector_screen.glb'), resolve, undefined, reject);
     });
     
     // Load poster textures
@@ -4878,7 +4878,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
       console.log(`Creating MDR interior at ${center.x}, ${center.z}`);
         try {
           const loader = new GLTFLoader();
-          const gltf = await loader.loadAsync("/severance_tv_show_office.glb"); // Path relative to public/
+          const gltf = await loader.loadAsync(getRootModelPath("severance_tv_show_office.glb")); // Path relative to public/
           const model = gltf.scene;
 
           // --- Material Override & Collision Setup --- (Simplified)
@@ -6334,7 +6334,7 @@ function createKrugerTextTexture(text, { width = 1024, height = 256, bgColor = '
 // Helper function to get image paths for a given poster title
 const getArtPosterImagePaths = (title) => {
   // Path that matches the known directory structure
-  const correctBasePath = `/assets/Images/performance/solo performances/${title.toLowerCase()}/`; 
+  const correctBasePath = getAssetPath(`assets/Images/performance/solo performances/${title.toLowerCase()}/`); 
   const urls = [];
   let count = 0;
 

@@ -24,7 +24,9 @@ const PERFORMANCE_ART_WORDS = [
   "power", "technology", "nature", "ecology", "social", "cultural"
 ];
 
-const FONT_PATH = '/assets/fonts/Noto Sans_Regular.typeface.json';
+import { getFontPath } from '@utils/assetPaths.js';
+
+const FONT_PATH = getFontPath('Noto Sans_Regular.typeface.json');
 
 function shuffleArray(array) {
   // Fisher-Yates shuffle
