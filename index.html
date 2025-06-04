@@ -5,8 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Portfolio</title>
   <link rel="icon" type="image/x-icon" href="/3D-Portfolio/favicon.ico">
-
-  <!-- Vite will process and bundle CSS automatically when imported in JS -->
+  <!-- GitHub Pages SPA support -->
+  <script>
+    // Check if we have a redirect parameter (from 404.html)
+    (function() {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+    
+    // Handle GitHub Pages routing
+    (function() {
+      var l = window.location;
+      if (l.search && l.search.indexOf('?/') !== -1) {
+        var decoded = l.search.slice(1).split('&').map(function(s) { 
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+          l.pathname.slice(0, -1) + decoded + l.hash
+        );
+      }
+    })();
+  </script>
+  <!-- Fixed deployment - v4 with cache busting -->
   <style>
     body {
       margin: 0;
@@ -36,18 +59,8 @@
       z-index: 10;
     }
 
-    /* Remove old start button styles */
-    #three-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Game HUD Styles */
     #game-hud {
-      display: none; /* Hide initially */
+      display: none;
       padding: 20px;
     }
 
@@ -71,12 +84,6 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
       z-index: 100;
       letter-spacing: 1.2px;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      transform-origin: bottom left;
-    }
-    
-    #controls-info:hover {
-      transform: scale(1.03);
     }
     
     #controls-header {
@@ -143,422 +150,26 @@
       opacity: 0;
       transition: opacity 0.3s ease;
     }
-
-    #dev-terminal-overlay {
-      background: #000 !important;
-      color: #33ff33 !important;
-      border: 2px solid #33ff33 !important;
-      border-radius: 4px !important;
-      box-shadow: 0 0 10px rgba(51, 255, 51, 0.5) !important;
-      font-family: 'Fira Mono', 'Courier New', monospace !important;
-      padding: 0 !important;
-    }
-
-    #dev-terminal-body {
-      font-family: 'Fira Mono', 'Courier New', monospace;
-      color: #33ff33;
-      background-color: #000;
-      margin: 25px 15px 0 15px;
-      padding: 5px;
-      font-size: 14px;
-      line-height: 1.4;
-      overflow-y: auto;
-      height: 320px;
-      max-height: 320px;
-      border: none;
-    }
-
-    #dev-terminal-prompt {
-      font-family: 'Fira Mono', 'Courier New', monospace;
-      color: #33ff33;
-      margin: 5px 15px 15px 15px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      height: 25px;
-    }
-
-    .dev-terminal-cursor {
-      display: inline-block;
-      width: 8px;
-      height: 14px;
-      background: #33ff33;
-      margin-left: 2px;
-      animation: blink-cursor 1s steps(1) infinite;
-      vertical-align: middle;
-    }
-
-    #dev-terminal-header {
-      height: 25px;
-      background: #202020;
-      border-bottom: 1px solid #33ff33;
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      font-size: 12px;
-      color: #33ff33;
-    }
-
-    @keyframes blink-cursor {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-
-    .terminal-controls {
-      margin-left: auto;
-      display: flex;
-      gap: 5px;
-    }
-
-    .terminal-controls button {
-      width: 16px;
-      height: 16px;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .terminal-close {
-      background: #ff5f56;
-      color: #fff;
-    }
-
-    .terminal-minimize {
-      background: #ffbd2e;
-      color: #fff;
-    }
-
-    .terminal-maximize {
-      background: #27ca3f;
-      color: #fff;
-    }
-
-    #dev-terminal-overlay {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80%;
-      max-width: 800px;
-      height: 400px;
-      z-index: 10000;
-      display: none;
-    }
-
-    .interaction-button {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      background: rgba(92, 222, 211, 0.3);
-      border: 2px solid #5CDED3;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #5CDED3;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      animation: pulse-button 2s infinite;
-      backdrop-filter: blur(5px);
-      transition: all 0.3s ease;
-      pointer-events: auto;
-    }
-
-    .interaction-button:hover {
-      background: rgba(92, 222, 211, 0.5);
-      transform: scale(1.1);
-      box-shadow: 0 0 20px rgba(92, 222, 211, 0.6);
-    }
-
-    @keyframes pulse-button {
-      0% { box-shadow: 0 0 0 0 rgba(92, 222, 211, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(92, 222, 211, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(92, 222, 211, 0); }
-    }
-
-    .poster-info-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 20000;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .poster-info-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(16, 24, 32, 0.95);
-      border: 2px solid #5CDED3;
-      border-radius: 8px;
-      padding: 40px;
-      max-width: 80%;
-      max-height: 80%;
-      overflow-y: auto;
-      color: #e0e0e0;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    }
-
-    .poster-info-content h2 {
-      color: #5CDED3;
-      margin-top: 0;
-      font-size: 2em;
-      border-bottom: 1px solid #5CDED3;
-      padding-bottom: 10px;
-    }
-
-    .poster-info-content .close-button {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      background: none;
-      border: none;
-      color: #5CDED3;
-      font-size: 24px;
-      cursor: pointer;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background 0.3s ease;
-    }
-
-    .poster-info-content .close-button:hover {
-      background: rgba(92, 222, 211, 0.2);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* Film overlay styles */
-    .film-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      z-index: 20000;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .film-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(16, 24, 32, 0.98);
-      border: 2px solid #5CDED3;
-      border-radius: 12px;
-      padding: 40px;
-      max-width: 90%;
-      width: 800px;
-      max-height: 90%;
-      overflow-y: auto;
-      color: #e0e0e0;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-    }
-
-    .film-content h2 {
-      color: #5CDED3;
-      margin-top: 0;
-      font-size: 2.5em;
-      border-bottom: 2px solid #5CDED3;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
-    }
-
-    .film-year {
-      color: #9ca3af;
-      font-size: 1.2em;
-      margin-bottom: 15px;
-    }
-
-    .film-cast {
-      color: #d1d5db;
-      font-size: 1.1em;
-      margin-bottom: 20px;
-      font-style: italic;
-    }
-
-    .film-role {
-      color: #5CDED3;
-      font-size: 1.1em;
-      margin-bottom: 15px;
-      font-weight: bold;
-    }
-
-    .film-summary {
-      line-height: 1.6;
-      font-size: 1.05em;
-      color: #e0e0e0;
-      margin-bottom: 25px;
-    }
-
-    .film-link {
-      display: inline-block;
-      background: linear-gradient(135deg, #5CDED3, #4ade80);
-      color: #000;
-      padding: 12px 24px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      margin-top: 20px;
-    }
-
-    .film-link:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(92, 222, 211, 0.4);
-    }
-
-    .film-content .close-button {
-      position: absolute;
-      top: 20px;
-      right: 25px;
-      background: none;
-      border: none;
-      color: #5CDED3;
-      font-size: 28px;
-      cursor: pointer;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-    }
-
-    .film-content .close-button:hover {
-      background: rgba(92, 222, 211, 0.2);
-      transform: rotate(90deg);
-    }
   </style>
-
-  <!-- Performance monitoring and error handling -->
-  <script>
-    // Performance monitoring
-    window.performance.mark('page-start');
-    
-    // Global error handler to prevent unhandled exceptions from crashing the application
-    window.addEventListener('error', function(event) {
-      console.error('Global error caught:', {
-        error: event.error,
-        message: event.message,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-        stack: event.error?.stack
-      });
-      
-      // Show error to user for critical errors
-      const errorMessage = event.error ? (event.error.stack || event.error.message) : event.message;
-      if (errorMessage.includes('WebGL') || errorMessage.includes('THREE') || errorMessage.includes('memory')) {
-        showErrorOverlay(errorMessage);
-      }
-      
-      event.preventDefault();
-      return true;
-    });
-    
-    // Also catch unhandled promise rejections
-    window.addEventListener('unhandledrejection', function(event) {
-      console.error('Unhandled promise rejection:', {
-        reason: event.reason,
-        stack: event.reason?.stack
-      });
-      event.preventDefault();
-    });
-    
-    // Show error overlay
-    function showErrorOverlay(message) {
-      const errorOverlay = document.createElement('div');
-      errorOverlay.style.cssText = `
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        background: rgba(255, 0, 0, 0.8);
-        color: white;
-        padding: 15px;
-        border-radius: 5px;
-        z-index: 100000;
-        font-family: sans-serif;
-        max-height: 200px;
-        overflow-y: auto;
-      `;
-      errorOverlay.innerHTML = `
-        <h3>An error occurred</h3>
-        <p>${message}</p>
-        <button onclick="window.location.reload()" style="background: white; border: none; padding: 5px 10px; margin-top: 10px; cursor: pointer;">
-          Reload
-        </button>
-        <button onclick="this.parentNode.remove()" style="background: #333; color: white; border: none; padding: 5px 10px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
-          Dismiss
-        </button>
-      `;
-      document.body.appendChild(errorOverlay);
-    }
-    
-    // Simplified debug logger
-    window.debugLumon = {
-      log: function(message) {
-        console.log("%c[Lumon Debug] " + message, "color: #5CDED3");
-      },
-      error: function(message) {
-        console.error("%c[Lumon Debug] " + message, "color: #FF5555");
-      }
-    };
-  </script>
-  <script type="module" crossorigin src="/3D-Portfolio/assets/main-DBnbW_UV.js"></script>
-  <link rel="stylesheet" crossorigin href="/3D-Portfolio/assets/main-BnuVihSM.css">
+  <script type="module" crossorigin src="/3D-Portfolio/assets/index-BnSv7byL.js"></script>
+  <link rel="stylesheet" crossorigin href="/3D-Portfolio/assets/index-CE_aFpHU.css">
 </head>
+
 <body>
   <div id="app-container">
     <div id="three-container"></div>
-
-    <div id="subtitle-container"></div>
-    <div id="ui-overlay">
-      <div id="location-indicator"></div>
-      <div id="interaction-prompt" style="display: none;"></div>
-      <!-- Dev Terminal Overlay (hidden by default) -->
-      <div id="dev-terminal-overlay" style="display:none; position:fixed; left:5vw; top:15vh; width:700px; height:400px; background:#000; color:#33ff33; border:2px solid #33ff33; border-radius:4px; z-index:10000; font-family:'Fira Mono', 'Courier New', monospace; box-shadow:0 0 10px rgba(51, 255, 51, 0.5); padding:0; overflow:hidden;">
-        <div id="dev-terminal-header">
-          <div id="dev-terminal-title">TERMINAL</div>
-          <div id="dev-terminal-controls">
-            <div class="terminal-btn terminal-minimize"></div>
-            <div class="terminal-btn terminal-maximize"></div>
-            <div class="terminal-btn terminal-close" id="dev-terminal-close"></div>
-          </div>
-        </div>
-        <div class="terminal-scan-line"></div>
-        <div id="dev-terminal-body"></div>
-        <div id="dev-terminal-prompt"></div>
-      </div>
-    </div>
-
-    <!-- Game HUD -->
+    
     <div id="game-hud" class="hud">
-      <!-- Improved controls info box -->
+      <div id="location-indicator">Location: Unknown</div>
+      
+      <div id="subtitle-container">
+        <div id="subtitle-text"></div>
+      </div>
+
+      <div id="interaction-prompt">
+        Press E to interact
+      </div>
+      
       <div id="controls-info">
         <div id="controls-header">CONTROLS</div>
         <div class="control-items">
@@ -591,175 +202,5 @@
     </div>
   </div>
 
-  <!-- Use the original main.js file directly -->
-
-  <script>
-    // Initialize UI components after DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      // Make sure controls are visible by default
-      const controlsInfo = document.getElementById('controls-info');
-      if (controlsInfo && controlsInfo.classList.contains('hidden')) {
-        controlsInfo.classList.remove('hidden');
-      }
-      
-      // Test terminal function (for development)
-      window.openTerminal = function() {
-        if (typeof window.showDevTerminalOverlay === 'function') {
-          window.showDevTerminalOverlay();
-        }
-      };
-      
-      // Keyboard shortcut for testing terminal (Alt + T)
-      document.addEventListener('keydown', function(e) {
-        if (e.altKey && e.key === 't') {
-          window.openTerminal();
-        }
-      });
-    });
-
-    // Add global mouse tracking for shaders
-    window.mouseX = window.innerWidth / 2;
-    window.mouseY = window.innerHeight / 2;
-    
-    document.addEventListener('mousemove', (event) => {
-      window.mouseX = event.clientX;
-      window.mouseY = event.clientY;
-    });
-  </script>
-
-  <!-- DEV TERMINAL OVERLAY LOGIC -->
-  <script>
-    (function() {
-      const overlay = document.getElementById('dev-terminal-overlay');
-      const body = document.getElementById('dev-terminal-body');
-      const promptDiv = document.getElementById('dev-terminal-prompt');
-      const closeBtn = document.getElementById('dev-terminal-close');
-      const minimizeBtn = document.querySelector('.terminal-minimize');
-      const maximizeBtn = document.querySelector('.terminal-maximize');
-      
-      const PROMPT = 'parsa@portfolio:~$ ';
-      const WELCOME_MESSAGE = [
-        '█       AUTHORIZED ACCESS ONLY              █',
-        '',
-        'Type "help" for available commands.',
-        ''
-      ].join('\n');
-      
-      let input = '';
-      let isOpen = false;
-      let cursorVisible = true;
-      let cursorInterval = null;
-      let commandHistory = [];
-      let historyIndex = -1;
-
-      function renderPrompt() {
-        promptDiv.innerHTML =
-          `<span style="color:#33ff33;">${PROMPT}</span>` +
-          `<span id="dev-terminal-input">${input.replace(/ /g, '&nbsp;')}</span>` +
-          `<span class="dev-terminal-cursor">&nbsp;</span>`;
-      }
-
-      function appendOutput(text, className = '') {
-        if (className) {
-          body.innerHTML += `<div class="${className}">${text}</div>`;
-        } else {
-          body.innerHTML += `${text}\n`;
-        }
-        body.scrollTop = body.scrollHeight;
-      }
-
-      function processCommand(cmd) {
-        if (cmd.trim() !== '') {
-          commandHistory.push(cmd);
-          historyIndex = commandHistory.length;
-        }
-        
-        appendOutput(`${PROMPT}${cmd}`, 'terminal-command');
-        
-        const trimmedCmd = cmd.trim().toLowerCase();
-        
-        switch(trimmedCmd) {
-          case 'help':
-            appendOutput('Available commands: help, clear, version, exit', 'terminal-output');
-            break;
-          case 'clear':
-            body.innerHTML = '';
-            break;
-          case 'version':
-            appendOutput('Severance Terminal v1.0', 'terminal-output');
-            break;
-          case 'exit':
-            window.hideDevTerminalOverlay();
-            return;
-          default:
-            if (trimmedCmd !== '') {
-              appendOutput(`bash: ${cmd}: command not found`, 'terminal-error');
-            }
-        }
-      }
-
-      function onKeyDown(e) {
-        if (!isOpen) return;
-        
-        switch(e.key) {
-          case 'Escape':
-            window.hideDevTerminalOverlay();
-            e.preventDefault();
-            return;
-          case 'Backspace':
-            input = input.slice(0, -1);
-            renderPrompt();
-            e.preventDefault();
-            return;
-          case 'Enter':
-            processCommand(input);
-            input = '';
-            renderPrompt();
-            e.preventDefault();
-            return;
-        }
-        
-        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          input += e.key;
-          renderPrompt();
-          e.preventDefault();
-        }
-      }
-
-      window.showDevTerminalOverlay = function() {
-        if (isOpen) return;
-        
-        overlay.style.display = 'block';
-        isOpen = true;
-        input = '';
-        
-        body.innerHTML = '';
-        appendOutput(WELCOME_MESSAGE);
-        renderPrompt();
-        
-        document.addEventListener('keydown', onKeyDown, true);
-        
-        if (cursorInterval) clearInterval(cursorInterval);
-        cursorInterval = setInterval(() => {
-          const cursor = promptDiv.querySelector('.dev-terminal-cursor');
-          if (cursor) cursor.style.opacity = cursorVisible ? '1' : '0';
-          cursorVisible = !cursorVisible;
-        }, 500);
-      };
-
-      window.hideDevTerminalOverlay = function() {
-        if (!isOpen) return;
-        
-        overlay.style.display = 'none';
-        isOpen = false;
-        
-        document.removeEventListener('keydown', onKeyDown, true);
-        
-        if (cursorInterval) clearInterval(cursorInterval);
-      };
-
-      if (closeBtn) closeBtn.onclick = window.hideDevTerminalOverlay;
-    })();
-  </script>
 </body>
 </html>
