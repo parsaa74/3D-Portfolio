@@ -5,7 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Portfolio</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <!-- Fixed deployment - v3 -->
+  <!-- GitHub Pages SPA support -->
+  <script>
+    // Check if we have a redirect parameter (from 404.html)
+    (function() {
+      var redirect = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      if (redirect && redirect != location.href) {
+        history.replaceState(null, null, redirect);
+      }
+    })();
+    
+    // Handle GitHub Pages routing
+    (function() {
+      var l = window.location;
+      if (l.search && l.search.indexOf('?/') !== -1) {
+        var decoded = l.search.slice(1).split('&').map(function(s) { 
+          return s.replace(/~and~/g, '&')
+        }).join('?');
+        window.history.replaceState(null, null,
+          l.pathname.slice(0, -1) + decoded + l.hash
+        );
+      }
+    })();
+  </script>
+  <!-- Fixed deployment - v4 with cache busting -->
   <style>
     body {
       margin: 0;

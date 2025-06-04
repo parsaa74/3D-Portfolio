@@ -1,0 +1,2 @@
+# This file ensures GitHub Pages doesn't use Jekyll processing
+# which can interfere with ES6 modules and other modern web features 

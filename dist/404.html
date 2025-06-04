@@ -3,40 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Page Not Found</title>
+  <title>3D Portfolio - Page Not Found</title>
   <script>
-    // Redirect to the home page
-    const segmentCount = 1;
-    const redirectPath = window.location.pathname.split('/').slice(0, segmentCount + 1).join('/');
-    window.location.replace(`${redirectPath}/`);
+    // GitHub Pages SPA redirect
+    // This script takes the current url and converts the path and query
+    // string into just a query string, and then redirects the browser
+    // to the new url with only a query string and hash fragment,
+    // e.g. https://www.foo.tld/one/two?a=b&c=d#qwe, becomes
+    // https://www.foo.tld/?/one/two&a=b~and~c=d#qwe
+    var l = window.location;
+    var pathSegmentsToKeep = 1; // The number of path segments to keep (only the repository name)
+    
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.hash
+    );
   </script>
   <style>
     body {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       text-align: center;
-      padding: 20px;
+      padding: 50px 20px;
       background: #000;
-      color: #fff;
+      color: #e0e0e0;
+      margin: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
     }
     h1 {
-      margin-top: 50px;
       color: #5CDED3;
+      font-size: 2.5em;
+      margin-bottom: 20px;
     }
     p {
       margin: 20px 0;
+      font-size: 1.1em;
+      line-height: 1.6;
+    }
+    .loading {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
     }
     a {
       color: #5CDED3;
       text-decoration: none;
+      border: 1px solid #5CDED3;
+      padding: 10px 20px;
+      display: inline-block;
+      margin-top: 20px;
+      transition: all 0.3s ease;
     }
     a:hover {
-      text-decoration: underline;
+      background: #5CDED3;
+      color: #000;
     }
   </style>
 </head>
 <body>
-  <h1>Page Not Found</h1>
-  <p>Redirecting to the home page...</p>
-  <p>If you are not redirected automatically, <a href="/3D-Portfolio/">click here</a>.</p>
+  <div class="container">
+    <h1>Redirecting...</h1>
+    <p class="loading">Please wait while we redirect you to the 3D Portfolio experience.</p>
+    <p>If you are not redirected automatically:</p>
+    <a href="/3D-Portfolio/">Return to 3D Portfolio</a>
+  </div>
 </body>
 </html> 

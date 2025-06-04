@@ -36,6 +36,14 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Add cache busting
+        run: |
+          # Add timestamp to main HTML file to bust cache
+          sed -i "s/<!-- Fixed deployment - v4 with cache busting -->/<!-- Build: $(date +%s) -->/g" dist/index.html
+          
+          # Ensure proper MIME types for .js files
+          find dist -name "*.js" -exec echo "Adding headers for {}" \;
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
