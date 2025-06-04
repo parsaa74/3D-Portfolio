@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive 3D Experience</title>
-  <link rel="icon" href="/3D-Portfolio/assets/corridor-icon.svg" type="image/svg+xml">
+  <title>3D Portfolio</title>
+  <link rel="icon" type="image/x-icon" href="/3D-Portfolio/favicon.ico">
+
+
+  <!-- Import main CSS -->
   <style>
     body {
       margin: 0;
@@ -338,12 +341,8 @@
       }
     };
   </script>
-  
-  
-  
-  
-  <script type="module" crossorigin src="/3D-Portfolio/assets/index-abe4efcc.js"></script>
-  <link rel="stylesheet" href="/3D-Portfolio/assets/index.css">
+  <script type="module" crossorigin src="/3D-Portfolio/assets/main-C2PX7sb-.js"></script>
+  <link rel="stylesheet" crossorigin href="/3D-Portfolio/assets/main-BnuVihSM.css">
 </head>
 <body>
   <div id="app-container">
@@ -404,7 +403,8 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Use the original main.js file directly -->
+
   <script>
     // Initialize UI components after DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
@@ -437,6 +437,141 @@
       window.mouseX = event.clientX;
       window.mouseY = event.clientY;
     });
+  </script>
+
+  <!-- DEV TERMINAL OVERLAY LOGIC -->
+  <script>
+    (function() {
+      const overlay = document.getElementById('dev-terminal-overlay');
+      const body = document.getElementById('dev-terminal-body');
+      const promptDiv = document.getElementById('dev-terminal-prompt');
+      const closeBtn = document.getElementById('dev-terminal-close');
+      const minimizeBtn = document.querySelector('.terminal-minimize');
+      const maximizeBtn = document.querySelector('.terminal-maximize');
+      
+      const PROMPT = 'parsa@portfolio:~$ ';
+      const WELCOME_MESSAGE = [
+        '█       AUTHORIZED ACCESS ONLY              █',
+        '',
+        'Type "help" for available commands.',
+        ''
+      ].join('\n');
+      
+      let input = '';
+      let isOpen = false;
+      let cursorVisible = true;
+      let cursorInterval = null;
+      let commandHistory = [];
+      let historyIndex = -1;
+
+      function renderPrompt() {
+        promptDiv.innerHTML =
+          `<span style="color:#33ff33;">${PROMPT}</span>` +
+          `<span id="dev-terminal-input">${input.replace(/ /g, '&nbsp;')}</span>` +
+          `<span class="dev-terminal-cursor">&nbsp;</span>`;
+      }
+
+      function appendOutput(text, className = '') {
+        if (className) {
+          body.innerHTML += `<div class="${className}">${text}</div>`;
+        } else {
+          body.innerHTML += `${text}\n`;
+        }
+        body.scrollTop = body.scrollHeight;
+      }
+
+      function processCommand(cmd) {
+        if (cmd.trim() !== '') {
+          commandHistory.push(cmd);
+          historyIndex = commandHistory.length;
+        }
+        
+        appendOutput(`${PROMPT}${cmd}`, 'terminal-command');
+        
+        const trimmedCmd = cmd.trim().toLowerCase();
+        
+        switch(trimmedCmd) {
+          case 'help':
+            appendOutput('Available commands: help, clear, version, exit', 'terminal-output');
+            break;
+          case 'clear':
+            body.innerHTML = '';
+            break;
+          case 'version':
+            appendOutput('Severance Terminal v1.0', 'terminal-output');
+            break;
+          case 'exit':
+            window.hideDevTerminalOverlay();
+            return;
+          default:
+            if (trimmedCmd !== '') {
+              appendOutput(`bash: ${cmd}: command not found`, 'terminal-error');
+            }
+        }
+      }
+
+      function onKeyDown(e) {
+        if (!isOpen) return;
+        
+        switch(e.key) {
+          case 'Escape':
+            window.hideDevTerminalOverlay();
+            e.preventDefault();
+            return;
+          case 'Backspace':
+            input = input.slice(0, -1);
+            renderPrompt();
+            e.preventDefault();
+            return;
+          case 'Enter':
+            processCommand(input);
+            input = '';
+            renderPrompt();
+            e.preventDefault();
+            return;
+        }
+        
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          input += e.key;
+          renderPrompt();
+          e.preventDefault();
+        }
+      }
+
+      window.showDevTerminalOverlay = function() {
+        if (isOpen) return;
+        
+        overlay.style.display = 'block';
+        isOpen = true;
+        input = '';
+        
+        body.innerHTML = '';
+        appendOutput(WELCOME_MESSAGE);
+        renderPrompt();
+        
+        document.addEventListener('keydown', onKeyDown, true);
+        
+        if (cursorInterval) clearInterval(cursorInterval);
+        cursorInterval = setInterval(() => {
+          const cursor = promptDiv.querySelector('.dev-terminal-cursor');
+          if (cursor) cursor.style.opacity = cursorVisible ? '1' : '0';
+          cursorVisible = !cursorVisible;
+        }, 500);
+      };
+
+      window.hideDevTerminalOverlay = function() {
+        if (!isOpen) return;
+        
+        overlay.style.display = 'none';
+        isOpen = false;
+        
+        document.removeEventListener('keydown', onKeyDown, true);
+        
+        if (cursorInterval) clearInterval(cursorInterval);
+      };
+
+      if (closeBtn) closeBtn.onclick = window.hideDevTerminalOverlay;
+    })();
   </script>
 </body>
 </html>

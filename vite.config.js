@@ -28,6 +28,7 @@ export default defineConfig({
   resolve: {
     alias: {
       three: resolve(__dirname, "node_modules/three"),
+      "three/addons/": resolve(__dirname, "node_modules/three/examples/jsm/"),
       "@": resolve(__dirname, "src"),
       "cannon-es": "cannon-es",
       "stats.js": "stats.js",

@@ -172,10 +172,10 @@ export class SeveranceEnvironment extends BaseEnvironment {
 
     // Initialize post-processing effects
     if (this.composer) {
-      const { EffectComposer } = await import('three/addons/postprocessing/EffectComposer.js');
-      const { RenderPass } = await import('three/addons/postprocessing/RenderPass.js');
-      const { UnrealBloomPass } = await import('three/addons/postprocessing/UnrealBloomPass.js');
-      const { ShaderPass } = await import('three/addons/postprocessing/ShaderPass.js');
+              const { EffectComposer } = await import('three/examples/jsm/postprocessing/EffectComposer.js');
+        const { RenderPass } = await import('three/examples/jsm/postprocessing/RenderPass.js');
+        const { UnrealBloomPass } = await import('three/examples/jsm/postprocessing/UnrealBloomPass.js');
+        const { ShaderPass } = await import('three/examples/jsm/postprocessing/ShaderPass.js');
 
       // Custom chromatic aberration shader
       const chromaticAberrationShader = {

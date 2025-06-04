@@ -7,7 +7,7 @@ import {
   ShaderPass,
   UnrealBloomPass,
   SMAAPass,
-} from "three/addons/postprocessing/EffectComposer.js";
+} from "three/examples/jsm/postprocessing/EffectComposer.js";
 
 describe("PostProcessingManager", () => {
   let manager;
