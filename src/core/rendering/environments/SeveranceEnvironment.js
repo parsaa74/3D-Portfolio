@@ -4286,7 +4286,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     console.log("[DEBUG FILM INTERIOR] About to call addWatchInteractionToFrame for poster1"); // <<< ADDED
     const poster1Interact = addWatchInteractionToFrame(
       framedPoster1, poster1Position,
-      'https://your-link-here',
+      'https://vimeo.com/1089278485',
       '38:01',
       '2017',
       'parsa azari',
