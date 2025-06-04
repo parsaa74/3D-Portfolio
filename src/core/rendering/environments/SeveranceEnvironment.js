@@ -4432,7 +4432,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load all favorite film textures
     const favoriteFilmTextures = await Promise.all(
-      favoriteFilms.map(film => textureLoader.loadAsync(`/assets/images/film/favorite films/${film.filename}`))
+              favoriteFilms.map(film => textureLoader.loadAsync(getAssetPath(`images/film/favorite films/${film.filename}`)))
     );
     
     // Define right wall position and rotation for gallery
@@ -4679,7 +4679,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
             const textureLoader = new THREE.TextureLoader();
             
             // Create the appropriate path based on posterTitle
-            const basePath = `/assets/Images/performance/solo performances/${posterTitle.toLowerCase()}/`;
+            const basePath = getAssetPath(`Images/performance/solo performances/${posterTitle.toLowerCase()}/`);
             console.log(`Looking for images at path: ${basePath}`);
             
             for (let i = 0; i < count; i++) {
