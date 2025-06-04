@@ -4440,7 +4440,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     
     // Load all favorite film textures
     const favoriteFilmTextures = await Promise.all(
-              favoriteFilms.map(film => textureLoader.loadAsync(getAssetPath(`images/film/favorite films/${film.filename}`)))
+              favoriteFilms.map(film => textureLoader.loadAsync(getAssetPath(`images/film/favorite-films/${film.filename}`)))
     );
     
     // Define right wall position and rotation for gallery
