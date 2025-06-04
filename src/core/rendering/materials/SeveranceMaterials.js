@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { getTexturePath, getShaderPath } from "@utils/assetPaths.js";
 
 /**
  * Material system for the Severance aesthetic
@@ -163,11 +164,11 @@ export class SeveranceMaterials {
   async _loadTextures() {
     const textureLoader = new THREE.TextureLoader();
     const texturePaths = {
-      wall: "/assets/textures/wall.jpg",
-      floor: "/assets/textures/floor.jpg",
-      trim: "/assets/textures/trim.jpg",
-      door: "/assets/textures/door.jpg",
-      outsideGround: "/assets/textures/wall.jpg",
+      wall: getTexturePath("wall.jpg"),
+      floor: getTexturePath("floor.jpg"),
+      trim: getTexturePath("trim.jpg"),
+      door: getTexturePath("door.jpg"),
+      outsideGround: getTexturePath("wall.jpg"),
     };
 
     const loadTexture = (path) => {
@@ -256,7 +257,7 @@ export class SeveranceMaterials {
           "Attempting to load vertex shader from src/shaders/common/vertex.glsl"
         );
         commonVertexShader = await this._loadShaderFile(
-          "/src/shaders/common/vertex.glsl"
+          getShaderPath("common/vertex.glsl")
         );
         console.log("Successfully loaded vertex shader");
       } catch (e) {
@@ -274,7 +275,7 @@ export class SeveranceMaterials {
           "Attempting to load wall shader from src/shaders/wall.glsl"
         );
         wallFragmentShader = await this._loadShaderFile(
-          "/src/shaders/wall.glsl"
+          getShaderPath("wall.glsl")
         );
         console.log("Successfully loaded wall shader");
         console.log(
@@ -306,7 +307,7 @@ export class SeveranceMaterials {
           "Attempting to load corridor shader from src/shaders/corridor.glsl"
         );
         corridorFragmentShader = await this._loadShaderFile(
-          "/src/shaders/corridor.glsl"
+          getShaderPath("corridor.glsl")
         );
         console.log("Successfully loaded corridor shader");
       } catch (e) {

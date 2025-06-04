@@ -1,5 +1,6 @@
 import { THREE, GLTFLoader, DRACOLoader } from "@utils/ThreeJSLoader.js";
 import { EventEmitter } from "@utils/EventEmitter";
+import { getTexturePath } from "@utils/assetPaths.js";
 
 /**
  * Asset loading system for managing game assets
@@ -86,11 +87,11 @@ export class AssetLoader extends EventEmitter {
    */
   _loadTextures() {
     const texturesToLoad = {
-      wall: "/public/assets/textures/wall.jpg",
-      floor: "/public/assets/textures/floor.jpg",
-      ceiling: "/public/assets/textures/ceiling.jpg",
-      door: "/public/assets/textures/door.jpg",
-      trim: "/public/assets/textures/trim.jpg",
+      wall: getTexturePath("wall.jpg"),
+      floor: getTexturePath("floor.jpg"),
+      ceiling: getTexturePath("ceiling.jpg"),
+      door: getTexturePath("door.jpg"),
+      trim: getTexturePath("trim.jpg"),
     };
 
     return Object.entries(texturesToLoad).map(([name, path]) => {

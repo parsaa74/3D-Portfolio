@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // Fixed import path
 import { TextureLoader } from "three"; // Add TextureLoader import
 import { BaseEnvironment } from "./BaseEnvironment.js";
+import { getAssetPath, getTexturePath } from "@utils/assetPaths.js";
 import { MapSystem } from "../../../systems/map/MapSystem.js";
 import { SeveranceMaterials } from "../materials/SeveranceMaterials.js";
 import { UnifiedMovementController } from "../../../systems/movement/UnifiedMovementController.js";
@@ -3946,7 +3947,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
     });
     
     // Load poster textures
-    const poster1Texture = await textureLoader.loadAsync('/assets/textures/posters/poster1.jpg');
+            const poster1Texture = await textureLoader.loadAsync(getAssetPath('assets/textures/posters/poster1.jpg'));
     // const poster2Texture = await textureLoader.loadAsync('/assets/textures/posters/Severance_Photo_0201.jpg');
 
     const chairMesh = chairGltf.scene;
@@ -4353,7 +4354,7 @@ export class SeveranceEnvironment extends BaseEnvironment {
       'poster2(3).jpg',
       'poster2(4).jpg'
     ];
-    const stillBasePath = '/assets/textures/posters/';
+            const stillBasePath = getAssetPath('assets/textures/posters/');
     const stillRotation = new THREE.Vector3(0, Math.PI / 2, 0);
     const collagePosition = new THREE.Vector3(
       center.x - size.x / 2 + 0.1,
