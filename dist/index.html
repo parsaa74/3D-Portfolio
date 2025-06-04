@@ -5,11 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Portfolio</title>
   <link rel="icon" type="image/x-icon" href="/3D-Portfolio/favicon.ico">
-  <!-- Fixed asset loading - version 2 -->
-
-  <!-- Vite will process and bundle CSS automatically when imported in JS -->
-  <!-- Vite entry point - must be in head for proper processing -->
-  
   <style>
     body {
       margin: 0;
@@ -39,18 +34,8 @@
       z-index: 10;
     }
 
-    /* Remove old start button styles */
-    #three-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* Game HUD Styles */
     #game-hud {
-      display: none; /* Hide initially */
+      display: none;
       padding: 20px;
     }
 
@@ -74,12 +59,6 @@
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
       z-index: 100;
       letter-spacing: 1.2px;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      transform-origin: bottom left;
-    }
-    
-    #controls-info:hover {
-      transform: scale(1.03);
     }
     
     #controls-header {
@@ -146,353 +125,26 @@
       opacity: 0;
       transition: opacity 0.3s ease;
     }
-
-    #dev-terminal-overlay {
-      background: #000 !important;
-      color: #33ff33 !important;
-      border: 2px solid #33ff33 !important;
-      border-radius: 4px !important;
-      box-shadow: 0 0 10px rgba(51, 255, 51, 0.5) !important;
-      font-family: 'Fira Mono', 'Courier New', monospace !important;
-      padding: 0 !important;
-    }
-
-    #dev-terminal-body {
-      font-family: 'Fira Mono', 'Courier New', monospace;
-      color: #33ff33;
-      background-color: #000;
-      margin: 25px 15px 0 15px;
-      padding: 5px;
-      font-size: 14px;
-      line-height: 1.4;
-      overflow-y: auto;
-      height: 320px;
-      max-height: 320px;
-      border: none;
-    }
-
-    #dev-terminal-prompt {
-      font-family: 'Fira Mono', 'Courier New', monospace;
-      color: #33ff33;
-      margin: 5px 15px 15px 15px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      height: 25px;
-    }
-
-    .dev-terminal-cursor {
-      display: inline-block;
-      width: 8px;
-      height: 14px;
-      background: #33ff33;
-      margin-left: 2px;
-      animation: blink-cursor 1s steps(1) infinite;
-      vertical-align: middle;
-    }
-
-    #dev-terminal-header {
-      height: 25px;
-      background: #202020;
-      border-bottom: 1px solid #33ff33;
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      font-size: 12px;
-      color: #33ff33;
-    }
-
-    @keyframes blink-cursor {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-
-    .terminal-controls {
-      margin-left: auto;
-      display: flex;
-      gap: 5px;
-    }
-
-    .terminal-controls button {
-      width: 16px;
-      height: 16px;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .terminal-close {
-      background: #ff5f56;
-      color: #fff;
-    }
-
-    .terminal-minimize {
-      background: #ffbd2e;
-      color: #fff;
-    }
-
-    .terminal-maximize {
-      background: #27ca3f;
-      color: #fff;
-    }
-
-    #dev-terminal-overlay {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80%;
-      max-width: 800px;
-      height: 400px;
-      z-index: 10000;
-      display: none;
-    }
-
-    .interaction-button {
-      position: absolute;
-      width: 60px;
-      height: 60px;
-      background: rgba(92, 222, 211, 0.3);
-      border: 2px solid #5CDED3;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #5CDED3;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      animation: pulse-button 2s infinite;
-      backdrop-filter: blur(5px);
-      transition: all 0.3s ease;
-      pointer-events: auto;
-    }
-
-    .interaction-button:hover {
-      background: rgba(92, 222, 211, 0.5);
-      transform: scale(1.1);
-      box-shadow: 0 0 20px rgba(92, 222, 211, 0.6);
-    }
-
-    @keyframes pulse-button {
-      0% { box-shadow: 0 0 0 0 rgba(92, 222, 211, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(92, 222, 211, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(92, 222, 211, 0); }
-    }
-
-    .poster-info-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 20000;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .poster-info-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(16, 24, 32, 0.95);
-      border: 2px solid #5CDED3;
-      border-radius: 8px;
-      padding: 40px;
-      max-width: 80%;
-      max-height: 80%;
-      overflow-y: auto;
-      color: #e0e0e0;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    }
-
-    .poster-info-content h2 {
-      color: #5CDED3;
-      margin-top: 0;
-      font-size: 2em;
-      border-bottom: 1px solid #5CDED3;
-      padding-bottom: 10px;
-    }
-
-    .poster-info-content .close-button {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      background: none;
-      border: none;
-      color: #5CDED3;
-      font-size: 24px;
-      cursor: pointer;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: background 0.3s ease;
-    }
-
-    .poster-info-content .close-button:hover {
-      background: rgba(92, 222, 211, 0.2);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* Film overlay styles */
-    .film-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      z-index: 20000;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .film-content {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(16, 24, 32, 0.98);
-      border: 2px solid #5CDED3;
-      border-radius: 12px;
-      padding: 40px;
-      max-width: 90%;
-      width: 800px;
-      max-height: 90%;
-      overflow-y: auto;
-      color: #e0e0e0;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
-    }
-
-    .film-content h2 {
-      color: #5CDED3;
-      margin-top: 0;
-      font-size: 2.5em;
-      border-bottom: 2px solid #5CDED3;
-      padding-bottom: 15px;
-      margin-bottom: 20px;
-    }
-
-    .film-year {
-      color: #9ca3af;
-      font-size: 1.2em;
-      margin-bottom: 15px;
-    }
-
-    .film-cast {
-      color: #d1d5db;
-      font-size: 1.1em;
-      margin-bottom: 20px;
-      font-style: italic;
-    }
-
-    .film-role {
-      color: #5CDED3;
-      font-size: 1.1em;
-      margin-bottom: 15px;
-      font-weight: bold;
-    }
-
-    .film-summary {
-      line-height: 1.6;
-      font-size: 1.05em;
-      color: #e0e0e0;
-      margin-bottom: 25px;
-    }
-
-    .film-link {
-      display: inline-block;
-      background: linear-gradient(135deg, #5CDED3, #4ade80);
-      color: #000;
-      padding: 12px 24px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      margin-top: 20px;
-    }
-
-    .film-link:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(92, 222, 211, 0.4);
-    }
-
-    .film-content .close-button {
-      position: absolute;
-      top: 20px;
-      right: 25px;
-      background: none;
-      border: none;
-      color: #5CDED3;
-      font-size: 28px;
-      cursor: pointer;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-    }
-
-    .film-content .close-button:hover {
-      background: rgba(92, 222, 211, 0.2);
-      transform: rotate(90deg);
-    }
   </style>
-  <script type="module" crossorigin src="/3D-Portfolio/assets/main-pVS6vMmy.js"></script>
-  <link rel="stylesheet" crossorigin href="/3D-Portfolio/assets/main-BnuVihSM.css">
+  <script type="module" crossorigin src="/3D-Portfolio/assets/index-QhzON4yl.js"></script>
+  <link rel="stylesheet" crossorigin href="/3D-Portfolio/assets/index-BnuVihSM.css">
 </head>
 
 <body>
-  <!-- Dev Terminal Overlay -->
-  <div id="dev-terminal-overlay">
-    <div id="dev-terminal-header">
-      <span>Terminal - Severance Environment</span>
-      <div class="terminal-controls">
-        <button class="terminal-minimize">-</button>
-        <button class="terminal-maximize">+</button>
-        <button class="terminal-close" id="dev-terminal-close">×</button>
-      </div>
-    </div>
-    <div id="dev-terminal-body"></div>
-    <div id="dev-terminal-prompt"></div>
-  </div>
-
   <div id="app-container">
     <div id="three-container"></div>
     
-    <!-- HUD -->
     <div id="game-hud" class="hud">
       <div id="location-indicator">Location: Unknown</div>
       
-      <!-- Subtitle container -->
       <div id="subtitle-container">
         <div id="subtitle-text"></div>
       </div>
 
-      <!-- Interaction prompt -->
       <div id="interaction-prompt">
         Press E to interact
       </div>
       
-      <!-- Controls info panel -->
       <div id="controls-info">
         <div id="controls-header">CONTROLS</div>
         <div class="control-items">
@@ -524,5 +176,6 @@
       </div>
     </div>
   </div>
+
 </body>
 </html>
