@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3D Portfolio</title>
   <link rel="icon" type="image/x-icon" href="/3D-Portfolio/favicon.ico">
+  <!-- Fixed asset loading - version 2 -->
 
   <!-- Vite will process and bundle CSS automatically when imported in JS -->
+  <!-- Vite entry point - must be in head for proper processing -->
+  
   <style>
     body {
       margin: 0;
@@ -453,112 +456,43 @@
       transform: rotate(90deg);
     }
   </style>
-
-  <!-- Performance monitoring and error handling -->
-  <script>
-    // Performance monitoring
-    window.performance.mark('page-start');
-    
-    // Global error handler to prevent unhandled exceptions from crashing the application
-    window.addEventListener('error', function(event) {
-      console.error('Global error caught:', {
-        error: event.error,
-        message: event.message,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-        stack: event.error?.stack
-      });
-      
-      // Show error to user for critical errors
-      const errorMessage = event.error ? (event.error.stack || event.error.message) : event.message;
-      if (errorMessage.includes('WebGL') || errorMessage.includes('THREE') || errorMessage.includes('memory')) {
-        showErrorOverlay(errorMessage);
-      }
-      
-      event.preventDefault();
-      return true;
-    });
-    
-    // Also catch unhandled promise rejections
-    window.addEventListener('unhandledrejection', function(event) {
-      console.error('Unhandled promise rejection:', {
-        reason: event.reason,
-        stack: event.reason?.stack
-      });
-      event.preventDefault();
-    });
-    
-    // Show error overlay
-    function showErrorOverlay(message) {
-      const errorOverlay = document.createElement('div');
-      errorOverlay.style.cssText = `
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        right: 10px;
-        background: rgba(255, 0, 0, 0.8);
-        color: white;
-        padding: 15px;
-        border-radius: 5px;
-        z-index: 100000;
-        font-family: sans-serif;
-        max-height: 200px;
-        overflow-y: auto;
-      `;
-      errorOverlay.innerHTML = `
-        <h3>An error occurred</h3>
-        <p>${message}</p>
-        <button onclick="window.location.reload()" style="background: white; border: none; padding: 5px 10px; margin-top: 10px; cursor: pointer;">
-          Reload
-        </button>
-        <button onclick="this.parentNode.remove()" style="background: #333; color: white; border: none; padding: 5px 10px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
-          Dismiss
-        </button>
-      `;
-      document.body.appendChild(errorOverlay);
-    }
-    
-    // Simplified debug logger
-    window.debugLumon = {
-      log: function(message) {
-        console.log("%c[Lumon Debug] " + message, "color: #5CDED3");
-      },
-      error: function(message) {
-        console.error("%c[Lumon Debug] " + message, "color: #FF5555");
-      }
-    };
-  </script>
-  <script type="module" crossorigin src="/3D-Portfolio/assets/main-DBnbW_UV.js"></script>
+  <script type="module" crossorigin src="/3D-Portfolio/assets/main-pVS6vMmy.js"></script>
   <link rel="stylesheet" crossorigin href="/3D-Portfolio/assets/main-BnuVihSM.css">
 </head>
-<body>
-  <div id="app-container">
-    <div id="three-container"></div>
 
-    <div id="subtitle-container"></div>
-    <div id="ui-overlay">
-      <div id="location-indicator"></div>
-      <div id="interaction-prompt" style="display: none;"></div>
-      <!-- Dev Terminal Overlay (hidden by default) -->
-      <div id="dev-terminal-overlay" style="display:none; position:fixed; left:5vw; top:15vh; width:700px; height:400px; background:#000; color:#33ff33; border:2px solid #33ff33; border-radius:4px; z-index:10000; font-family:'Fira Mono', 'Courier New', monospace; box-shadow:0 0 10px rgba(51, 255, 51, 0.5); padding:0; overflow:hidden;">
-        <div id="dev-terminal-header">
-          <div id="dev-terminal-title">TERMINAL</div>
-          <div id="dev-terminal-controls">
-            <div class="terminal-btn terminal-minimize"></div>
-            <div class="terminal-btn terminal-maximize"></div>
-            <div class="terminal-btn terminal-close" id="dev-terminal-close"></div>
-          </div>
-        </div>
-        <div class="terminal-scan-line"></div>
-        <div id="dev-terminal-body"></div>
-        <div id="dev-terminal-prompt"></div>
+<body>
+  <!-- Dev Terminal Overlay -->
+  <div id="dev-terminal-overlay">
+    <div id="dev-terminal-header">
+      <span>Terminal - Severance Environment</span>
+      <div class="terminal-controls">
+        <button class="terminal-minimize">-</button>
+        <button class="terminal-maximize">+</button>
+        <button class="terminal-close" id="dev-terminal-close">×</button>
       </div>
     </div>
+    <div id="dev-terminal-body"></div>
+    <div id="dev-terminal-prompt"></div>
+  </div>
 
-    <!-- Game HUD -->
+  <div id="app-container">
+    <div id="three-container"></div>
+    
+    <!-- HUD -->
     <div id="game-hud" class="hud">
-      <!-- Improved controls info box -->
+      <div id="location-indicator">Location: Unknown</div>
+      
+      <!-- Subtitle container -->
+      <div id="subtitle-container">
+        <div id="subtitle-text"></div>
+      </div>
+
+      <!-- Interaction prompt -->
+      <div id="interaction-prompt">
+        Press E to interact
+      </div>
+      
+      <!-- Controls info panel -->
       <div id="controls-info">
         <div id="controls-header">CONTROLS</div>
         <div class="control-items">
@@ -590,176 +524,5 @@
       </div>
     </div>
   </div>
-
-  <!-- Use the original main.js file directly -->
-
-  <script>
-    // Initialize UI components after DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      // Make sure controls are visible by default
-      const controlsInfo = document.getElementById('controls-info');
-      if (controlsInfo && controlsInfo.classList.contains('hidden')) {
-        controlsInfo.classList.remove('hidden');
-      }
-      
-      // Test terminal function (for development)
-      window.openTerminal = function() {
-        if (typeof window.showDevTerminalOverlay === 'function') {
-          window.showDevTerminalOverlay();
-        }
-      };
-      
-      // Keyboard shortcut for testing terminal (Alt + T)
-      document.addEventListener('keydown', function(e) {
-        if (e.altKey && e.key === 't') {
-          window.openTerminal();
-        }
-      });
-    });
-
-    // Add global mouse tracking for shaders
-    window.mouseX = window.innerWidth / 2;
-    window.mouseY = window.innerHeight / 2;
-    
-    document.addEventListener('mousemove', (event) => {
-      window.mouseX = event.clientX;
-      window.mouseY = event.clientY;
-    });
-  </script>
-
-  <!-- DEV TERMINAL OVERLAY LOGIC -->
-  <script>
-    (function() {
-      const overlay = document.getElementById('dev-terminal-overlay');
-      const body = document.getElementById('dev-terminal-body');
-      const promptDiv = document.getElementById('dev-terminal-prompt');
-      const closeBtn = document.getElementById('dev-terminal-close');
-      const minimizeBtn = document.querySelector('.terminal-minimize');
-      const maximizeBtn = document.querySelector('.terminal-maximize');
-      
-      const PROMPT = 'parsa@portfolio:~$ ';
-      const WELCOME_MESSAGE = [
-        '█       AUTHORIZED ACCESS ONLY              █',
-        '',
-        'Type "help" for available commands.',
-        ''
-      ].join('\n');
-      
-      let input = '';
-      let isOpen = false;
-      let cursorVisible = true;
-      let cursorInterval = null;
-      let commandHistory = [];
-      let historyIndex = -1;
-
-      function renderPrompt() {
-        promptDiv.innerHTML =
-          `<span style="color:#33ff33;">${PROMPT}</span>` +
-          `<span id="dev-terminal-input">${input.replace(/ /g, '&nbsp;')}</span>` +
-          `<span class="dev-terminal-cursor">&nbsp;</span>`;
-      }
-
-      function appendOutput(text, className = '') {
-        if (className) {
-          body.innerHTML += `<div class="${className}">${text}</div>`;
-        } else {
-          body.innerHTML += `${text}\n`;
-        }
-        body.scrollTop = body.scrollHeight;
-      }
-
-      function processCommand(cmd) {
-        if (cmd.trim() !== '') {
-          commandHistory.push(cmd);
-          historyIndex = commandHistory.length;
-        }
-        
-        appendOutput(`${PROMPT}${cmd}`, 'terminal-command');
-        
-        const trimmedCmd = cmd.trim().toLowerCase();
-        
-        switch(trimmedCmd) {
-          case 'help':
-            appendOutput('Available commands: help, clear, version, exit', 'terminal-output');
-            break;
-          case 'clear':
-            body.innerHTML = '';
-            break;
-          case 'version':
-            appendOutput('Severance Terminal v1.0', 'terminal-output');
-            break;
-          case 'exit':
-            window.hideDevTerminalOverlay();
-            return;
-          default:
-            if (trimmedCmd !== '') {
-              appendOutput(`bash: ${cmd}: command not found`, 'terminal-error');
-            }
-        }
-      }
-
-      function onKeyDown(e) {
-        if (!isOpen) return;
-        
-        switch(e.key) {
-          case 'Escape':
-            window.hideDevTerminalOverlay();
-            e.preventDefault();
-            return;
-          case 'Backspace':
-            input = input.slice(0, -1);
-            renderPrompt();
-            e.preventDefault();
-            return;
-          case 'Enter':
-            processCommand(input);
-            input = '';
-            renderPrompt();
-            e.preventDefault();
-            return;
-        }
-        
-        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          input += e.key;
-          renderPrompt();
-          e.preventDefault();
-        }
-      }
-
-      window.showDevTerminalOverlay = function() {
-        if (isOpen) return;
-        
-        overlay.style.display = 'block';
-        isOpen = true;
-        input = '';
-        
-        body.innerHTML = '';
-        appendOutput(WELCOME_MESSAGE);
-        renderPrompt();
-        
-        document.addEventListener('keydown', onKeyDown, true);
-        
-        if (cursorInterval) clearInterval(cursorInterval);
-        cursorInterval = setInterval(() => {
-          const cursor = promptDiv.querySelector('.dev-terminal-cursor');
-          if (cursor) cursor.style.opacity = cursorVisible ? '1' : '0';
-          cursorVisible = !cursorVisible;
-        }, 500);
-      };
-
-      window.hideDevTerminalOverlay = function() {
-        if (!isOpen) return;
-        
-        overlay.style.display = 'none';
-        isOpen = false;
-        
-        document.removeEventListener('keydown', onKeyDown, true);
-        
-        if (cursorInterval) clearInterval(cursorInterval);
-      };
-
-      if (closeBtn) closeBtn.onclick = window.hideDevTerminalOverlay;
-    })();
-  </script>
 </body>
 </html>
