@@ -3518,12 +3518,12 @@ export class SeveranceEnvironment extends BaseEnvironment {
       return nodeGroup;
     };
     
-    // Create nodes
+    // Create nodes - moved farther from terminal to avoid interference
     const nodes = [
-      { type: 'biome', position: new THREE.Vector3(center.x - size.x * 0.3, center.y + 1.2, center.z - size.z * 0.2) },
-      { type: 'toys', position: new THREE.Vector3(center.x + size.x * 0.3, center.y + 1.2, center.z - size.z * 0.2) },
-      { type: 'personal', position: new THREE.Vector3(center.x - size.x * 0.3, center.y + 1.2, center.z + size.z * 0.2) },
-      { type: 'german_art', position: new THREE.Vector3(center.x + size.x * 0.3, center.y + 1.2, center.z + size.z * 0.2) }
+      { type: 'biome', position: new THREE.Vector3(center.x + size.x * 0.3, center.y + 1.2, center.z - size.z * 0.3) },
+      { type: 'toys', position: new THREE.Vector3(center.x + size.x * 0.3, center.y + 1.2, center.z + size.z * 0.3) },
+      { type: 'personal', position: new THREE.Vector3(center.x + size.x * 0.1, center.y + 1.2, center.z - size.z * 0.4) },
+      { type: 'german_art', position: new THREE.Vector3(center.x + size.x * 0.1, center.y + 1.2, center.z + size.z * 0.4) }
     ];
     
     // Create nodes with async support
@@ -3881,17 +3881,17 @@ export class SeveranceEnvironment extends BaseEnvironment {
       new THREE.PlaneGeometry(buttonWidth, buttonHeight),
       eButtonMat
     );
-    eButtonMesh.position.set(terminal.position.x + 0.4, terminal.position.y, terminal.position.z);
+    eButtonMesh.position.set(terminal.position.x + 0.6, terminal.position.y, terminal.position.z); // Moved slightly forward
     eButtonMesh.rotation.y = Math.PI/2;
     eButtonMesh.name = 'dev_terminal_ebutton';
     eButtonMesh.visible = true; // TEMP: Always visible for debug
     interiorGroup.add(eButtonMesh);
     
-    // Create invisible interaction volume for terminal (no changes to original)
-    const terminalInteractionGeom = new THREE.BoxGeometry(1.0, 2.0, 2.0);
+    // Create invisible interaction volume for terminal - positioned away from nodes to avoid interference
+    const terminalInteractionGeom = new THREE.BoxGeometry(2.0, 2.0, 2.5); // Increased size for better interaction
     const terminalInteractionMat = new THREE.MeshBasicMaterial({ visible: false });
     const terminalInteractionMesh = new THREE.Mesh(terminalInteractionGeom, terminalInteractionMat);
-    terminalInteractionMesh.position.set(center.x - size.x/2 + 0.4, center.y + 1.2, center.z);
+    terminalInteractionMesh.position.set(center.x - size.x/2 + 0.8, center.y + 1.2, center.z); // Moved further from wall
     terminalInteractionMesh.userData.interactable = true;
     terminalInteractionMesh.userData.isDevTerminal = true;
     terminalInteractionMesh.name = 'dev_terminal_interaction';

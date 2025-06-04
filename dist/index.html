@@ -150,8 +150,63 @@
       opacity: 0;
       transition: opacity 0.3s ease;
     }
+
+    /* Terminal specific styles */
+    #dev-terminal-overlay {
+      contain: layout style;
+      isolation: isolate;
+    }
+    
+    #dev-terminal-body {
+      scrollbar-width: thin;
+      scrollbar-color: #33ff33 #111;
+    }
+    
+    #dev-terminal-body::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    #dev-terminal-body::-webkit-scrollbar-track {
+      background: #111;
+    }
+    
+    #dev-terminal-body::-webkit-scrollbar-thumb {
+      background: #33ff33;
+      border-radius: 4px;
+    }
+    
+    #dev-terminal-body::-webkit-scrollbar-thumb:hover {
+      background: #44ffaa;
+    }
+    
+    .terminal-output, .terminal-command, .terminal-error {
+      margin: 0;
+      padding: 2px 0;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      max-width: 100%;
+    }
+    
+    .terminal-error {
+      color: #ff6666;
+    }
+    
+    .terminal-command {
+      color: #cccccc;
+    }
+    
+    .dev-terminal-cursor {
+      background: #33ff33;
+      animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
   </style>
-  <script type="module" crossorigin src="/3D-Portfolio/assets/index-Drl2nJco.js"></script>
+  <script type="module" crossorigin src="/3D-Portfolio/assets/index-kPd96QhG.js"></script>
   <link rel="stylesheet" crossorigin href="/3D-Portfolio/assets/index-CE_aFpHU.css">
 </head>
 
@@ -200,6 +255,20 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Dev Terminal Overlay (hidden by default) -->
+  <div id="dev-terminal-overlay" style="display:none; position:fixed; left:5vw; top:15vh; width:700px; height:400px; background:#000; color:#33ff33; border:2px solid #33ff33; border-radius:4px; z-index:10000; font-family: 'JetBrains Mono', monospace; box-shadow: 0 4px 20px rgba(0,0,0,0.8); overflow:hidden;">
+    <div id="dev-terminal-header" style="background:#333; color:#33ff33; padding:5px 10px; border-bottom:1px solid #33ff33; display:flex; justify-content:space-between; align-items:center; cursor:move; height:30px; flex-shrink:0;">
+      <div id="dev-terminal-title" style="font-weight:bold; font-size:12px;">TERMINAL</div>
+      <div id="dev-terminal-controls" style="display:flex; gap:5px;">
+        <div class="terminal-btn terminal-minimize" style="width:12px; height:12px; background:#ffcc00; border-radius:50%; cursor:pointer;"></div>
+        <div class="terminal-btn terminal-maximize" style="width:12px; height:12px; background:#00ff00; border-radius:50%; cursor:pointer;"></div>
+        <div class="terminal-btn terminal-close" id="dev-terminal-close" style="width:12px; height:12px; background:#ff0000; border-radius:50%; cursor:pointer;"></div>
+      </div>
+    </div>
+    <div id="dev-terminal-body" style="height:calc(100% - 80px); overflow-y:auto; overflow-x:hidden; padding:10px; font-size:13px; line-height:1.3; word-wrap:break-word; white-space:pre-wrap; box-sizing:border-box; scroll-behavior:smooth;"></div>
+    <div id="dev-terminal-prompt" style="padding:8px 10px; border-top:1px solid #33ff33; display:flex; align-items:center; height:40px; flex-shrink:0; box-sizing:border-box; overflow:hidden;"></div>
   </div>
 
 </body>
