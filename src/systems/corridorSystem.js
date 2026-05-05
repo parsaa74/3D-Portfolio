@@ -16,7 +16,7 @@ export const CORRIDOR_WIDTH = 2.5;
 export const CORRIDOR_HEIGHT = 3.5; // Increased height for less oppressive feel
 export const SEGMENT_LENGTH = 5.0;
 
-// Severance-specific color scheme
+// office-specific color scheme
 export const WALL_COLOR = 0xf5f5f5; // Pristine white
 export const FLOOR_COLOR = 0xf0f0f0; // Slightly off-white for subtle contrast
 export const CEILING_COLOR = 0xffffff; // Pure white
@@ -387,7 +387,7 @@ export class CorridorSystem {
   }
 
   createMDRDepartment(x = CORRIDOR_WIDTH * 4, y = 0, z = 0) {
-    console.log("Creating MDR department with Severance aesthetic...");
+    console.log("Creating MDR department with office aesthetic...");
 
     const mdr = new THREE.Group();
     mdr.position.set(x, y, z);

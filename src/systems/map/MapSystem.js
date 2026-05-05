@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 /**
  * MapSystem - Handles map exploration and visualization
- * Implements Severance's map mechanics for tracking explored areas
+ * Implements map mechanics for tracking explored areas
  */
 export class MapSystem {
   constructor(options = {}) {

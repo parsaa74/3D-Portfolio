@@ -2,7 +2,7 @@ import { THREE } from "../../utils/ThreeJSLoader.js";
 import * as CANNON from "cannon-es";
 
 /**
- * Environment system for managing the Severance floor layout
+ * Environment system for managing the Office floor layout
  * @class EnvironmentSystem
  */
 export class EnvironmentSystem {

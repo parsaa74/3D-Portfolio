@@ -1,10 +1,10 @@
-# 3D Portfolio - Severance Environment
+# 3D Portfolio
 
-An immersive 3D portfolio experience inspired by the Apple TV+ series "Severance". Navigate through a corporate corridor environment to explore different sections of work and art.
+An immersive 3D portfolio experience. Navigate through a corporate corridor environment to explore different sections of work and art.
 
 ## ✨ Features
 
-- **Interactive 3D Environment**: Navigate through a Severance-inspired office building
+- **Interactive 3D Environment**: Navigate through an atmospheric office building
 - **Portfolio Sections**: 
   - Design Work & Creative Development
   - Film & Video Projects  
@@ -111,6 +111,3 @@ While this is a personal portfolio, feedback and suggestions are welcome! Please
 
 For inquiries about the work showcased in this portfolio, please reach out through the contact information provided within the 3D environment.
 
----
-
-*Inspired by the architectural and psychological spaces of "Severance" (Apple TV+)*

@@ -232,8 +232,8 @@ float fbm(vec3 x) {
   return v;
 }
 
-// Custom Severance-inspired color palette
-vec3 severancePalette(float t) {
+// Custom office-inspired color palette
+vec3 officePalette(float t) {
   // Icy blue, pale green, ghostly white, subtle red
   vec3 a = vec3(0.65, 0.85, 1.0); // base icy blue
   vec3 b = vec3(0.2, 0.4, 0.2);   // greenish
@@ -262,8 +262,8 @@ void main() {
   float swirlNoise = fbm(swirl * 0.8);
   finalNoise = mix(finalNoise, swirlNoise, 0.4);
 
-  // Color shifting (Severance palette)
-  vec3 baseColor = severancePalette(finalNoise * 0.7 + time * 0.05);
+  // Color shifting (Office palette)
+  vec3 baseColor = officePalette(finalNoise * 0.7 + time * 0.05);
   vec3 color = mix(baseColor, uColor, 0.25);
 
   // Enhanced fresnel edge glow (icy blue/white)

@@ -61,7 +61,7 @@ export class PostProcessingManager {
 
   async setupColorCorrection() {
     const colorCorrectionPass = new ShaderPass(ColorCorrectionShader);
-    // Adjust for cooler, slightly desaturated Severance look
+    // Adjust for cooler, slightly desaturated clinical look
     colorCorrectionPass.uniforms.powRGB.value = new THREE.Vector3(
       1.0, // Less power adjustment overall
       1.0,

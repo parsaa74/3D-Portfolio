@@ -3,7 +3,7 @@ import { PerformanceMonitor } from "../performance/PerformanceMonitor.js";
 import { PostProcessingManager } from "../postprocessing/PostProcessingManager.js";
 
 /**
- * BaseEnvironment - Foundation for all 3D environments in Severance
+ * BaseEnvironment - Foundation for all 3D environments in Office
  * Provides core functionality for scene management, rendering, and resource handling
  * @abstract
  */

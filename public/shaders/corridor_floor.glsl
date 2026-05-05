@@ -58,7 +58,7 @@ void main() {
     float sheen = 0.04 * smoothstep(0.5, 0.0, distToPlayer);
     color += vec3(sheen);
     
-    // Extremely subtle red tint for the Severance/Twin Peaks mood
+    // Extremely subtle red tint for the Twin Peaks-style mood
     color = mix(color, color + vec3(0.03, 0.0, 0.0), 0.05);
     
     gl_FragColor = vec4(color, 1.0);

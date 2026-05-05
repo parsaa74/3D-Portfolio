@@ -1,4 +1,4 @@
-// Common vertex shader for Severance environments
+// Common vertex shader for office environment
 // Used by walls, corridors, and other surfaces
 
 // Varying outputs passed to fragment shader

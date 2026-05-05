@@ -1,4 +1,4 @@
-// Corridor shader for Severance environment
+// Corridor shader for office environment
 // Provides subtle lighting effects and enhances the clinical atmosphere
 
 uniform vec3 lightColor;
@@ -21,13 +21,13 @@ void main() {
   // Add flickering effect to simulate fluorescent lighting
   float flicker = 1.0 + 0.02 * sin(time * 10.0) * sin(time * 5.0);
   
-  // Subtle edge glow effect for that clinical Severance look
+  // Subtle edge glow effect for that clinical clinical look
   float edgeGlow = pow(1.0 - max(dot(normal, viewDir), 0.0), 5.0) * 0.5;
   
   // Calculate final color
   vec3 color = ambientLight + (lightColor * lightIntensity * diffuse * flicker);
   
-  // Add subtle white-blue tint that's characteristic of the Severance offices
+  // Add subtle white-blue tint that's characteristic of the offices
   color = mix(color, vec3(0.9, 0.95, 1.0), 0.15);
   
   // Add edge glow effect

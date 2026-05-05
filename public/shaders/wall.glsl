@@ -1,4 +1,4 @@
-// Wall shader for Severance environment
+// Wall shader for office environment
 // Creates the stark, clinical walls with subtle texture effect
 
 uniform vec3 wallColor;
@@ -34,7 +34,7 @@ void main() {
   vec3 normal = normalize(vNormal);
   vec3 viewDir = normalize(-vPosition);
   
-  // Add subtle texture to the walls - Severance walls have slight imperfections
+  // Add subtle texture to the walls - office walls have slight imperfections
   float textureNoise = fbm(vUv * 50.0) * wallRoughness * 0.1;
   
   // Lighting

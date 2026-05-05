@@ -1,1 +1,0 @@
-import wallShader from '/shaders/wall.glsl' 

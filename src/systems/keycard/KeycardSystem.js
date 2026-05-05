@@ -1,6 +1,6 @@
 /**
  * KeycardSystem - Handles keycard-based access control
- * Implements Severance's department access mechanics
+ * Implements department access mechanics
  */
 export class KeycardSystem {
   constructor() {

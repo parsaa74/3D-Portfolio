@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { MDREnvironment } from "../../../core/rendering/environments/MDREnvironment.js";
 // import { LumonEnvironment } from "../../../core/rendering/environments/LumonEnvironment.js";
 import * as THREE from "three";
-import { SeveranceEnvironment } from "../../../core/rendering/environments/SeveranceEnvironment.js";
+import { OfficeEnvironment } from "../../../core/rendering/environments/OfficeEnvironment.js";
 
 describe("Environment Integration Tests", () => {
   // describe("MDR Environment", () => {
@@ -250,25 +250,25 @@ describe("Environment Integration Tests", () => {
     });
   });
 
-  describe("SeveranceEnvironment deltaTime handling", () => {
-    let severanceEnvironment;
+  describe("OfficeEnvironment deltaTime handling", () => {
+    let officeEnvironment;
     let errorSpy;
 
     beforeEach(async () => {
-      severanceEnvironment = new SeveranceEnvironment();
-      await severanceEnvironment.initialize();
+      officeEnvironment = new OfficeEnvironment();
+      await officeEnvironment.initialize();
       errorSpy = vi.spyOn(console, "error");
     });
 
     afterEach(() => {
-      if (severanceEnvironment) {
-        severanceEnvironment.dispose();
+      if (officeEnvironment) {
+        officeEnvironment.dispose();
       }
       vi.restoreAllMocks();
     });
 
     it("should not log an invalid deltaTime error when update() is called with no arguments", () => {
-      expect(() => severanceEnvironment.update()).not.toThrow();
+      expect(() => officeEnvironment.update()).not.toThrow();
       expect(errorSpy).not.toHaveBeenCalledWith(
         expect.stringContaining("RainSystem: Invalid deltaTime in update:"),
         expect.anything()
@@ -276,23 +276,23 @@ describe("Environment Integration Tests", () => {
     });
   });
 
-  describe("SeveranceEnvironment outdoor rendering", () => {
-    let severanceEnvironment;
+  describe("OfficeEnvironment outdoor rendering", () => {
+    let officeEnvironment;
 
     beforeEach(async () => {
-      severanceEnvironment = new SeveranceEnvironment();
-      await severanceEnvironment.initialize();
+      officeEnvironment = new OfficeEnvironment();
+      await officeEnvironment.initialize();
     });
 
     afterEach(() => {
-      if (severanceEnvironment) {
-        severanceEnvironment.dispose();
+      if (officeEnvironment) {
+        officeEnvironment.dispose();
       }
     });
 
     it("should create a ground mesh with outsideGround material and a skysphere with sky material, and their colors should be distinct", () => {
       // Find the ground mesh
-      const groundMesh = severanceEnvironment.globalFloor;
+      const groundMesh = officeEnvironment.globalFloor;
       expect(groundMesh).toBeDefined();
       expect(groundMesh.material).toBeDefined();
       expect(groundMesh.material).toBeInstanceOf(THREE.MeshStandardMaterial);
@@ -300,7 +300,7 @@ describe("Environment Integration Tests", () => {
       const groundColor = groundMesh.material.color.getHex();
 
       // Find the skysphere mesh (should be a large sphere with sky material)
-      const skysphere = severanceEnvironment.scene.children.find(
+      const skysphere = officeEnvironment.scene.children.find(
         (obj) => obj.isMesh && obj.geometry.type === "SphereGeometry" && obj.material && obj.material.color.getHex() === 0x7ec0ee
       );
       expect(skysphere).toBeDefined();

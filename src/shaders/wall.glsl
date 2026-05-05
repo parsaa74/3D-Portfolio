@@ -1,4 +1,4 @@
-// Wall shader for Severance environment
+// Wall shader for office environment
 // Creates the stark, clinical walls with subtle texture effect
 
 uniform vec3 wallColor; // White

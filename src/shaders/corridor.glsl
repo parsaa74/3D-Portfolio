@@ -1,4 +1,4 @@
-// Corridor lighting shader for Severance environment
+// Corridor lighting shader for office environment
 // Creates the characteristic fluorescent lighting effect
 
 uniform vec3 lightColor;

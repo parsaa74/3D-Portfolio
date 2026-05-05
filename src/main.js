@@ -1,6 +1,6 @@
 /**
- * Severance Experience - Main Entry Point
- * @author Mr. Doob's Severance Project
+ * 3D Portfolio Experience - Main Entry Point
+ * @author Mr. Doob's 3D Portfolio Project
  * @description A Three.js-powered recreation of the Lumon Industries office environment
  */
 
@@ -8,7 +8,7 @@
 import "./styles/main.css";
 
 import * as THREE from "three";
-import { SeveranceEnvironment } from "./core/rendering/environments/SeveranceEnvironment.js";
+import { OfficeEnvironment } from "./core/rendering/environments/OfficeEnvironment.js";
 import { GameLoop } from "@core/GameLoop";
 import { PerformanceMonitor } from "./core/rendering/performance/PerformanceMonitor.js";
 import { UnifiedMovementController } from "./systems/movement/UnifiedMovementController.js";
@@ -111,10 +111,10 @@ export const memoryMonitor = {
 };
 
 /**
- * @class SeveranceApp
- * @description Main application class for the Severance experience
+ * @class App
+ * @description Main application class for the 3D portfolio experience
  */
-class SeveranceApp {
+class App {
   constructor() {
     // Core Three.js components
     this.scene = null;
@@ -150,16 +150,16 @@ class SeveranceApp {
     this.showInteractionPrompt = this.showInteractionPrompt.bind(this);
     this.handleNodeInfoInteraction = this.handleNodeInfoInteraction.bind(this);
     
-    console.log("SeveranceApp constructor complete, methods bound");
+    console.log("App constructor complete, methods bound");
   }
 
   /**
    * @method initialize
-   * @description Initialize the Severance experience
+   * @description Initialize the 3D portfolio experience
    */
   async initialize() {
     try {
-      console.log("Initializing Severance experience...");
+      console.log("Initializing 3D portfolio experience...");
 
       // Check WebGL compatibility first
       if (!checkWebGL()) {
@@ -177,7 +177,7 @@ class SeveranceApp {
       this.showLoadingScreen();
 
       // Initialize environment
-      this.environment = new SeveranceEnvironment({
+      this.environment = new OfficeEnvironment({
         containerId: "three-container",
         usePostProcessing: true,
         usePerformanceMonitoring: this.isDevelopment,
@@ -232,10 +232,10 @@ class SeveranceApp {
       // Safety: ensure aspect ratio is correct after initialization
       this.onWindowResize();
       this.isInitialized = true;
-      console.log("Severance experience successfully initialized");
+      console.log("3D portfolio experience successfully initialized");
 
     } catch (error) {
-      console.error("Failed to initialize Severance experience:", error);
+      console.error("Failed to initialize 3D portfolio experience:", error);
       this.showErrorMessage(error);
     }
   }
@@ -2038,7 +2038,7 @@ class SeveranceApp {
 
   /**
    * @method startGame
-   * @description Start the Severance game from the start screen
+   * @description Start the Office game from the start screen
    */
   startGame() {
     console.log("startGame called. playerCanMove:", window.playerCanMove, "isPlaying:", this.environment?.gameState?.isPlaying);
@@ -2228,7 +2228,7 @@ class SeveranceApp {
 
 // Initialize the application when the DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  const app = new SeveranceApp();
+  const app = new App();
   app.initialize();
 
   // Export for debugging in development
@@ -2239,7 +2239,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Always export app for interaction handlers
   window.app = app;
-  window.severanceApp = app; // Also export as severanceApp for ceiling tests
   
 
 
