@@ -9,7 +9,7 @@ export class KeycardSystem {
 
     // Access levels and their requirements
     this.accessLevels = new Map([
-      ["MDR", ["MDR_ACCESS"]],
+      ["WORK", ["WORK_ACCESS"]],
       ["O_AND_D", ["O_AND_D_ACCESS", "SUPERVISOR_APPROVAL"]],
       ["WELLNESS", ["WELLNESS_ACCESS"]],
       ["SECURITY", ["SECURITY_ACCESS", "SUPERVISOR_APPROVAL"]],

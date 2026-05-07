@@ -28,7 +28,7 @@ void main() {
   // Combine effects
   float effect = max(dataLine * 0.3, dots * 0.5);
   
-  // Lumon blue-green color palette
+  // blue-green color palette
   vec3 color = mix(
     vec3(0.0, 0.0, 0.0),
     vec3(0.1, 0.4, 0.4),

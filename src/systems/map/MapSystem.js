@@ -24,7 +24,7 @@ export class MapSystem {
 
     // Colors for different areas
     this.areaColors = {
-      MDR: "#2196F3",
+      WORK: "#2196F3",
       O_AND_D: "#4CAF50",
       WELLNESS: "#FF9800",
       UNEXPLORED: "#1a1a1a",

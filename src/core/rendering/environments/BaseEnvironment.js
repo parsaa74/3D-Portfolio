@@ -293,7 +293,9 @@ export class BaseEnvironment {
    */
   dispose() {
     // Remove event listeners
-    window.removeEventListener("resize", this._onWindowResize);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener("resize", this._onWindowResize);
+    }
 
     // Dispose of systems
     for (const system of this.systems.values()) {

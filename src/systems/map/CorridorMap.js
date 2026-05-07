@@ -21,14 +21,14 @@ export const CORRIDOR_MAP = {
     // --- Core Layout ---
     { id: 'ELV', pos: [0, 0], description: 'Elevator Vestibule Area' },
     { id: 'C1', pos: [0, -5], description: 'Main Corridor - Point 1' },
-    { id: 'C2', pos: [0, -10], description: 'Main Corridor - Junction 1 (MDR/O&D)' },
+    { id: 'C2', pos: [0, -10], description: 'Main Corridor - Junction 1 (WORK/O&D)' },
     { id: 'C3', pos: [0, -15], description: 'Main Corridor - Point 3' },
     { id: 'C4', pos: [0, -20], description: 'Main Corridor - Junction 2 (Wellness/Break)' },
     { id: 'C5', pos: [0, -25], description: 'Main Corridor - Point 5' },
 
-    // --- MDR Wing (Right Side) ---
-    { id: 'J_MDR', pos: [2, -10], description: 'Junction towards MDR' },
-    { id: 'MDR1', pos: [5, -10], description: 'MDR Department Area' },
+    // --- Work Wing (Right Side) ---
+    { id: 'J_WORK', pos: [2, -10], description: 'Junction towards WORK' },
+    { id: 'WORK1', pos: [5, -10], description: 'Work Department Area' },
 
     // --- O&D Wing (Left Side) ---
     { id: 'J_OD', pos: [-2, -10], description: 'Junction towards O&D' },
@@ -62,9 +62,9 @@ export const CORRIDOR_MAP = {
     { from: 'C3', to: 'C4', description: 'Main Corridor 3 to Junction 2' },
     { from: 'C4', to: 'C5', description: 'Junction 2 to Main Corridor 5' },
 
-    // --- MDR Wing ---
-    { from: 'C2', to: 'J_MDR', description: 'Main Corridor to MDR Junction' },
-    { from: 'J_MDR', to: 'MDR1', description: 'MDR Junction to MDR Area' },
+    // --- Work Wing ---
+    { from: 'C2', to: 'J_WORK', description: 'Main Corridor to Work Junction' },
+    { from: 'J_WORK', to: 'WORK1', description: 'Work Junction to Work Area' },
 
     // --- O&D Wing ---
     { from: 'C2', to: 'J_OD', description: 'Main Corridor to O&D Junction' },

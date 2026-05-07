@@ -173,11 +173,11 @@ export class AudioManager {
 
   setZone(zoneName) {
     this.zone = zoneName;
-    // Example: breakRoom = more volume, wellness = softer, mdr = more reverb
+    // Example: breakRoom = more volume, wellness = softer, work = more reverb
     let wet = 0.4, gain = 0.15;
     if (zoneName === 'breakRoom') { wet = 0.55; gain = 0.22; }
     if (zoneName === 'wellness') { wet = 0.25; gain = 0.10; }
-    if (zoneName === 'mdr') { wet = 0.5; gain = 0.18; }
+    if (zoneName === 'work') { wet = 0.5; gain = 0.18; }
     this.masterReverb.wet.rampTo(wet, 3);
     for (const v of this.droneVoices) {
       v.gain.gain.rampTo(gain, 3);

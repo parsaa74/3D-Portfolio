@@ -14,7 +14,13 @@ export default defineConfig(({ command }) => ({
         // Better file naming with hashes for cache busting
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+        manualChunks(id) {
+          if (id.includes('node_modules/three/')) return 'three';
+          if (id.includes('node_modules/cannon-es/')) return 'vendor';
+          if (id.includes('node_modules/tone/')) return 'vendor';
+          if (id.includes('node_modules/stats.js/')) return 'vendor';
+        }
       }
     },
     // Ensure proper module resolution

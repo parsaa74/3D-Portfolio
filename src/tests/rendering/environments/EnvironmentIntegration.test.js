@@ -1,41 +1,41 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { MDREnvironment } from "../../../core/rendering/environments/MDREnvironment.js";
-// import { LumonEnvironment } from "../../../core/rendering/environments/LumonEnvironment.js";
+import { WorkstationEnvironment } from "../../../core/rendering/environments/WorkstationEnvironment.js";
+// import { OfficeEnvironment } from "../../../core/rendering/environments/OfficeEnvironment.js";
 import * as THREE from "three";
 import { OfficeEnvironment } from "../../../core/rendering/environments/OfficeEnvironment.js";
 
 describe("Environment Integration Tests", () => {
-  // describe("MDR Environment", () => {
-  //   let mdrEnvironment;
+  // describe("WORK Environment", () => {
+  //   let workstationEnvironment;
   //
   //   beforeEach(async () => {
-  //     mdrEnvironment = new MDREnvironment();
-  //     await mdrEnvironment.initialize();
+  //     workstationEnvironment = new WorkstationEnvironment();
+  //     await workstationEnvironment.initialize();
   //   });
   //
   //   afterEach(() => {
-  //     if (mdrEnvironment) {
-  //       mdrEnvironment.dispose();
+  //     if (workstationEnvironment) {
+  //       workstationEnvironment.dispose();
   //     }
   //   });
   //
   //   it("should initialize with correct scene properties", () => {
-  //     expect(mdrEnvironment.scene.background).toEqual(
+  //     expect(workstationEnvironment.scene.background).toEqual(
   //       new THREE.Color(0x1a1a1a)
   //     );
-  //     expect(mdrEnvironment.scene.fog).toBeInstanceOf(THREE.Fog);
-  //     expect(mdrEnvironment.scene.fog.color).toEqual(new THREE.Color(0x1a1a1a));
+  //     expect(workstationEnvironment.scene.fog).toBeInstanceOf(THREE.Fog);
+  //     expect(workstationEnvironment.scene.fog.color).toEqual(new THREE.Color(0x1a1a1a));
   //   });
   //
-  //   it("should set up MDR-specific lighting", () => {
+  //   it("should set up work-specific lighting", () => {
   //     // Check ambient light
-  //     const ambientLight = mdrEnvironment.lights.get("ambient");
+  //     const ambientLight = workstationEnvironment.lights.get("ambient");
   //     expect(ambientLight).toBeInstanceOf(THREE.AmbientLight);
   //     expect(ambientLight.intensity).toBe(0.3);
   //
   //     // Check fluorescent lights
   //     let fluorescentLightCount = 0;
-  //     mdrEnvironment.lights.forEach((light, key) => {
+  //     workstationEnvironment.lights.forEach((light, key) => {
   //       if (key.startsWith("fluorescent_")) {
   //         fluorescentLightCount++;
   //         expect(light).toBeInstanceOf(THREE.RectAreaLight);
@@ -46,8 +46,8 @@ describe("Environment Integration Tests", () => {
   //   });
   //
   //   it("should create office furniture", () => {
-  //     expect(mdrEnvironment.desks.size).toBeGreaterThan(0);
-  //     mdrEnvironment.desks.forEach((desk) => {
+  //     expect(workstationEnvironment.desks.size).toBeGreaterThan(0);
+  //     workstationEnvironment.desks.forEach((desk) => {
   //       expect(desk).toBeInstanceOf(THREE.Mesh);
   //       expect(desk.geometry).toBeInstanceOf(THREE.BoxGeometry);
   //     });
@@ -55,7 +55,7 @@ describe("Environment Integration Tests", () => {
   //
   //   it("should update lighting in animation loop", () => {
   //     const lightIntensities = new Map();
-  //     mdrEnvironment.lights.forEach((light, key) => {
+  //     workstationEnvironment.lights.forEach((light, key) => {
   //       if (key.startsWith("fluorescent_")) {
   //         lightIntensities.set(key, light.intensity);
   //       }
@@ -63,12 +63,12 @@ describe("Environment Integration Tests", () => {
   //
   //     // Run a few animation frames
   //     for (let i = 0; i < 100; i++) {
-  //       mdrEnvironment.update(0.016); // Simulate 60fps
+  //       workstationEnvironment.update(0.016); // Simulate 60fps
   //     }
   //
   //     // Check if any light intensities changed
   //     let intensityChanged = false;
-  //     mdrEnvironment.lights.forEach((light, key) => {
+  //     workstationEnvironment.lights.forEach((light, key) => {
   //       if (key.startsWith("fluorescent_")) {
   //         if (light.intensity !== lightIntensities.get(key)) {
   //           intensityChanged = true;
@@ -80,47 +80,47 @@ describe("Environment Integration Tests", () => {
   //   });
   // });
 
-  // describe("Lumon Environment", () => {
-  //   let lumonEnvironment;
+  // describe("Office Environment", () => {
+  //   let officeEnvironment;
   //
   //   beforeEach(async () => {
-  //     lumonEnvironment = new LumonEnvironment();
-  //     await lumonEnvironment.initialize();
+  //     officeEnvironment = new OfficeEnvironment();
+  //     await officeEnvironment.initialize();
   //   });
   //
   //   afterEach(() => {
-  //     if (lumonEnvironment) {
-  //       lumonEnvironment.dispose();
+  //     if (officeEnvironment) {
+  //       officeEnvironment.dispose();
   //     }
   //   });
   //
   //   it("should initialize with correct scene properties", () => {
-  //     expect(lumonEnvironment.scene.background).toEqual(
+  //     expect(officeEnvironment.scene.background).toEqual(
   //       new THREE.Color(0x090909)
   //     );
-  //     expect(lumonEnvironment.scene.fog).toBeInstanceOf(THREE.Fog);
-  //     expect(lumonEnvironment.scene.fog.color).toEqual(
+  //     expect(officeEnvironment.scene.fog).toBeInstanceOf(THREE.Fog);
+  //     expect(officeEnvironment.scene.fog.color).toEqual(
   //       new THREE.Color(0x090909)
   //     );
   //   });
   //
   //   it("should set up corridor system", () => {
-  //     expect(lumonEnvironment.corridors.size).toBeGreaterThan(0);
-  //     lumonEnvironment.corridors.forEach((corridor) => {
+  //     expect(officeEnvironment.corridors.size).toBeGreaterThan(0);
+  //     officeEnvironment.corridors.forEach((corridor) => {
   //       expect(corridor.leftWall).toBeInstanceOf(THREE.Mesh);
   //       expect(corridor.rightWall).toBeInstanceOf(THREE.Mesh);
   //     });
   //   });
   //
   //   it("should create doors and interactive elements", () => {
-  //     expect(lumonEnvironment.doors.size).toBeGreaterThan(0);
-  //     expect(lumonEnvironment.interactiveObjects.size).toBeGreaterThan(0);
+  //     expect(officeEnvironment.doors.size).toBeGreaterThan(0);
+  //     expect(officeEnvironment.interactiveObjects.size).toBeGreaterThan(0);
   //
-  //     lumonEnvironment.doors.forEach((door) => {
+  //     officeEnvironment.doors.forEach((door) => {
   //       expect(door).toBeInstanceOf(THREE.Mesh);
   //     });
   //
-  //     lumonEnvironment.interactiveObjects.forEach((object, key) => {
+  //     officeEnvironment.interactiveObjects.forEach((object, key) => {
   //       if (key.startsWith("keypad_")) {
   //         expect(object).toBeInstanceOf(THREE.Mesh);
   //       }
@@ -129,13 +129,13 @@ describe("Environment Integration Tests", () => {
   //
   //   it("should set up corridor lighting", () => {
   //     // Check ambient light
-  //     const ambientLight = lumonEnvironment.lights.get("ambient");
+  //     const ambientLight = officeEnvironment.lights.get("ambient");
   //     expect(ambientLight).toBeInstanceOf(THREE.AmbientLight);
   //     expect(ambientLight.intensity).toBe(0.2);
   //
   //     // Check corridor lights
   //     let corridorLightCount = 0;
-  //     lumonEnvironment.lights.forEach((light, key) => {
+  //     officeEnvironment.lights.forEach((light, key) => {
   //       if (key.startsWith("corridor_light_")) {
   //         corridorLightCount++;
   //         expect(light).toBeInstanceOf(THREE.RectAreaLight);
@@ -147,7 +147,7 @@ describe("Environment Integration Tests", () => {
   //
   //   it("should update lighting in animation loop", () => {
   //     const lightIntensities = new Map();
-  //     lumonEnvironment.lights.forEach((light, key) => {
+  //     officeEnvironment.lights.forEach((light, key) => {
   //       if (key.startsWith("corridor_light_")) {
   //         lightIntensities.set(key, light.intensity);
   //       }
@@ -155,12 +155,12 @@ describe("Environment Integration Tests", () => {
   //
   //     // Run a few animation frames
   //     for (let i = 0; i < 1000; i++) {
-  //       lumonEnvironment.update(0.016); // Simulate 60fps
+  //       officeEnvironment.update(0.016); // Simulate 60fps
   //     }
   //
   //     // Check if any light intensities changed
   //     let intensityChanged = false;
-  //     lumonEnvironment.lights.forEach((light, key) => {
+  //     officeEnvironment.lights.forEach((light, key) => {
   //       if (key.startsWith("corridor_light_")) {
   //         if (light.intensity !== lightIntensities.get(key)) {
   //           intensityChanged = true;
@@ -172,56 +172,56 @@ describe("Environment Integration Tests", () => {
   //   });
   //
   //   it("should clean up resources on disposal", () => {
-  //     const initialObjectCount = lumonEnvironment.scene.children.length;
+  //     const initialObjectCount = officeEnvironment.scene.children.length;
   //
-  //     lumonEnvironment.dispose();
+  //     officeEnvironment.dispose();
   //
-  //     expect(lumonEnvironment.scene.children.length).toBeLessThan(
+  //     expect(officeEnvironment.scene.children.length).toBeLessThan(
   //       initialObjectCount
   //     );
   //   });
   // });
 
   describe("Environment Interaction", () => {
-    let mdrEnvironment;
-    let lumonEnvironment;
+    let workstationEnvironment;
+    let officeEnvironment;
 
     beforeEach(async () => {
-      mdrEnvironment = new MDREnvironment();
-      lumonEnvironment = new LumonEnvironment();
+      workstationEnvironment = new WorkstationEnvironment();
+      officeEnvironment = new OfficeEnvironment();
 
       await Promise.all([
-        mdrEnvironment.initialize(),
-        lumonEnvironment.initialize(),
+        workstationEnvironment.initialize(),
+        officeEnvironment.initialize(),
       ]);
     });
 
     afterEach(() => {
-      mdrEnvironment.dispose();
-      lumonEnvironment.dispose();
+      workstationEnvironment.dispose();
+      officeEnvironment.dispose();
     });
 
     it("should maintain separate rendering contexts", () => {
-      expect(mdrEnvironment.scene).not.toBe(lumonEnvironment.scene);
-      expect(mdrEnvironment.camera).not.toBe(lumonEnvironment.camera);
-      expect(mdrEnvironment.renderer).not.toBe(lumonEnvironment.renderer);
+      expect(workstationEnvironment.scene).not.toBe(officeEnvironment.scene);
+      expect(workstationEnvironment.camera).not.toBe(officeEnvironment.camera);
+      expect(workstationEnvironment.renderer).not.toBe(officeEnvironment.renderer);
     });
 
     it("should have different post-processing configurations", () => {
-      // MDR environment should have bloom for fluorescent lights
-      const mdrBloomPass = mdrEnvironment.postProcessing.passes.get("bloom");
-      expect(mdrBloomPass).toBeDefined();
-      expect(mdrBloomPass.strength).toBe(1.5);
+      // work environment should have bloom for fluorescent lights
+      const workBloomPass = workstationEnvironment.postProcessing.passes.get("bloom");
+      expect(workBloomPass).toBeDefined();
+      expect(workBloomPass.strength).toBe(1.5);
 
-      // Lumon environment should have different bloom settings
-      const lumonBloomPass =
-        lumonEnvironment.postProcessing.passes.get("bloom");
-      expect(lumonBloomPass).toBeDefined();
-      expect(lumonBloomPass.strength).toBe(1.5);
+      // Office environment should have different bloom settings
+      const officeBloomPass =
+        officeEnvironment.postProcessing.passes.get("bloom");
+      expect(officeBloomPass).toBeDefined();
+      expect(officeBloomPass.strength).toBe(1.5);
 
       // They should have separate composer instances
-      expect(mdrEnvironment.postProcessing.composer).not.toBe(
-        lumonEnvironment.postProcessing.composer
+      expect(workstationEnvironment.postProcessing.composer).not.toBe(
+        officeEnvironment.postProcessing.composer
       );
     });
 
@@ -236,15 +236,15 @@ describe("Environment Integration Tests", () => {
       // Trigger resize
       window.dispatchEvent(new Event("resize"));
 
-      // Check MDR environment
-      expect(mdrEnvironment.camera.aspect).toBe(newWidth / newHeight);
-      expect(mdrEnvironment.renderer.getSize(new THREE.Vector2())).toEqual(
+      // Check work environment
+      expect(workstationEnvironment.camera.aspect).toBe(newWidth / newHeight);
+      expect(workstationEnvironment.renderer.getSize(new THREE.Vector2())).toEqual(
         new THREE.Vector2(newWidth, newHeight)
       );
 
-      // Check Lumon environment
-      expect(lumonEnvironment.camera.aspect).toBe(newWidth / newHeight);
-      expect(lumonEnvironment.renderer.getSize(new THREE.Vector2())).toEqual(
+      // Check Office environment
+      expect(officeEnvironment.camera.aspect).toBe(newWidth / newHeight);
+      expect(officeEnvironment.renderer.getSize(new THREE.Vector2())).toEqual(
         new THREE.Vector2(newWidth, newHeight)
       );
     });

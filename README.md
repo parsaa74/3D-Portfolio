@@ -9,7 +9,7 @@ An immersive 3D portfolio experience. Navigate through a corporate corridor envi
   - Design Work & Creative Development
   - Film & Video Projects  
   - Performance Art Documentation
-  - MDR (Macrodata Refinement) Interactive Experience
+  - Workspace Interactive Experience
 - **Dynamic Lighting**: Procedural lighting system with atmospheric effects
 - **Modern Web Technologies**: Built with Three.js and modern JavaScript
 

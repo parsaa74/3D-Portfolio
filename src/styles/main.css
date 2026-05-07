@@ -178,7 +178,7 @@ body {
 
 @font-face {
   font-family: 'Neue Montreal';
-  src: url('/assets/neue-montreal-free-demo-pangram-pangram-030418/NeueMontreal-Regular.otf') format('opentype');
+  src: url('../assets/fonts/NeueMontreal-Regular.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }

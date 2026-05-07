@@ -20,6 +20,7 @@ build/
 *.swp
 *.swo
 .cursor/
+.claude/
 
 # Logs
 npm-debug.log*
@@ -63,8 +64,6 @@ untitled.blend1
 door.blend
 door.blend1
 
-# Test Configuration
-vitest.config.js
 
 # Development Images
 52bbahgze5w81.jpg

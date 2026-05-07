@@ -1,7 +1,7 @@
 /**
  * 3D Portfolio Experience - Main Entry Point
  * @author Mr. Doob's 3D Portfolio Project
- * @description A Three.js-powered recreation of the Lumon Industries office environment
+ * @description A Three.js-powered recreation of the 3D office environment
  */
 
 // Import CSS styles for Vite to bundle
@@ -543,7 +543,7 @@ class App {
 
     const locationMap = {
       hub: "CENTRAL HUB",
-      mdr: "MACRODATA REFINEMENT",
+      work: "WORKSPACE",
       breakRoom: "BREAK ROOM",
       wellness: "WELLNESS CENTER",
       perpetuity: "PERPETUITY WING",
@@ -2443,8 +2443,8 @@ document.addEventListener("DOMContentLoaded", () => {
       case 'ls':
         output = [
           'Documents/',
-          'macrodata.dat',
-          'refinement.exe',
+          'workspace.dat',
+          'workstation.exe',
           'secrets.txt',
           'README.md'
         ].join('\n');
@@ -2452,7 +2452,7 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
         
       case 'whoami':
-        appendOutput('macrodata-refiner-429', 'terminal-output');
+        appendOutput('workspace-refiner-429', 'terminal-output');
         break;
         
       case 'exit':

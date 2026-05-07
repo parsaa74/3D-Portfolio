@@ -198,8 +198,8 @@ export class OfficeMaterials {
             // Silently handle non-power-of-two textures for better performance
             texture.generateMipmaps = false;
             texture.minFilter = THREE.LinearFilter;
-            texture.wrapS = THREE.ClampToEdgeWrap;
-            texture.wrapT = THREE.ClampToEdgeWrap;
+            texture.wrapS = THREE.ClampToEdgeWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
           } else {
             texture.generateMipmaps = true;
             texture.minFilter = THREE.LinearMipmapLinearFilter;
@@ -286,20 +286,7 @@ export class OfficeMaterials {
         );
       } catch (e) {
         console.error("Could not load wall shader from file", e);
-
-        // Second attempt from public path
-        try {
-          console.log(
-            "Attempting to load wall shader from public/src/shaders/wall.glsl"
-          );
-          wallFragmentShader = await this._loadShaderFile(
-            "/public/src/shaders/wall.glsl"
-          );
-          console.log("Successfully loaded wall shader from public path");
-        } catch (e2) {
-          console.error("All attempts to load wall shader failed", e2);
-          wallFragmentShader = null;
-        }
+        wallFragmentShader = null;
       }
 
       // Load corridor shader from src/shaders/corridor.glsl
@@ -664,8 +651,8 @@ export class OfficeMaterials {
    * @private
    */
   _initializeDepartmentMaterials() {
-    // MDR Department - Blue-green tint (based on show)
-    const mdrMaterial = new THREE.MeshStandardMaterial({
+    // Work department blue-green tint
+    const workMaterial = new THREE.MeshStandardMaterial({
       color: 0xedf2f4,
       metalness: 0.1,
       roughness: 0.9,
@@ -710,7 +697,7 @@ export class OfficeMaterials {
     });
 
     // Store department materials
-    this.materials.set("mdr", mdrMaterial);
+    this.materials.set("work", workMaterial);
     this.materials.set("od", odMaterial);
     this.materials.set("breakRoom", breakRoomMaterial);
     this.materials.set("perpetuity", perpetuityMaterial);

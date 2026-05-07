@@ -25,7 +25,7 @@ export const CORRIDOR_TRIM_HEIGHT = 0.1;
 
 // Department-specific colors (matching show)
 export const DEPARTMENT_COLORS = {
-  MDR: 0x1a3f4d, // Blue-green
+  WORK: 0x1a3f4d, // Blue-green
   OD: 0x2b5329, // Deep green
   WELLNESS: 0x4d3319, // Warm brown
   TESTING: 0x4d1919, // Deep red
@@ -386,11 +386,11 @@ export class CorridorSystem {
     return hub;
   }
 
-  createMDRDepartment(x = CORRIDOR_WIDTH * 4, y = 0, z = 0) {
-    console.log("Creating MDR department with office aesthetic...");
+  createWorkDepartment(x = CORRIDOR_WIDTH * 4, y = 0, z = 0) {
+    console.log("Creating WORK department with office aesthetic...");
 
-    const mdr = new THREE.Group();
-    mdr.position.set(x, y, z);
+    const work = new THREE.Group();
+    work.position.set(x, y, z);
 
     // Create room geometry - intentionally oppressive
     const roomWidth = CORRIDOR_WIDTH * 4;
@@ -407,7 +407,7 @@ export class CorridorSystem {
     });
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
-    mdr.add(floor);
+    work.add(floor);
 
     // Add walls with department-specific color tint
     const wallGeometry = new THREE.PlaneGeometry(roomWidth, roomHeight);
@@ -439,7 +439,7 @@ export class CorridorSystem {
       const wall = new THREE.Mesh(wallGeometry, wallMaterial);
       wall.position.set(...position);
       wall.rotation.set(...rotation);
-      mdr.add(wall);
+      work.add(wall);
 
       // Add department color trim
       const trimGeometry = new THREE.BoxGeometry(
@@ -448,14 +448,14 @@ export class CorridorSystem {
         wall.rotation.y % Math.PI === 0 ? CORRIDOR_TRIM_HEIGHT : roomLength
       );
       const trimMaterial = new THREE.MeshStandardMaterial({
-        color: DEPARTMENT_COLORS.MDR,
+        color: DEPARTMENT_COLORS.WORK,
         metalness: TRIM_METALNESS,
         roughness: 0.3,
       });
       const trim = new THREE.Mesh(trimGeometry, trimMaterial);
       trim.position.set(position[0], CORRIDOR_TRIM_HEIGHT / 2, position[2]);
       trim.rotation.set(...rotation);
-      mdr.add(trim);
+      work.add(trim);
     });
 
     // Create workstation cluster in 2x2 grid
@@ -467,11 +467,11 @@ export class CorridorSystem {
     ];
 
     workstationPositions.forEach((pos, index) => {
-      const workstation = this.createRefinementWorkstation();
+      const workstation = this.createWorkstation();
       workstation.position.set(pos.x, 0, pos.z);
       // Rotate workstations to face center
       workstation.rotation.y = Math.atan2(-pos.z, -pos.x);
-      mdr.add(workstation);
+      work.add(workstation);
     });
 
     // Add recessed ceiling lights
@@ -492,31 +492,31 @@ export class CorridorSystem {
       });
       const fixture = new THREE.Mesh(fixtureGeometry, fixtureMaterial);
       fixture.position.set(pos.x, roomHeight - 0.05, pos.z);
-      mdr.add(fixture);
+      work.add(fixture);
 
       // Add actual light source
       const light = new THREE.PointLight(LIGHT_COLOR, LIGHTING_INTENSITY, 8);
       light.position.set(pos.x, roomHeight - 0.1, pos.z);
-      mdr.add(light);
+      work.add(light);
     });
 
     // Add ambient light for base illumination
     const ambientLight = new THREE.AmbientLight(LIGHT_COLOR, AMBIENT_INTENSITY);
-    mdr.add(ambientLight);
+    work.add(ambientLight);
 
-    this.scene.add(mdr);
-    this.spatialGrid.addObject(mdr, {
+    this.scene.add(work);
+    this.spatialGrid.addObject(work, {
       x: x - roomWidth / 2,
       z: z - roomLength / 2,
       width: roomWidth,
       depth: roomLength,
     });
 
-    return mdr;
+    return work;
   }
 
-  // Helper method to create a refinement workstation
-  createRefinementWorkstation() {
+  // Helper method to create a workstation workstation
+  createWorkstation() {
     const workstation = new THREE.Group();
 
     // Create retro-style desk

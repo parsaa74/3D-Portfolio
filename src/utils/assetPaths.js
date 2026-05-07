@@ -8,17 +8,8 @@
  * @returns {string} - The correctly formatted path for the current environment
  */
 export function getAssetPath(path) {
-  // Remove leading slash if present to ensure consistent format
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  
-  // In production (GitHub Pages), we need to include the base path
-  // Use both PROD check and base URL detection for GitHub Pages
-  if (import.meta.env.PROD || import.meta.env.BASE_URL === '/3D-Portfolio/') {
-    return `/3D-Portfolio/${cleanPath}`;
-  }
-  
-  // In development, serve directly from root (no base path)
-  return `/${cleanPath}`;
+  const cleanPath = path.replace(/^\/+/, '');
+  return `${import.meta.env.BASE_URL}${cleanPath}`;
 }
 
 /**

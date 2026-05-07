@@ -1,8 +1,12 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"; // Fixed import path
-import { TextureLoader } from "three"; // Add TextureLoader import
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { TextureLoader } from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { BaseEnvironment } from "./BaseEnvironment.js";
-import { getAssetPath, getTexturePath, getShaderPath, getModelPath, getRootModelPath } from "@utils/assetPaths.js";
+import { getAssetPath, getTexturePath, getShaderPath, getModelPath } from "@utils/assetPaths.js";
 import { MapSystem } from "../../../systems/map/MapSystem.js";
 import { OfficeMaterials } from "../materials/OfficeMaterials.js";
 import { UnifiedMovementController } from "../../../systems/movement/UnifiedMovementController.js";
@@ -91,15 +95,15 @@ export class OfficeEnvironment extends BaseEnvironment {
       lights: new Map(),
       models: new Map(),
       sounds: new Map(),
-      materials: new Map(), // Added from LumonEnvironment for consistency
+      materials: new Map(), // Added from OfficeEnvironment for consistency
     };
 
-    // Wayfinding elements (from LumonEnvironment)
+    // Wayfinding elements (from OfficeEnvironment)
     this.wayfinding = new Map();
-    this.clock = new THREE.Clock(); // Added from LumonEnvironment
+    this.clock = new THREE.Clock(); // Added from OfficeEnvironment
 
     // Door locations for interaction detection
-    window.doorLocations = [];
+    if (typeof window !== 'undefined') window.doorLocations = [];
 
     // Add door animation properties
     this.doorStates = new Map();
@@ -173,11 +177,6 @@ export class OfficeEnvironment extends BaseEnvironment {
 
     // Initialize post-processing effects
     if (this.composer) {
-              const { EffectComposer } = await import('three/examples/jsm/postprocessing/EffectComposer.js');
-        const { RenderPass } = await import('three/examples/jsm/postprocessing/RenderPass.js');
-        const { UnrealBloomPass } = await import('three/examples/jsm/postprocessing/UnrealBloomPass.js');
-        const { ShaderPass } = await import('three/examples/jsm/postprocessing/ShaderPass.js');
-
       // Custom chromatic aberration shader
       const chromaticAberrationShader = {
         uniforms: {
@@ -1228,7 +1227,7 @@ export class OfficeEnvironment extends BaseEnvironment {
     }
     
     // Also check for direct room connections (room nodes adjacent to this junction)
-    const roomNodeIds = new Set(['MDR1', 'OD1', 'WELL1', 'BREAK1']);
+    const roomNodeIds = new Set(['WORK1', 'OD1', 'WELL1', 'BREAK1']);
     for (const roomNodeId of roomNodeIds) {
       const roomNode = CORRIDOR_MAP.nodes.find(n => n.id === roomNodeId);
       const thisNode = CORRIDOR_MAP.nodes.find(n => n.id === nodeId);
@@ -1678,7 +1677,7 @@ export class OfficeEnvironment extends BaseEnvironment {
   // --- Portfolio Section Configuration ---
   portfolioSectionsConfig = {
       DESIGN: {
-        nodeId: "MDR1",
+        nodeId: "WORK1",
         name: "Interaction_Design",
         description: "UX/UI & Interaction Projects",
         rotation: -Math.PI / 2, // Changed from Math.PI / 2 to face corridor
@@ -1820,7 +1819,7 @@ export class OfficeEnvironment extends BaseEnvironment {
       
       // Get the junction related to this section
       const junctionMapping = {
-        "Interaction_Design": "J_MDR",
+        "Interaction_Design": "J_WORK",
         "Development": "J_OD",
         "Film_Cinema": "J_WELL",
         "Performance_Art": "J_BREAK"
@@ -2387,7 +2386,7 @@ export class OfficeEnvironment extends BaseEnvironment {
     // Return corridor segment info if found
     if (closestSegment) {
       const segmentId = closestSegment.id;
-      // Extract department from segment ID (e.g., "mdr_hallway" -> "mdr")
+      // Extract department from segment ID (e.g., "work_hallway" -> "work")
       const department = segmentId.includes("_")
         ? segmentId.split("_")[0]
         : "corridor";
@@ -3934,18 +3933,18 @@ export class OfficeEnvironment extends BaseEnvironment {
     
     // Load chair.gltf
     const chairGltf = await new Promise((resolve, reject) => {
-              loader.load(getRootModelPath('chair.glb'), resolve, undefined, reject);
+              loader.load(getModelPath('chair.glb'), resolve, undefined, reject);
     });
     // Load lamp.gltf
     const lampGltf = await new Promise((resolve, reject) => {
-              loader.load(getRootModelPath('lamp.glb'), resolve, undefined, reject);
+              loader.load(getModelPath('lamp.glb'), resolve, undefined, reject);
     });
     // Load projector.glb
     const projectorGltf = await new Promise((resolve, reject) => {
-              loader.load(getRootModelPath('projector.glb'), resolve, undefined, reject);
+              loader.load(getModelPath('projector.glb'), resolve, undefined, reject);
     });
     const projectorScreenGltf = await new Promise((resolve, reject) => {
-              loader.load(getRootModelPath('projector_screen.glb'), resolve, undefined, reject);
+              loader.load(getModelPath('projector_screen.glb'), resolve, undefined, reject);
     });
     
     // Load poster textures
@@ -4893,12 +4892,12 @@ export class OfficeEnvironment extends BaseEnvironment {
     console.log('Created sophisticated art gallery interior with robust wall placement and empty door wall.');
 }
 
-  /** Loads and places the MDR model */
-  async _createMdrInterior(interiorGroup, center, size, doorPosition) { // Added doorPosition
-      console.log(`Creating MDR interior at ${center.x}, ${center.z}`);
+  /** Loads and places the office model */
+  async _createWorkInterior(interiorGroup, center, size, doorPosition) { // Added doorPosition
+      console.log(`Creating work interior at ${center.x}, ${center.z}`);
         try {
           const loader = new GLTFLoader();
-          const gltf = await loader.loadAsync(getRootModelPath("office.glb")); // Path relative to public/
+          const gltf = await loader.loadAsync(getModelPath("office.glb")); // public/models/office.glb
           const model = gltf.scene;
 
           // --- Material Override & Collision Setup --- (Simplified)
@@ -4917,7 +4916,7 @@ export class OfficeEnvironment extends BaseEnvironment {
                 const entranceWallThreshold = 1.5; // How close to door pos to be considered entrance wall
 
                 if (distanceToDoor < entranceWallThreshold) {
-                  console.log(`[MDR Interior] Skipping collidable wall near door: ${child.name}, dist: ${distanceToDoor.toFixed(2)}`);
+                  console.log(`[Work Interior] Skipping collidable wall near door: ${child.name}, dist: ${distanceToDoor.toFixed(2)}`);
                   // Optionally make the entrance wall invisible or remove it if needed
                   // child.visible = false;
                 } else {
@@ -4946,7 +4945,7 @@ export class OfficeEnvironment extends BaseEnvironment {
           const desiredSize = size.clone().multiplyScalar(0.9); // Fit within 90% of bounds
           const scaleFactor = Math.min(desiredSize.x / modelSize.x, desiredSize.y / modelSize.y, desiredSize.z / modelSize.z);
 
-          console.log(`MDR Scaling: DeptSize=${size.x.toFixed(2)},${size.z.toFixed(2)} ModelSize=${modelSize.x.toFixed(2)},${modelSize.z.toFixed(2)} ScaleFactor=${scaleFactor.toFixed(2)}`);
+          console.log(`Scaling: DeptSize=${size.x.toFixed(2)},${size.z.toFixed(2)} ModelSize=${modelSize.x.toFixed(2)},${modelSize.z.toFixed(2)} ScaleFactor=${scaleFactor.toFixed(2)}`);
           model.scale.set(scaleFactor, scaleFactor, scaleFactor);
 
           // Re-center model within bounds AFTER scaling
@@ -4958,9 +4957,9 @@ export class OfficeEnvironment extends BaseEnvironment {
           model.position.y = center.y; // Ensure floor alignment (assuming model origin is at its base)
 
           interiorGroup.add(model);
-          console.log(`Loaded and processed MDR model: office.glb`);
+          console.log(`Loaded and processed office model: office.glb`);
         } catch (error) {
-          console.error("Error loading or processing MDR model:", error);
+          console.error("Error loading or processing office model:", error);
           // Fallback to placeholder if model loading fails
           this._createPlaceholderInterior(interiorGroup, center, size, doorPosition);
       }
@@ -4973,7 +4972,7 @@ export class OfficeEnvironment extends BaseEnvironment {
    * @param {string} sectionName - The portfolio section name (used for naming the group)
    * @param {THREE.Vector3} center - The calculated center of the section bounds
    * @param {THREE.Vector3} size - The calculated size of the section bounds
-   * @param {string} sectionType - Identifier for the type of interior to create (e.g., 'DESIGN', 'MDR')
+   * @param {string} sectionType - Identifier for the type of interior to create (e.g., 'DESIGN', 'WORK')
    * @private
    */
   async createPortfolioSectionInteriors(sectionName, center, size, sectionType, doorPosition) {
@@ -4991,12 +4990,12 @@ export class OfficeEnvironment extends BaseEnvironment {
       doorPosition = center.clone();
     }
 
-    // --- Create Bounding Walls --- (Common for most types, except maybe MDR if model includes walls)
+    // --- Create Bounding Walls --- (Common for most types, except maybe WORK if model includes walls)
     const wallMaterial = this.materialSystem.getMaterial("corridorWall");
-    if (sectionType !== 'MDR') { // Only add procedural walls if not using MDR model's walls
+    if (sectionType !== 'WORK') { // Only add procedural walls if not using office model's walls
         // Create walls but with a CLEAR DOORWAY
         this._createSectionWalls(center, size, wallMaterial, interiorGroup, doorPosition);
-    } // MDR method needs to handle its own walls via _addCollidableWall
+    } // WORK method needs to handle its own walls via _addCollidableWall
 
     // --- Common Floor --- (Always add a floor plane)
     const floorMaterial = this.materialSystem.getMaterial("floor");
@@ -5060,7 +5059,7 @@ export class OfficeEnvironment extends BaseEnvironment {
       'DEV': 0x34a853,    // Green
       'FILM': 0xfbbc05,   // Yellow/gold
       'ART': 0xea4335,    // Red
-      'MDR': 0xffffff     // White
+      'WORK': 0xffffff     // White
     };
     
     const markerColor = sectionColors[sectionType] || 0xffffff;
@@ -5109,8 +5108,8 @@ export class OfficeEnvironment extends BaseEnvironment {
           case 'ART':
               await this._createArtInterior(interiorGroup, center, size, doorPosition);
               break;
-          case 'MDR':
-              await this._createMdrInterior(interiorGroup, center, size, doorPosition);
+          case 'WORK':
+              await this._createWorkInterior(interiorGroup, center, size, doorPosition);
               break;
           default:
               console.warn(`Unknown portfolio section type: ${sectionType}. Creating placeholder.`);
@@ -5493,7 +5492,7 @@ export class OfficeEnvironment extends BaseEnvironment {
     return false;
   }
 
-  // --- Added from LumonEnvironment ---
+  // --- Added from OfficeEnvironment ---
 
   /**
    * Create wayfinding elements (like colored floor strips) to help navigate.
@@ -5510,7 +5509,7 @@ export class OfficeEnvironment extends BaseEnvironment {
 
     // Define department colors for wayfinding strips
     const deptColors = {
-      MDR: 0x4285f4, // Blue
+      WORK: 0x4285f4, // Blue
       O_AND_D: 0xea4335, // Red (Optics & Design)
       WELLNESS: 0x34a853, // Green
       BREAK_ROOM: 0x666666, // Gray
@@ -5525,7 +5524,7 @@ export class OfficeEnvironment extends BaseEnvironment {
     const hubPosition = new THREE.Vector3(0, 0.01, 0); // Assuming origin
 
     const paths = [
-      { to: "MDR", color: deptColors.MDR, targetPos: new THREE.Vector3(CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 2) },
+      { to: "WORK", color: deptColors.WORK, targetPos: new THREE.Vector3(CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 2) },
       { to: "O_AND_D", color: deptColors.O_AND_D, targetPos: new THREE.Vector3(-CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 2) },
       { to: "WELLNESS", color: deptColors.WELLNESS, targetPos: new THREE.Vector3(CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 4) },
       { to: "BREAK_ROOM", color: deptColors.BREAK_ROOM, targetPos: new THREE.Vector3(-CORRIDOR_WIDTH * 4, 0.01, -SEGMENT_LENGTH * 4) },
